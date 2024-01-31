@@ -28,8 +28,8 @@ class NewsTexts {
       ];
 
   static List<String> categoryList() => <String>[
-        'Class 1: Critical',
-        'Class 2: Serious',
-        'Class 3: Mildly Serious'
+        'Class I',
+        'Class II',
+        'Class III'
       ];
 }

@@ -1,4 +1,6 @@
+import 'package:daily_news/model/request_query.dart';
 import 'package:daily_news/provider/user_provider.dart';
+import 'package:daily_news/ui/screens/home/widgets/query_widget.dart';
 import 'package:daily_news/ui/shared/theme/theme_cubit.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -9,6 +11,7 @@ import 'package:provider/provider.dart';
 import 'core/news_application.dart';
 import 'core/service_locator.dart';
 import 'core/app.dart';
+import 'data/network/current_weather_api.dart';
 
 
 void main() async {
@@ -27,6 +30,9 @@ void main() async {
   await setUpServiceLocators();
   await sl.allReady();
   startAppComponent(application, user);
+  // RequestQuery initialRequestQuery = RequestQuery("", "", "");
+  // topHeadlinesApi = TopHeadlinesApi(requestQuery: initialRequestQuery);
+
 }
 
 void startAppComponent(var application, User? user) {
@@ -34,6 +40,8 @@ void startAppComponent(var application, User? user) {
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => UserProvider()),
+        // ChangeNotifierProvider(create: (context) => RequestQueryProvider()),
+
       ],
       child: BlocProvider(
         create: (context) => ThemeCubit(),

@@ -5,8 +5,6 @@ import '../../api_provider/base_api_provider.dart';
 import '../../models/base_model/base_model.dart';
 
 
-
-
 abstract class BaseApi<TQuery extends BaseModel, TRes extends BaseModel, TErr extends BaseModel> {
   String url;
   BaseApiProvider apiProvider;
@@ -22,7 +20,6 @@ abstract class BaseApi<TQuery extends BaseModel, TRes extends BaseModel, TErr ex
       options: Options(
         headers: headers ?? {'Content-Type': 'application/json'},
       ),
-
       queryParameters: queryParameters,
     );
     return response;
@@ -30,37 +27,29 @@ abstract class BaseApi<TQuery extends BaseModel, TRes extends BaseModel, TErr ex
 
   Future<Either<TRes, TErr>> get({
     Map<String, String>? headers,
-    TQuery? queryParams,
+    TQuery? queryParams
   }) async {
     try {
       // Construct the query parameters dynamically
       Map<String, dynamic>? queryParameters = queryParams?.toJson();
-
       Response<Map<String, dynamic>> response = await getRaw(
         headers: headers,
         queryParameters: queryParameters,
       );
-
       // Assuming that both TRes and TErr extend BaseModel, the following should work
       return Left(mapSuccessResponse(response.data) as TRes);
     } on DioError catch (err) {
       if (err.response != null && err.response!.data != null) {
         return Right(mapErrorResponse(err.response!.data) as TErr);
       }
-
       return Right(
         mapErrorResponse({"cod": 9999, "message": "Internal network error"}) as TErr,
       );
     }
   }
-
   BaseModel mapSuccessResponse(Map<String, dynamic>? responseJson);
   BaseModel mapErrorResponse(Map<String, dynamic>? errorJson);
 }
-
-
-
-
 
 
 // abstract class BaseApi<TQuery extends BaseModel, TRes extends BaseModel,

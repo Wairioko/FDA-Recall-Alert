@@ -1,5 +1,6 @@
 import 'package:dartz/dartz.dart';
 import '../../../core/service_locator.dart';
+import '../../../model/request_query.dart';
 import '../../models/error_response.dart';
 import '../../models/top_headlines_query_params.dart';
 import '../../models/top_headlines_response.dart';
@@ -42,8 +43,8 @@ import '../../network/current_weather_api.dart';
 //
 //     return response;
 //   }
-// }
-
+// // }
+//
 // abstract class TopHeadlinesRemoteDataSource {
 //   Future<Either<TopHeadlinesResponse, ErrorResponse>> getTopHeadlines(
 //       TopHeadlinesQueryParams? queryParams);
@@ -70,43 +71,91 @@ import '../../network/current_weather_api.dart';
 //
 //     return response;
 //   }
-
 //
-  // @override
-  // Future<Either<TopHeadlinesResponse, ErrorResponse>> getTopHeadlines(TopHeadlinesQueryParams? queryParams) async {
-  //   Either<TopHeadlinesResponse, ErrorResponse> response =
-  //   await _topHeadlinesApi.get();
-  //
-  //   // queryParameters: TopHeadlinesQueryParams(state, category).toJson());
-  //   return response;
-  // }
+//
+//   @override
+//   Future<Either<TopHeadlinesResponse, ErrorResponse>> getTopHeadlines(TopHeadlinesQueryParams? queryParams) async {
+//     Either<TopHeadlinesResponse, ErrorResponse> response =
+//     await _topHeadlinesApi.get();
+//
+//     // queryParameters: TopHeadlinesQueryParams(state, category).toJson());
+//     return response;
+//   }
 // }
-
 
 abstract class TopHeadlinesRemoteDataSource {
   Future<Either<TopHeadlinesResponse, ErrorResponse>> getTopHeadlines(
-      );
-  // String state, String category
+      String state, String category, String query);
+  // Add state and category parameters
 }
-// String country, String category, String query
-class TopHeadlinesRemoteDataSourceImpl implements TopHeadlinesRemoteDataSource {
+
+class TopHeadlinesRemoteDataSourceImpl implements
+    TopHeadlinesRemoteDataSource {
   late TopHeadlinesApi _topHeadlinesApi;
 
   TopHeadlinesRemoteDataSourceImpl() {
     _topHeadlinesApi = sl<TopHeadlinesApi>();
   }
-  // String country, String category,
-  // String query
+
   @override
-  Future<Either<TopHeadlinesResponse, ErrorResponse>> getTopHeadlines() async {
-    // String state, String category
+  Future<Either<TopHeadlinesResponse, ErrorResponse>> getTopHeadlines(
+      String state, String category, String query) async {
+
+    _topHeadlinesApi.requestQuery = RequestQuery(state, category, query);
+
     Either<TopHeadlinesResponse, ErrorResponse> response =
     await _topHeadlinesApi.get();
-
-    // queryParameters: TopHeadlinesQueryParams(state, category).toJson());
     return response;
   }
+}
 
-  }
-
+//
+// abstract class TopHeadlinesRemoteDataSource {
+//   Future<Either<TopHeadlinesResponse, ErrorResponse>> getTopHeadlines(
+//       );
+//   // String state, String category
+// }
+// // String country, String category, String query
+// class TopHeadlinesRemoteDataSourceImpl implements TopHeadlinesRemoteDataSource {
+//   late TopHeadlinesApi _topHeadlinesApi;
+//
+//
+//   TopHeadlinesRemoteDataSourceImpl() {
+//     _topHeadlinesApi = sl<TopHeadlinesApi>();
+//   }
+//   // String country, String category,
+//   // String query
+//   @override
+//   Future<Either<TopHeadlinesResponse, ErrorResponse>> getTopHeadlines() async {
+//     // String state, String category
+//
+//     Either<TopHeadlinesResponse, ErrorResponse> response =
+//     await _topHeadlinesApi.get();
+//
+//     // queryParameters: TopHeadlinesQueryParams(state, category).toJson());
+//     return response;
+//   }
+//
+//   }
+//
+// import 'package:dartz/dartz.dart';
+// import 'package:daily_news/data/models/top_headlines_response.dart';
+// import 'package:daily_news/data/models/error_response.dart';
+//
+// abstract class TopHeadlinesRemoteDataSource {
+//   Future<Either<TopHeadlinesResponse, ErrorResponse>> getTopHeadlines();
+// }
+// class TopHeadlinesRemoteDataSourceImpl implements TopHeadlinesRemoteDataSource {
+//   late TopHeadlinesApi _topHeadlinesApi;
+//
+//   @override
+//   Future<Either<TopHeadlinesResponse, ErrorResponse>> getTopHeadlines() async {
+//     _topHeadlinesApi = sl<TopHeadlinesApi>();
+//
+//     Either<TopHeadlinesResponse, ErrorResponse> response =
+//     await _topHeadlinesApi.get(requestQuery: re);
+//
+//     return response;
+//   }
+// }
 

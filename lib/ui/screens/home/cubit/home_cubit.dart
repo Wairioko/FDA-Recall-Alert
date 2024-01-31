@@ -1,8 +1,6 @@
 import 'package:bloc/bloc.dart';
 import 'package:daily_news/model/request_query.dart';
 import '../../../../core/service_locator.dart';
-import '../../../../data/api_provider/news_api_provider.dart';
-import '../../../../data/models/top_headlines_query_params.dart';
 import '../../../../domain/repositories/top_headlines_repository.dart';
 import '../../../../domain/use_cases/top_headlines_use_case.dart';
 import '../../../../utility/log.dart';
@@ -21,10 +19,8 @@ class HomeCubit extends Cubit<HomeState> {
       if (requestQuery != null) {
         lastRequestQuery = requestQuery;
       }
-
       var topHeadlines = await TopHeadlinesUseCase(sl.get<TopHeadlinesRepository>())
           .call(lastRequestQuery);
-
       if (topHeadlines == null) {
         emit(DataUnavailableState(NewsTexts.get()["noLocalData"]));
       } else {

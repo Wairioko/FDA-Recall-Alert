@@ -1,6 +1,5 @@
 import 'package:daily_news/data/models/top_headlines_query_params.dart';
 import '../../core/service_locator.dart';
-// import 'package:daily_news/ui/screens/home/widgets/query_widget.dart';
 import '../../model/request_query.dart';
 import '../api_provider/news_api_provider.dart';
 import '../models/base_model/base_model.dart';
@@ -8,17 +7,20 @@ import '../models/error_response.dart';
 import '../models/top_headlines_response.dart';
 import 'base_api/base_api.dart';
 
-class TopHeadlinesApi extends BaseApi<TopHeadlinesQueryParams, TopHeadlinesResponse, ErrorResponse> {
+class TopHeadlinesApi extends BaseApi<TopHeadlinesQueryParams,
+    TopHeadlinesResponse, ErrorResponse> {
 
-
-  TopHeadlinesApi()
+  TopHeadlinesApi({required this.requestQuery})
       : super(NewsApiProvider.topHeadlines, sl<NewsApiProvider>());
+
+  RequestQuery requestQuery;
 
   @override
   BaseModel mapErrorResponse(Map<String, dynamic>? errorJson) {
     print("Error Response: $errorJson");
     return ErrorResponse.fromJson(errorJson!);
   }
+
   @override
   BaseModel mapSuccessResponse(Map<String, dynamic>? responseJson) {
     // Filter items based on the 'status' field
@@ -26,19 +28,73 @@ class TopHeadlinesApi extends BaseApi<TopHeadlinesQueryParams, TopHeadlinesRespo
         .where((item) => item['status'] == "Ongoing")
         .toList();
 
-    // If state is present in requestQuery, filter by 'distribution_pattern'
+    // Check if state and/or category are not empty or consist only of whitespaces
+    // Check if state and/or category are not empty or consist only of whitespaces
+    // if (requestQuery.state.trim().isNotEmpty || requestQuery.category.trim().isNotEmpty) {
+    //   print("Searching for results");
+    //
+    //   ongoingItems = ongoingItems.where((item) {
+    //     bool stateMatch = true; // Default to true
+    //     bool categoryMatch = true; // Default to true
+    //
+    //     // Check if the state matches
+    //     if (requestQuery.state.trim().isNotEmpty) {
+    //       String normalizedState = requestQuery.state.toLowerCase();
+    //
+    //       stateMatch = item['distribution_pattern'].toLowerCase().contains(normalizedState) ||
+    //           item['distribution_pattern'].toLowerCase().contains(getStateInitials(normalizedState)) ||
+    //           item['distribution_pattern'].toLowerCase().contains('nation') ||
+    //           item['distribution_pattern'].toLowerCase().contains('country') ||
+    //           (item['distribution_pattern'].toLowerCase().contains('nationwide') && normalizedState == 'nation') ||
+    //           (item['distribution_pattern'].toLowerCase().contains('countrywide') && normalizedState == 'country');
+    //     }
+    //
+    //     // Check if the category matches
+    //     if (requestQuery.category.trim().isNotEmpty) {
+    //       categoryMatch = item['classification'].toLowerCase().contains(requestQuery.category.toLowerCase());
+    //     }
+    //
+    //     // Return true if both state and category conditions are met
+    //     return stateMatch && categoryMatch;
+    //   }).toList();
+    //
+    //   print("Results for state ${requestQuery.state} and category ${requestQuery.category}: $ongoingItems");
+    // } else {
+    //   print("No state or category selected");
+    // }
 
-    if (.state.isNotEmpty) {
-      print("Searching for results in the following state: ${.state}");
+    if (requestQuery.state.trim().isNotEmpty || requestQuery.category.trim().isNotEmpty) {
+      print("Searching for results");
 
-      ongoingItems = ongoingItems
-          .where((item) =>
-      item['distribution_pattern'].toLowerCase().contains(.state.toLowerCase()) ||
-          item['distribution_pattern'].toLowerCase().contains(getStateInitials(.state.toLowerCase())))
-          .toList();
+      ongoingItems = ongoingItems.where((item) {
+        bool stateMatch = true; // Default to true
+        bool categoryMatch = true; // Default to true
+
+        // Check if the state matches
+        if (requestQuery.state.trim().isNotEmpty) {
+          stateMatch = item['distribution_pattern'].toLowerCase().contains(requestQuery.state.toLowerCase()) ||
+              item['distribution_pattern'].toLowerCase().contains(getStateInitials(requestQuery.state.toLowerCase()));
+        }
+
+        // Check if distribution_pattern contains "nation" or "country"
+        bool nationOrCountryMatch = item['distribution_pattern'].toLowerCase().contains('nation') ||
+            item['distribution_pattern'].toLowerCase().contains('country');
+
+        // Check if any state condition is met or nationOrCountryMatch is true
+        bool stateCondition = stateMatch || nationOrCountryMatch;
+
+        // Check if the category matches
+        if (requestQuery.category.trim().isNotEmpty) {
+          categoryMatch = item['classification'].toLowerCase().contains(requestQuery.category.toLowerCase());
+        }
+
+        // Return true only if both conditions (state and category) are met
+        return stateCondition && (categoryMatch || !requestQuery.category.trim().isNotEmpty);
+      }).toList();
     } else {
-      print("No state selected");
+      print("No state or category selected");
     }
+
 
     // Create a new response JSON with only filtered items
     Map<String, dynamic> filteredResponseJson = {
@@ -51,7 +107,7 @@ class TopHeadlinesApi extends BaseApi<TopHeadlinesQueryParams, TopHeadlinesRespo
   }
 
   String getStateInitials(String state) {
-    // Map full state names to their respective initials
+//     // Map full state names to their respective initials
     Map<String, String> stateMappings = {
       'alabama': 'AL',
       'alaska': 'AK',
@@ -104,24 +160,11 @@ class TopHeadlinesApi extends BaseApi<TopHeadlinesQueryParams, TopHeadlinesRespo
       'wisconsin': 'WI',
       'wyoming': 'WY',
     };
-
     return stateMappings[state] ?? state;
   }
 }
 
 
-// import 'package:daily_news/data/models/top_headlines_query_params.dart';
-// import 'package:dartz/dartz.dart';
-// import 'package:dio/dio.dart';
-// import '../../core/service_locator.dart';
-// import '../../model/request_query.dart';
-// import '../api_provider/news_api_provider.dart';
-// import '../models/base_model/base_model.dart';
-// import '../models/error_response.dart';
-// import '../models/top_headlines_response.dart';
-// import 'base_api/base_api.dart';
-//
-//
 // class TopHeadlinesApi extends BaseApi<
 //     TopHeadlinesQueryParams,
 //     TopHeadlinesResponse,
@@ -131,7 +174,9 @@ class TopHeadlinesApi extends BaseApi<TopHeadlinesQueryParams, TopHeadlinesRespo
 //       : super(NewsApiProvider.topHeadlines, sl<NewsApiProvider>()) {
 //     // requestQuery = requestQuery("", "", ""); // or initialize with the required parameters
 //   }
-//   RequestQuery requestQuery = RequestQuery('', '', '');
+//
+//   TopHeadlinesQueryParams queryParams = TopHeadlinesQueryParams('', '', '');
+//
 //
 //   @override
 //   BaseModel mapErrorResponse(Map<String, dynamic>? errorJson) {
@@ -149,18 +194,18 @@ class TopHeadlinesApi extends BaseApi<TopHeadlinesQueryParams, TopHeadlinesRespo
 //
 //
 //     // If state is present in requestQuery, filter by 'distribution_pattern'
-//     if (requestQuery != null) {
-//       if (requestQuery.state.isNotEmpty) {
-//         print("Searching for results in the following state: ${requestQuery.state}");
+//     if (queryParams != null) {
+//       if (queryParams.state.isNotEmpty) {
+//         print("Searching for results in the following state: ${queryParams.state}");
 //
 //         ongoingItems = ongoingItems
 //             .where((item) =>
 //         item['distribution_pattern']
 //             .toLowerCase()
-//             .contains(requestQuery.state.toLowerCase()) ||
+//             .contains(queryParams.state.toLowerCase()) ||
 //             item['distribution_pattern']
 //                 .toLowerCase()
-//                 .contains(getStateInitials(requestQuery.state.toLowerCase())))
+//                 .contains(getStateInitials(queryParams.state.toLowerCase())))
 //             .toList();
 //       }
 //   }
@@ -239,6 +284,42 @@ class TopHeadlinesApi extends BaseApi<TopHeadlinesQueryParams, TopHeadlinesRespo
 // }
 
 
+// class TopHeadlinesApi extends BaseApi<TopHeadlinesQueryParams, TopHeadlinesResponse, ErrorResponse> {
+//   // final RequestQueryProvider requestQueryProvider;
+//
+//   RequestQuery requestQuery;
+//   TopHeadlinesApi(this.requestQuery)
+//       : super(NewsApiProvider.topHeadlines, sl<NewsApiProvider>());
+  // TopHeadlinesQueryParams queryParams;
+
+
+// if (requestQuery.state != null) {
+//   print(
+//       "Searching for results in the following state: ${requestQuery?.state}");
+//
+//   ongoingItems = ongoingItems
+//       .where((item) =>
+//   item['distribution_pattern'].toLowerCase().contains(requestQuery?.state.toLowerCase()) ||
+//       item['distribution_pattern'].toLowerCase().contains(getStateInitials(requestQuery!.state.toLowerCase())))
+//       .toList();
+// } else {
+//   print("No state selected");
+// }
+
+
+// import 'package:daily_news/data/models/top_headlines_query_params.dart';
+// import 'package:dartz/dartz.dart';
+// import 'package:dio/dio.dart';
+// import '../../core/service_locator.dart';
+// import '../../model/request_query.dart';
+// import '../api_provider/news_api_provider.dart';
+// import '../models/base_model/base_model.dart';
+// import '../models/error_response.dart';
+// import '../models/top_headlines_response.dart';
+// import 'base_api/base_api.dart';
+//
+//
+
 
 //
 //
@@ -288,5 +369,3 @@ class TopHeadlinesApi extends BaseApi<TopHeadlinesQueryParams, TopHeadlinesRespo
 //     return options;
 //   }
 // }
-//
-

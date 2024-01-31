@@ -19,11 +19,11 @@ class TopHeadlinesRepositoryImpl implements TopHeadlinesRepository {
 
   @override
   Future<TopHeadlines?> getTopHeadlines(String state, String category, String query) async {
-    TopHeadlinesQueryParams queryParams = TopHeadlinesQueryParams(state, category, query);
+    // TopHeadlinesQueryParams queryParams = TopHeadlinesQueryParams(state, category, query);
 
     Either<TopHeadlinesResponse, ErrorResponse> response =
-    await _topHeadlinesRemoteDataSource.getTopHeadlines();
-    // state, category
+    await _topHeadlinesRemoteDataSource.getTopHeadlines(state, category, query);
+    //
     var result = response.fold(
           (apiResponse) async {
         _topHeadlinesLocalDataSource.putTopHeadlinesResponse(apiResponse, state, category);

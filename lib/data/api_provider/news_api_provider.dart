@@ -3,6 +3,7 @@ import 'package:dio/dio.dart';
 import '../../model/request_query.dart';
 import '../../utility/news_texts.dart';
 import '../../utility/utility.dart';
+import '../models/top_headlines_query_params.dart';
 import 'base_api_provider.dart';
 
 class NewsApiProvider extends BaseApiProvider {
@@ -52,12 +53,14 @@ class NewsApiProvider extends BaseApiProvider {
     }
     return NewsTexts.get()['anErrorOccurred'];
   }
+
+
   BaseOptions createBaseOptions() {
     DateTime now = DateTime.now();
     String formattedNow = "${now.year}${now.month.toString().padLeft(2, '0')}${now.day.
     toString().padLeft(2, '0')}";
     String baseUrl = 'https://api.fda.gov/food/enforcement.json?search='
-        'report_date:[20231201+TO+$formattedNow]&limit=1000';
+        'report_date:[20230101+TO+$formattedNow]&limit=1000';
     BaseOptions options = BaseOptions(
       baseUrl: baseUrl,
     );
@@ -67,34 +70,15 @@ class NewsApiProvider extends BaseApiProvider {
 }
 
 
-// String constructUrl(RequestQuery? requestQuery) {
-//   DateTime now = DateTime.now();
-//   String formattedNow = "${now.year}${now.month.toString().padLeft(2, '0')}${
-//       now.day.toString().padLeft(2, '0')}";
-//   Uri uri = Uri(
-//     scheme: 'https',
-//     host: 'api.fda.gov',
-//     path: '/food/enforcement.json',
-//     queryParameters: {
-//       'search': 'report_date:[20231201 TO $formattedNow]',
-//       if (requestQuery != null && requestQuery.state.isNotEmpty) 'state': requestQuery.state,
-//       if (requestQuery != null && requestQuery.category.isNotEmpty) 'category': requestQuery.category,
-//       'limit': '1000',
-//     },
-//   );
-//   print("Constructed URL: $uri");
-//   return uri.toString();
-// }
-
-
 
 // BaseOptions createBaseOptions() {
+//   RequestQuery requestQuery;
 //   TopHeadlinesQueryParams? queryParams;
 //   String baseUrl = 'https://api.fda.gov/food/enforcement.json?';
 //   DateTime now = DateTime.now();
 //   String formattedNow = "${now.year}${now.month.toString().padLeft(2, '0')}${now.day.
 //   toString().padLeft(2, '0')}";
-//   String searchParam = "search=report_date:[20231201+TO+$formattedNow]";
+//   String searchParam = "search=report_date:[20230101+TO+$formattedNow]";
 //   if (queryParams != null) {
 //     if (queryParams.state.isNotEmpty) {
 //       searchParam = "state=${queryParams.state}";
@@ -112,6 +96,7 @@ class NewsApiProvider extends BaseApiProvider {
 //   );
 //   return options;
 // }
+
 // BaseOptions createBaseOptions() {
 //   String baseUrl = 'https://api.fda.gov/food/enforcement.json?';
 //   DateTime now = DateTime.now();
@@ -130,8 +115,8 @@ class NewsApiProvider extends BaseApiProvider {
 //
 // class NewsApiProvider extends BaseApiProvider {
 //
-//   NewsApiProvider({TopHeadlinesQueryParams? queryParams}) {
-//     BaseOptions options = createBaseOptions(queryParams);
+//   NewsApiProvider({required RequestQuery requestQuery}) {
+//     BaseOptions options = createBaseOptions(requestQuery);
 //     dio = Dio(options);
 //
 //     dio.interceptors.add(logInterceptor);
@@ -178,17 +163,18 @@ class NewsApiProvider extends BaseApiProvider {
 //     return NewsTexts.get()['anErrorOccurred'];
 //   }
 //
-//   BaseOptions createBaseOptions(TopHeadlinesQueryParams? queryParams) {
+//   BaseOptions createBaseOptions(RequestQuery requestQuery) {
 //     String baseUrl = 'https://api.fda.gov/food/enforcement.json?';
 //     DateTime now = DateTime.now();
 //     String formattedNow = "${now.year}${now.month.toString().padLeft(2, '0')}${now.day.
 //     toString().padLeft(2, '0')}";
 //     String searchParam = "search=report_date:[20231201+TO+$formattedNow]";
-//     if (queryParams != null) {
-//       if (queryParams.state.isNotEmpty) {
-//         searchParam = "state=${queryParams.state}";
-//       } else if (queryParams.category.isNotEmpty) {
-//         searchParam = "category=${queryParams.category}";
+//     if (requestQuery != null) {
+//       if (requestQuery.state.isNotEmpty) {
+//         searchParam = "state=${requestQuery.state}";
+//         print("this is a state $searchParam");
+//       } else if (requestQuery.category.isNotEmpty) {
+//         searchParam = "category=${requestQuery.category}";
 //       }
 //     }
 //
@@ -202,7 +188,7 @@ class NewsApiProvider extends BaseApiProvider {
 //
 //   static String get topHeadlines => '';
 // }
-
+//
 
 // BaseOptions createBaseOptions(TopHeadlinesQueryParams? queryParams) {
 //   DateTime now = DateTime.now();
@@ -345,80 +331,3 @@ class NewsApiProvider extends BaseApiProvider {
 
 
 
-
-//
-// import 'dart:io';
-//
-// import 'package:dio/dio.dart';
-//
-// import '../../utility/news_texts.dart';
-// import '../../utility/utility.dart';
-// import '../models/error_response.dart';
-// import 'base_api_provider.dart';
-//
-// class NewsApiProvider extends BaseApiProvider{
-//
-//   NewsApiProvider() {
-//     BaseOptions options = createBaseOptions();
-//     dio = Dio(options);
-//
-//     dio.interceptors.add(logInterceptor);
-//     dio.interceptors.add(getLoadingInterceptor());
-//   }
-//
-//   //#region Interceptors
-//   Interceptor logInterceptor =
-//     LogInterceptor(responseBody: true, requestBody: true, requestHeader: true);
-//
-//   Interceptor getLoadingInterceptor() => InterceptorsWrapper(
-//     onRequest: (RequestOptions options, RequestInterceptorHandler handler) async {
-//       Utility.startLoadingAnimation();
-//       handler.next(options);
-//     },
-//     onResponse: (Response response, ResponseInterceptorHandler handler) {
-//       Utility.completeLoadingAnimation();
-//       handler.next(response); // continue
-//     },
-//     onError: (DioError error, ErrorInterceptorHandler handler) async {
-//       String errorMessage = NewsTexts.get()['anErrorOccurred'];
-//
-//       if (error.response != null && error.response!.data != null) {
-//         var errorResponse = ErrorResponse.fromJson(error.response!.data);
-//         errorMessage = errorResponse.message ?? NewsTexts.get()['anErrorOccurred'];
-//       } else if (error.message.isNotEmpty) {
-//         errorMessage = await connectionCheck();
-//       }
-//
-//       Utility.showLoadingFailedError(errorMessage);
-//       handler.next(error);
-//     },
-//   );
-//   //#endregion
-//
-//   Future<String> connectionCheck() async {
-//     try {
-//       final result = await InternetAddress.lookup('example.com');
-//       if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
-//         return NewsTexts.get()['noOrSlowInternetConnection'];
-//       }
-//     } on SocketException catch (_) {
-//       return NewsTexts.get()['networkConnectivityError'];
-//     }
-//     return NewsTexts.get()['anErrorOccurred'];
-//   }
-//
-//   BaseOptions createBaseOptions() {
-//     final Map<String, String> _baseHeaders = {
-//       'Accept': 'application/json',
-//       'Content-Type': 'application/json',
-//       'Authorization': 'f5135eea2f7748d7b144be1c2fad9c78',
-//       "Access-Control-Allow-Origin": "*"
-//     };
-//     BaseOptions options =
-//     BaseOptions(baseUrl: 'https://newsapi.org/v2/', headers: _baseHeaders);
-//     return options;
-//   }
-//
-//   static String get topHeadlines => 'top-headlines';
-//
-// }

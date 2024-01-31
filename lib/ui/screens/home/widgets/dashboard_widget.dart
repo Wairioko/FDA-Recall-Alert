@@ -1,3 +1,4 @@
+import 'package:daily_news/data/network/current_weather_api.dart';
 import 'package:daily_news/domain/entities/top_headlines.dart';
 import 'package:daily_news/ui/screens/home/widgets/news_list.dart';
 import 'package:daily_news/ui/screens/home/widgets/query_widget.dart';
@@ -57,7 +58,7 @@ class _DashBoardWidgetState extends State<DashBoardWidget> {
                 title: 'Safe Scan',
               ),
             ),
-            QueryWidget(homeCubit: _homeCubit,),
+            QueryWidget(homeCubit: _homeCubit),
             BlocProvider.value(
               value: _homeCubit,
               child: BlocBuilder<HomeCubit, HomeState>(
