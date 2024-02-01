@@ -4,6 +4,7 @@ abstract class TopHeadlinesRepository {
   Future<TopHeadlines?> getTopHeadlines(
     String country,
     String category,
-    String query
+    String query,
+      String classification
   );
 }

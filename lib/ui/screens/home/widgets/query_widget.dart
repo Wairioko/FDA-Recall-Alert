@@ -16,9 +16,10 @@ class QueryWidget extends StatefulWidget {
 }
 
 class _QueryWidgetState extends State<QueryWidget> {
-  RequestQuery requestQuery = RequestQuery("", "", "");
-  String categoryHintText = "Category";
+  RequestQuery requestQuery = RequestQuery("", "", "", "");
+  String categoryHintText = "Classification";
   String stateHintText = "State";
+  String itemHintText = "Category";
   final TextEditingController _controller = TextEditingController();
   bool showClearButton = false;
 
@@ -31,17 +32,28 @@ class _QueryWidgetState extends State<QueryWidget> {
 
   void clearCategory() {
     setState(() {
-      categoryHintText = "Category";
+      categoryHintText = "Classification";
       requestQuery.category = ""; // Set category to an empty string
+    });
+  }
+
+  void clearClassification() {
+    setState(() {
+      categoryHintText = "Classification";
+      requestQuery.classification = ""; // Set category to an empty string
     });
   }
 
 
   void reloadData() {
     setState(() {
-      showClearButton = true;
+      showClearButton = requestQuery.isNotEmpty; // Show the clear button only if there's any query
     });
-    widget.homeCubit.getTopHeadlines(requestQuery: requestQuery);
+
+    // Only fetch data if there's a non-empty query
+    if (requestQuery.isNotEmpty) {
+      widget.homeCubit.getTopHeadlines(requestQuery: requestQuery);
+    }
   }
 
 
@@ -51,10 +63,33 @@ class _QueryWidgetState extends State<QueryWidget> {
       _controller.clear();
       clearState();
       clearCategory();
+      clearClassification();
+      requestQuery.query = "";  // Set query to an empty string
     });
+
     // Trigger data reload
     widget.homeCubit.getTopHeadlines(requestQuery: requestQuery);
   }
+
+
+  void _filterItems(String query) {
+    setState(() {
+      // Update the requestQuery's query field
+      requestQuery.query = query;
+
+      // If the query is empty, clear state and category
+      if (query.isEmpty) {
+        clearState();
+        clearCategory();
+        clearClassification();
+      }
+
+      // Trigger data reload
+      reloadData();
+    });
+  }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -73,10 +108,45 @@ class _QueryWidgetState extends State<QueryWidget> {
                 child:
                 TextField(
                   controller: _controller,
+                  onChanged: _filterItems, // Call _filterItems when the text changes
                   decoration: const InputDecoration(
                     hintText: 'Enter Query',
                     contentPadding: EdgeInsets.all(16.0),
                     border: InputBorder.none,
+                  ),
+                ),
+
+              ),
+              const SizedBox(width: 10.0),
+              Expanded(
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10.0),
+                    color: Colors.grey[200],
+                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: DropdownButton<String>(
+                    dropdownColor: Colors.grey[300],
+                    underline: const SizedBox(),
+                    isExpanded: true,
+                    hint: Text(
+                      itemHintText,
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                    ),
+                    items: NewsTexts.itemList().map((String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value),
+                      );
+                    }).toList(),
+                    onChanged: (String? newValue) {
+                      setState(() {
+                        itemHintText = newValue ?? 'Recall Item';
+                        requestQuery.category =
+                            newValue ?? NewsTexts.itemList()[0];
+                      });
+                    },
                   ),
                 ),
               ),
@@ -132,7 +202,7 @@ class _QueryWidgetState extends State<QueryWidget> {
                           overflow: TextOverflow.ellipsis,
                           maxLines: 1,
                         ),
-                        items: NewsTexts.categoryList().map((String value) {
+                        items: NewsTexts.classificationList().map((String value) {
                           return DropdownMenuItem<String>(
                             value: value,
                             child: Text(value),
@@ -140,14 +210,15 @@ class _QueryWidgetState extends State<QueryWidget> {
                         }).toList(),
                         onChanged: (String? newValue) {
                           setState(() {
-                            categoryHintText = newValue ?? 'Category';
+                            categoryHintText = newValue ?? 'Classification';
                             requestQuery.category =
-                                newValue ?? NewsTexts.categoryList()[0];
+                                newValue ?? NewsTexts.classificationList()[0];
                           });
                         },
                       ),
                     ),
                   ),
+
                 ],
               ),
               const SizedBox(

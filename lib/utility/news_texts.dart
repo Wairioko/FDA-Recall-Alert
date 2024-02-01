@@ -15,6 +15,12 @@ class NewsTexts {
         'After 3 weeks',
   ];
 
+  static List<String> itemList() => <String>[
+    'FOOD',
+    'DRUGS',
+    'DEVICE',
+  ];
+
   static List<String> stateList() => <String>[
         "Alabama", "Alaska", "Arizona", "Arkansas",
         "California", "Colorado", "Connecticut",
@@ -33,7 +39,7 @@ class NewsTexts {
         "Washington", "West Virginia", "Wisconsin", "Wyoming"
       ];
 
-  static List<String> categoryList() => <String>[
+  static List<String> classificationList() => <String>[
         'Class I',
         'Class II',
         'Class III'

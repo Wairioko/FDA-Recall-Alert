@@ -11,7 +11,7 @@ import 'home_state.dart';
 class HomeCubit extends Cubit<HomeState> {
   HomeCubit() : super(const HomeInitialState());
 
-  RequestQuery lastRequestQuery = RequestQuery("", "", "");
+  RequestQuery lastRequestQuery = RequestQuery("", "", "", "");
 
   Future<void> getTopHeadlines({RequestQuery? requestQuery}) async {
       Utility.startLoadingAnimation();

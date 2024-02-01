@@ -41,6 +41,7 @@ dependencies:
   cloud_firestore: ^4.13.1
   http: ^1.2.0
   flutter_riverpod: ^2.0.0
+  firebase_messaging: ^14.7.13
 #  firebase_core_platform_interface: .0
 #  firebase_database: ^10.6.0
 

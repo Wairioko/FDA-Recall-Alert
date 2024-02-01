@@ -16,8 +16,7 @@ Future<void> setUpServiceLocators() async {
 
   sl.registerSingleton<NewsApiProvider>(NewsApiProvider());
 
-  RequestQuery requestQuery = RequestQuery('', '', '');
-  //
+  RequestQuery requestQuery = RequestQuery('', '', '', "");
   sl.registerFactory<TopHeadlinesApi>(() => TopHeadlinesApi(requestQuery:requestQuery));
   sl.registerFactory<TopHeadlinesRemoteDataSource>(() => TopHeadlinesRemoteDataSourceImpl());
   sl.registerFactory<TopHeadlinesRepository>(() => TopHeadlinesRepositoryImpl());

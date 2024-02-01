@@ -321,6 +321,15 @@ class MenuWidget extends StatelessWidget {
                   ),
                 _buildMenuItem(
                   onTap: () {
+                    Navigator.of(context).pushNamed(ReceiptListScreen.path);
+                  },
+                  icon: Utility.isLightTheme(state.themeType)
+                      ? 'assets/icons/about.svg'
+                      : 'assets/icons/light_about.svg',
+                  text: 'Notifications',
+                ),
+                _buildMenuItem(
+                  onTap: () {
                     context.read<ThemeCubit>().toggleTheme();
                   },
                   icon: Utility.isLightTheme(state.themeType)

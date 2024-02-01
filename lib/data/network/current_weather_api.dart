@@ -28,40 +28,16 @@ class TopHeadlinesApi extends BaseApi<TopHeadlinesQueryParams,
         .where((item) => item['status'] == "Ongoing")
         .toList();
 
-    // Check if state and/or category are not empty or consist only of whitespaces
-    // Check if state and/or category are not empty or consist only of whitespaces
-    // if (requestQuery.state.trim().isNotEmpty || requestQuery.category.trim().isNotEmpty) {
-    //   print("Searching for results");
-    //
-    //   ongoingItems = ongoingItems.where((item) {
-    //     bool stateMatch = true; // Default to true
-    //     bool categoryMatch = true; // Default to true
-    //
-    //     // Check if the state matches
-    //     if (requestQuery.state.trim().isNotEmpty) {
-    //       String normalizedState = requestQuery.state.toLowerCase();
-    //
-    //       stateMatch = item['distribution_pattern'].toLowerCase().contains(normalizedState) ||
-    //           item['distribution_pattern'].toLowerCase().contains(getStateInitials(normalizedState)) ||
-    //           item['distribution_pattern'].toLowerCase().contains('nation') ||
-    //           item['distribution_pattern'].toLowerCase().contains('country') ||
-    //           (item['distribution_pattern'].toLowerCase().contains('nationwide') && normalizedState == 'nation') ||
-    //           (item['distribution_pattern'].toLowerCase().contains('countrywide') && normalizedState == 'country');
-    //     }
-    //
-    //     // Check if the category matches
-    //     if (requestQuery.category.trim().isNotEmpty) {
-    //       categoryMatch = item['classification'].toLowerCase().contains(requestQuery.category.toLowerCase());
-    //     }
-    //
-    //     // Return true if both state and category conditions are met
-    //     return stateMatch && categoryMatch;
-    //   }).toList();
-    //
-    //   print("Results for state ${requestQuery.state} and category ${requestQuery.category}: $ongoingItems");
-    // } else {
-    //   print("No state or category selected");
-    // }
+    if (requestQuery.query.trim().isNotEmpty) {
+      print("Searching for results");
+
+      ongoingItems = ongoingItems.where((item) {
+        // Check if the "product_description" contains the search query
+        return item['product_description'].toLowerCase().contains(requestQuery.query.toLowerCase());
+      }).toList();
+    } else {
+      print("No search query entered");
+    }
 
     if (requestQuery.state.trim().isNotEmpty || requestQuery.category.trim().isNotEmpty) {
       print("Searching for results");
@@ -84,12 +60,12 @@ class TopHeadlinesApi extends BaseApi<TopHeadlinesQueryParams,
         bool stateCondition = stateMatch || nationOrCountryMatch;
 
         // Check if the category matches
-        if (requestQuery.category.trim().isNotEmpty) {
-          categoryMatch = item['classification'].toLowerCase().contains(requestQuery.category.toLowerCase());
+        if (requestQuery.classification.trim().isNotEmpty) {
+          categoryMatch = item['classification'].toLowerCase().contains(requestQuery.classification.toLowerCase());
         }
 
         // Return true only if both conditions (state and category) are met
-        return stateCondition && (categoryMatch || !requestQuery.category.trim().isNotEmpty);
+        return stateCondition && (categoryMatch || !requestQuery.classification.trim().isNotEmpty);
       }).toList();
     } else {
       print("No state or category selected");
@@ -163,6 +139,43 @@ class TopHeadlinesApi extends BaseApi<TopHeadlinesQueryParams,
     return stateMappings[state] ?? state;
   }
 }
+
+
+// Check if state and/or category are not empty or consist only of whitespaces
+// Check if state and/or category are not empty or consist only of whitespaces
+// if (requestQuery.state.trim().isNotEmpty || requestQuery.category.trim().isNotEmpty) {
+//   print("Searching for results");
+//
+//   ongoingItems = ongoingItems.where((item) {
+//     bool stateMatch = true; // Default to true
+//     bool categoryMatch = true; // Default to true
+//
+//     // Check if the state matches
+//     if (requestQuery.state.trim().isNotEmpty) {
+//       String normalizedState = requestQuery.state.toLowerCase();
+//
+//       stateMatch = item['distribution_pattern'].toLowerCase().contains(normalizedState) ||
+//           item['distribution_pattern'].toLowerCase().contains(getStateInitials(normalizedState)) ||
+//           item['distribution_pattern'].toLowerCase().contains('nation') ||
+//           item['distribution_pattern'].toLowerCase().contains('country') ||
+//           (item['distribution_pattern'].toLowerCase().contains('nationwide') && normalizedState == 'nation') ||
+//           (item['distribution_pattern'].toLowerCase().contains('countrywide') && normalizedState == 'country');
+//     }
+//
+//     // Check if the category matches
+//     if (requestQuery.category.trim().isNotEmpty) {
+//       categoryMatch = item['classification'].toLowerCase().contains(requestQuery.category.toLowerCase());
+//     }
+//
+//     // Return true if both state and category conditions are met
+//     return stateMatch && categoryMatch;
+//   }).toList();
+//
+//   print("Results for state ${requestQuery.state} and category ${requestQuery.category}: $ongoingItems");
+// } else {
+//   print("No state or category selected");
+// }
+
 
 
 // class TopHeadlinesApi extends BaseApi<
