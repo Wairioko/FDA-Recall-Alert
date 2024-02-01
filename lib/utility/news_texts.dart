@@ -9,6 +9,12 @@ class NewsTexts {
         "emptyQuery": "No data found for your query",
       };
 
+  static List<String> shoppingFrequencyList() => <String>[
+        'Multiple times each week',
+        'Every 2 weeks',
+        'After 3 weeks',
+  ];
+
   static List<String> stateList() => <String>[
         "Alabama", "Alaska", "Arizona", "Arkansas",
         "California", "Colorado", "Connecticut",
