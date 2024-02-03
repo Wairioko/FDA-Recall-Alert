@@ -11,7 +11,6 @@ import 'package:provider/provider.dart';
 import 'core/news_application.dart';
 import 'core/service_locator.dart';
 import 'core/app.dart';
-import 'data/network/current_weather_api.dart';
 import 'notifications/notification_service.dart';
 
 
@@ -24,8 +23,8 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
   // Initialize NotificationService
-  // final NotificationService notificationService = NotificationService();
-  // await notificationService.init();
+  final NotificationService notificationService = NotificationService();
+  await notificationService.init();
   User? user = FirebaseAuth.instance.currentUser;
 
   NewsApplication application = NewsApplication();
