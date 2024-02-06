@@ -152,7 +152,6 @@ class SignUpPage extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 5.0),
                   child: TextFormField(
-                    obscureText: true,
                     controller: defaultStateController,
                     decoration: InputDecoration(
                       suffixIcon: const Icon(CupertinoIcons.location),
