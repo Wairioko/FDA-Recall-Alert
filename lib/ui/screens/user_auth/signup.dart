@@ -46,7 +46,7 @@ class SignUpPage extends StatelessWidget {
             email: email.text,
             password: password.text.trim(),
           ).then((value) async {
-            await FirebaseFirestore.instance.collection('users').doc(value.user?.uid).set({
+            await FirebaseFirestore.instance.collection('user-registration-data').doc(value.user?.uid).set({
               'email': email.text,
               'defaultState': defaultStateController.text,
               'shoppingFrequency': shoppingFrequency,
@@ -208,7 +208,8 @@ class SignUpPage extends StatelessWidget {
                   ),
                 ),
                 TextButton(
-                  onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const LogInPage())),
+                  onPressed: () => Navigator.push(context, MaterialPageRoute(builder:
+                      (context) => const LogInPage())),
                   child: const Text("Log In"),
                 ),
                 const SizedBox(height: 10.0),
