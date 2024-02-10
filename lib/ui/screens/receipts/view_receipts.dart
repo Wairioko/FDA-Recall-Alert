@@ -21,7 +21,7 @@ class _ReceiptListScreenState extends State<ReceiptListScreen> {
     receiptsStream = FirebaseFirestore.instance
         .collection('user-registration-data')
         .doc(loggedInUser.uid)
-        .collection('receipts=data')
+        .collection('receipts-data')
         .snapshots();
   }
 
