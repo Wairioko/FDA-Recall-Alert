@@ -19,9 +19,9 @@ class _ReceiptListScreenState extends State<ReceiptListScreen> {
     super.initState();
     loggedInUser = FirebaseAuth.instance.currentUser!;
     receiptsStream = FirebaseFirestore.instance
-        .collection('user-registration-data')
-        .doc(loggedInUser.uid)
         .collection('receipts-data')
+        .doc(loggedInUser.uid)
+        .collection('user_receipts')
         .snapshots();
   }
 
@@ -107,9 +107,9 @@ class _ReceiptListScreenState extends State<ReceiptListScreen> {
 
   void _deleteReceipt(String receiptId) {
     FirebaseFirestore.instance
-        .collection('user-registration-data')
-        .doc(loggedInUser.uid)
         .collection('receipts-data')
+        .doc(loggedInUser.uid)
+        .collection('user_receipts')
         .doc(receiptId)
         .delete()
         .then((_) {
@@ -171,9 +171,9 @@ class _ReceiptEditScreenState extends State<ReceiptEditScreen> {
   void _updateReceipt() {
     String updatedText = _textEditingController.text;
     FirebaseFirestore.instance
-        .collection('user-registration-data')
-        .doc(FirebaseAuth.instance.currentUser!.uid)
         .collection('receipts-data')
+        .doc(FirebaseAuth.instance.currentUser!.uid)
+        .collection('user_receipts')
         .doc(widget.receiptId)
         .update({'receipt': updatedText})
         .then((_) {

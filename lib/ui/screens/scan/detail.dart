@@ -39,7 +39,7 @@ class _ResultScreenState extends State<ResultScreen> {
     if (loggedInUser != null) {
       try {
         // Reference to the user's document in "user-registration-data" collection
-        DocumentReference userDoc = FirebaseFirestore.instance.collection('user-registration-data').doc(loggedInUser.uid);
+        DocumentReference userDoc = FirebaseFirestore.instance.collection('receipts-data').doc(loggedInUser.uid);
 
         // Reference to the "receipts" subcollection under the user's document
         CollectionReference receiptsCollection = userDoc.collection('user_receipts');
