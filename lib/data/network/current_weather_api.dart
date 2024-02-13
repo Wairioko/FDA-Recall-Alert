@@ -7,6 +7,12 @@ import '../models/error_response.dart';
 import '../models/top_headlines_response.dart';
 import 'base_api/base_api.dart';
 
+
+class ApiData {
+  static List<dynamic>? responseJson;
+}
+
+
 class TopHeadlinesApi extends BaseApi<TopHeadlinesQueryParams,
     TopHeadlinesResponse, ErrorResponse> {
 
@@ -23,10 +29,16 @@ class TopHeadlinesApi extends BaseApi<TopHeadlinesQueryParams,
 
   @override
   BaseModel mapSuccessResponse(Map<String, dynamic>? responseJson) {
+    // Inside the method where you get responseJson
+      // Assuming you have responseJson available here
+
+
     // Filter items based on the 'status' field
     List<dynamic> ongoingItems = responseJson?['results']
         .where((item) => item['status'] == "Ongoing")
         .toList();
+
+    ApiData.responseJson = ongoingItems;
 
     if (requestQuery.query.trim().isNotEmpty) {
       print("Searching for results");
