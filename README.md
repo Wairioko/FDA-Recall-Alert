@@ -1,5 +1,3 @@
-## Daily News App
-### **Creator:**  A.F.M. MOHIMENUL JOAA
 
 #### **Feature Description:**  
 1. Fetch and Display: Fetch news articles from the NewsAPI Display them in a list with the
@@ -118,7 +116,7 @@ Android, iOS, Web
 | [shimmer][SS]                |
 
 ## License
-GNU AFFERO GENERAL PUBLIC LICENSE
+
 
 [CI]: <https://pub.dev/packages/cupertino_icons>
 [FSVG]: <https://pub.dev/packages/flutter_svg>
