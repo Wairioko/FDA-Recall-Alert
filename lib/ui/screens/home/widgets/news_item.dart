@@ -54,6 +54,16 @@ class NewsItem extends StatelessWidget {
                 fontWeight: FontWeight.w300,
               ),
             ),
+            Text(
+              newsItemModel.classification,
+              overflow: TextOverflow.fade,
+              maxLines: 1,
+              softWrap: false,
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w300,
+              ),
+            ),
           ],
         ),
       ),

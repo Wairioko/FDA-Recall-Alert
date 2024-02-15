@@ -5,6 +5,7 @@ import '../../utility/news_texts.dart';
 import '../../utility/utility.dart';
 import '../models/top_headlines_query_params.dart';
 import 'base_api_provider.dart';
+import 'package:daily_news/ui/screens/home/widgets/query_widget.dart';
 
 class NewsApiProvider extends BaseApiProvider {
 
@@ -54,8 +55,14 @@ class NewsApiProvider extends BaseApiProvider {
     return NewsTexts.get()['anErrorOccurred'];
   }
 
+  void getCategory() {
+    String? category = CategoryData.category;
+    print("my item category $category");
+  }
 
   BaseOptions createBaseOptions() {
+    // Call getCategory() method to retrieve category
+    getCategory();
     DateTime now = DateTime.now();
     String formattedNow = "${now.year}${now.month.toString().padLeft(2, '0')}${now.day.
     toString().padLeft(2, '0')}";
@@ -64,8 +71,10 @@ class NewsApiProvider extends BaseApiProvider {
     BaseOptions options = BaseOptions(
       baseUrl: baseUrl,
     );
+    // Get the category value
     return options;
   }
+
   static String get topHeadlines => '';
 }
 

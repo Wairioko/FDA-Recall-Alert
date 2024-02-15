@@ -1,3 +1,5 @@
+import 'dart:ffi';
+
 class TopHeadlines {
   TopHeadlines({
     // required this.status,
@@ -19,6 +21,7 @@ class Article {
     required this.recalling_firm,
     required this.distribution_pattern,
     required this.voluntary_mandated,
+    required this.event_id
 
   });
 
@@ -29,5 +32,6 @@ class Article {
   final String? voluntary_mandated;
   final String? distribution_pattern;
   final String? recalling_firm;
+  final dynamic event_id;
 
 }

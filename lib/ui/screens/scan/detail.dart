@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:daily_news/data/network/current_weather_api.dart';
 
 User? loggedInUser = FirebaseAuth.instance.currentUser;
 
@@ -16,6 +17,7 @@ class _ResultScreenState extends State<ResultScreen> {
   late TextEditingController _textEditingController;
   late String _editedText;
   late FocusNode _focusNode;
+  int _editingLineIndex = -1;
   bool _isEditing = false;
   bool _isUploading = false;
   late List<dynamic> _searchResults = [];
@@ -24,6 +26,7 @@ class _ResultScreenState extends State<ResultScreen> {
   bool _isSearching = false;
   bool _textEdited = false; // Flag to track text edits
   List<String> _lines = []; // List to store lines of text
+
 
   @override
   void initState() {
@@ -53,15 +56,20 @@ class _ResultScreenState extends State<ResultScreen> {
     // Clear previous search results
     _searchResults.clear();
 
+    // Load responseJson as a list of dynamic objects
+    List<dynamic>? responseJson = ApiData.responseJson;
+
     for (int i = 0; i < _lines.length; i++) {
       String line = _lines[i];
       bool matchFound = false;
+      // Check if the line is empty
+      if (line.trim().isEmpty) {
+        _lines[i] = ""; // Clear the line if it's empty
+        continue; // Move to the next line
+      }
 
       // Loop through each entry in responseJson to check for matches
-      for (dynamic item in ApiData.responseJson ?? []) {
-        print("Line: $line");
-        print("Product Description: ${item['product_description']}");
-
+      for (dynamic item in responseJson ?? []) {
         if (item['product_description'] != null &&
             item['product_description']
                 .toString()
@@ -71,7 +79,6 @@ class _ResultScreenState extends State<ResultScreen> {
           break;
         }
       }
-
       // Update the label based on match status
       if (matchFound) {
         _lines[i] = "$line - Potential Match Found";
@@ -79,13 +86,10 @@ class _ResultScreenState extends State<ResultScreen> {
         _lines[i] = "$line - Item cleared";
       }
     }
-
-
     setState(() {
       _isSearching = false; // Stop searching
     });
   }
-
 
 
   Future<void> _updateText(User? loggedInUser) async {
@@ -96,7 +100,11 @@ class _ResultScreenState extends State<ResultScreen> {
 
     setState(() {
       _isUploading = true;
-      _isSearching = true; // Start searching
+    });
+
+    setState(() {
+      _isUploading = false;
+      _textEdited = false; // Reset after upload
     });
 
     if (loggedInUser != null) {
@@ -152,7 +160,8 @@ class _ResultScreenState extends State<ResultScreen> {
             TextButton(
               onPressed: () {
                 Navigator.pop(context);
-                Navigator.pop(context); // Pop twice to return to the home screen
+                Navigator.pop(
+                    context); // Pop twice to return to the home screen
               },
               child: const Text("OK"),
             ),
@@ -162,11 +171,7 @@ class _ResultScreenState extends State<ResultScreen> {
     );
   }
 
-  void _onCheckboxChanged(bool? value) {
-    setState(() {
-      _allItemsChecked = value ?? false;
-    });
-  }
+
 
   @override
   void dispose() {
@@ -174,56 +179,26 @@ class _ResultScreenState extends State<ResultScreen> {
     super.dispose();
   }
 
-  void _editLine(int lineIndex) {
+  void _editLine(int index) {
     setState(() {
       _isEditing = true;
+      _editingLineIndex = index;
     });
-    _textEditingController.text = _lines[lineIndex]; // Set initial text
-    // Focus on the TextField
+    _textEditingController.text = _lines[index];
     FocusScope.of(context).requestFocus(_focusNode);
   }
 
   void _enableTextEditing() {
     setState(() {
       _isEditing = !_isEditing;
-      _textEdited = false; // Reset _textEdited when editing starts
-    });
+      _textEdited = false;
 
-    if (_isEditing) {
-      showModalBottomSheet(
-        context: context,
-        builder: (BuildContext context) {
-          return GestureDetector(
-            onTap: () {}, // Prevent dismissing bottom sheet on tap
-            child: Container(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  TextField(
-                    controller: _textEditingController,
-                    focusNode: _focusNode,
-                    onChanged: (value) {
-                      setState(() {
-                        _editedText = value;
-                        _textEdited = true; // Set _textEdited to true when text is changed
-                        // Update the lines when text is edited
-                        _lines = _editedText.split('\n');
-                      });
-                    },
-                    textInputAction: TextInputAction.newline,
-                    keyboardType: TextInputType.multiline,
-                    maxLines: null,
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
-      );
-      FocusScope.of(context).requestFocus(_focusNode); // Focus on text field when editing starts
-    }
+      if (_isEditing) {
+        FocusScope.of(context).requestFocus(_focusNode); // Request focus
+      }
+    });
   }
+
 
   Widget _buildNotebookList() {
     return Container(
@@ -232,16 +207,66 @@ class _ResultScreenState extends State<ResultScreen> {
         itemCount: _lines.length,
         itemBuilder: (context, index) {
           return GestureDetector(
-            onTap: () => _editLine(index),
+              onTap: () {
+                if (!_isEditing) {
+                  _editLine(index);
+                } else if (_editingLineIndex == index) {
+                  setState(() {
+                    _isEditing = false;
+                    _editingLineIndex = -1;
+                  });
+                }
+              },
             child: Column(
               children: [
-                ListTile(
+                _isEditing && index == _editingLineIndex
+                    ? TextField(
+                  keyboardType: TextInputType.multiline,
+                  maxLines: null,
+                  autofocus: false,
+            controller: _textEditingController,
+              focusNode: _focusNode,
+              onChanged: (value) {
+                setState(() {
+                  _lines[index] = value; // Update the line in the list
+                  // _textEditingController.text = value; // Update the text controller
+                  _textEdited = true;
+                });
+              },
+
+              // Other properties...
+                  onSubmitted: (value) {
+                    setState(() {
+                      _lines[index] = value + '\n'; // Add newline character
+                      _isEditing = false;
+                      _editingLineIndex = -1;
+                    });
+                  },
+              // onSubmitted: (value) {
+              //       setState(() {
+              //         // Insert the edited text as a new line after the current line
+              //         _lines.insert(index + 1, value);
+              //         // Remove the edited line (the current line)
+              //         _lines.removeAt(index);
+              //         // Reset the text controller
+              //         // _textEditingController.text = '';
+              //         _isEditing = false;
+              //         _editingLineIndex = -1;
+              //       });
+              //     },
+
+                )
+                    : ListTile(
                   title: Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Text(
                       _lines[index],
                       style: TextStyle(
-                        color: _lines[index].contains('Potential Match Found') ? Colors.red : _lines[index].contains('Item cleared') ? Colors.green : Colors.white,
+                        color: _lines[index].contains('Potential Match Found')
+                            ? Colors.red
+                            : _lines[index].contains('Item cleared')
+                            ? Colors.green
+                            : Colors.white,
                       ),
                     ),
                   ),
@@ -259,36 +284,36 @@ class _ResultScreenState extends State<ResultScreen> {
     );
   }
 
+
+  FloatingActionButton _buildEditButton() {
+    return FloatingActionButton(
+      onPressed: () {
+        _enableTextEditing();
+      },
+      child: const Icon(Icons.edit),
+      backgroundColor: Colors.blue,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Result'),
         actions: [
-          if (_isSearching || _isEditing) // Show upload button only when searching or editing
+          if (_isSearching || _isUploading || !_textEdited)
             IconButton(
               onPressed: () {
                 _updateText(FirebaseAuth.instance.currentUser);
               },
               icon: const Icon(Icons.cloud_upload),
             ),
-          IconButton(
-            onPressed: () {
-              _enableTextEditing();
-            },
-            icon: const Icon(Icons.edit),
-          ),
         ],
       ),
       body: _buildNotebookList(),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          _updateText(FirebaseAuth.instance.currentUser);
-        },
-        child: const Icon(Icons.cloud_upload),
-        backgroundColor: Colors.greenAccent,
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      persistentFooterButtons: [
+        _buildEditButton(),
+      ],
       bottomNavigationBar: BottomAppBar(
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -304,12 +329,9 @@ class _ResultScreenState extends State<ResultScreen> {
       ),
     );
   }
-}
 
-class ApiData {
-  static List<dynamic>? responseJson;
-}
 
+}
 
 // import 'package:cloud_firestore/cloud_firestore.dart';
 // import 'package:firebase_auth/firebase_auth.dart';

@@ -1,7 +1,6 @@
 import 'package:daily_news/model/detail_data_model.dart';
 import 'package:daily_news/utility/news_texts.dart';
 import 'package:flutter/material.dart';
-
 import '../../../../domain/entities/top_headlines.dart';
 import '../../../../model/new_item_model.dart';
 import 'news_item.dart';
@@ -13,6 +12,8 @@ class NewsList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+      // Sort the articles list by the status field in descending order
+
     if (articles.isEmpty) {
       return Expanded(
         child: Padding(
@@ -38,6 +39,7 @@ class NewsList extends StatelessWidget {
                 product_description: currentArticle.product_description ?? "",
                 reason_for_recall: currentArticle.reason_for_recall ?? "",
                 status :currentArticle.status ?? "",
+                classification: currentArticle.classification ?? "",
                 // imageUrl: currentArticle.urlToImage ?? "",
                 detailDataModel: DetailDataModel(
                   product_description: currentArticle.product_description ?? "",

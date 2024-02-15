@@ -85,7 +85,7 @@ import '../../network/current_weather_api.dart';
 
 abstract class TopHeadlinesRemoteDataSource {
   Future<Either<TopHeadlinesResponse, ErrorResponse>> getTopHeadlines(
-      String state, String category, String query, String classification);
+      String state, String category, String query, String classification, String item);
   // Add state and category parameters
 }
 
@@ -99,9 +99,9 @@ class TopHeadlinesRemoteDataSourceImpl implements
 
   @override
   Future<Either<TopHeadlinesResponse, ErrorResponse>> getTopHeadlines(
-      String state, String category, String query, String classification) async {
+      String state, String category, String query, String classification, String item) async {
 
-    _topHeadlinesApi.requestQuery = RequestQuery(state, category, query, classification);
+    _topHeadlinesApi.requestQuery = RequestQuery(state, category, query, classification, item);
 
     Either<TopHeadlinesResponse, ErrorResponse> response =
     await _topHeadlinesApi.get();

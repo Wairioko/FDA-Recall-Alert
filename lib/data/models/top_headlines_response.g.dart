@@ -94,13 +94,14 @@ class ArticleResponseModelAdapter extends TypeAdapter<_$_ArticleResponseModel> {
       fields[4] as String?,
       fields[5] as String?,
       fields[6] as String?,
+      fields[7] as String?,
     );
   }
 
   @override
   void write(BinaryWriter writer, _$_ArticleResponseModel obj) {
     writer
-      ..writeByte(7)
+      ..writeByte(8)
       ..writeByte(0)
       ..write(obj.status)
       ..writeByte(1)
@@ -114,7 +115,9 @@ class ArticleResponseModelAdapter extends TypeAdapter<_$_ArticleResponseModel> {
       ..writeByte(5)
       ..write(obj.voluntary_mandated)
       ..writeByte(6)
-      ..write(obj.distribution_pattern);
+      ..write(obj.distribution_pattern)
+      ..writeByte(7)
+      ..write(obj.event_id);
   }
 
   @override
@@ -166,6 +169,7 @@ _$_ArticleResponseModel _$$_ArticleResponseModelFromJson(
       json['recalling_firm'] as String?,
       json['voluntary_mandated'] as String?,
       json['distribution_pattern'] as String?,
+      json['event_id'] as dynamic,
     );
 
 

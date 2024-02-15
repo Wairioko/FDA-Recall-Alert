@@ -32,6 +32,8 @@ mixin _$ArticleResponseModel {
   String? get voluntary_mandated => throw _privateConstructorUsedError;
   @HiveField(6)
   String? get distribution_pattern => throw _privateConstructorUsedError;
+  @HiveField(7)
+  dynamic? get event_id => throw _privateConstructorUsedError;
 }
 /// @nodoc
 @JsonSerializable(createToJson: false)
@@ -53,7 +55,9 @@ class _$_ArticleResponseModel extends _ArticleResponseModel {
       @HiveField(5)
       this.voluntary_mandated,
       @HiveField(6)
-      this.distribution_pattern)
+      this.distribution_pattern,
+      @HiveField(7)
+      this.event_id)
       : super._();
 
 
@@ -81,13 +85,17 @@ class _$_ArticleResponseModel extends _ArticleResponseModel {
   @override
   @HiveField(6)
   final String? distribution_pattern;
+  @HiveField(7)
+  final dynamic event_id;
 
   @override
   String toString() {
     return '_$_ArticleResponseModel(status: $status, product_description: $product_description, '
         'classification: $classification, reason_for_recall: $reason_for_recall, '
         'recalling_firm: $recalling_firm, voluntary_mandated: $voluntary_mandated,'
-        ' distribution_pattern: $distribution_pattern)';
+        ' distribution_pattern: $distribution_pattern),'
+        'event_id: $event_id),'
+        ;
   }
 }
 
@@ -106,7 +114,9 @@ abstract class _ArticleResponseModel extends ArticleResponseModel {
       @HiveField(5)
       final String? voluntary_mandated,
       @HiveField(6)
-      final String? distribution_pattern
+      final String? distribution_pattern,
+      @HiveField(7)
+      final dynamic event_id
       ) = _$_ArticleResponseModel;
   const _ArticleResponseModel._() : super._();
 
@@ -134,5 +144,7 @@ abstract class _ArticleResponseModel extends ArticleResponseModel {
   @override
   @HiveField(6)
   String? get distribution_pattern;
+  @HiveField(7)
+  dynamic get event_id;
 
 }

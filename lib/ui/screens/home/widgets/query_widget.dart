@@ -14,11 +14,17 @@ class QueryWidget extends StatefulWidget {
   State<QueryWidget> createState() => _QueryWidgetState();
 }
 
+class CategoryData {
+  static String? category;
+}
+
+
 class _QueryWidgetState extends State<QueryWidget> {
-  RequestQuery requestQuery = RequestQuery("", "", "", "");
-  String categoryHintText = "Classification";
+  RequestQuery requestQuery = RequestQuery("", "", "", "", "");
+  String classificationHintText = "Classification";
   String stateHintText = "State";
-  String itemHintText = "Category";
+  String itemHintText = "Recall Category";
+
   final TextEditingController _controller = TextEditingController();
   bool showClearButton = false;
 
@@ -29,23 +35,25 @@ class _QueryWidgetState extends State<QueryWidget> {
     });
   }
 
-  void clearCategory() {
+  void clearItem() {
     setState(() {
-      categoryHintText = "Classification";
-      requestQuery.category = ""; // Set category to an empty string
+      itemHintText = "Recall Category";
+      requestQuery.item = "";
     });
   }
 
+
   void clearClassification() {
     setState(() {
-      categoryHintText = "Classification";
+      classificationHintText = "Classification";
       requestQuery.classification = ""; // Set classification to an empty string
     });
   }
 
   void reloadData() {
     setState(() {
-      showClearButton = requestQuery.isNotEmpty; // Show the clear button only if there's any query
+      showClearButton = requestQuery
+          .isNotEmpty; // Show the clear button only if there's any query
     });
 
     // Only fetch data if there's a non-empty query
@@ -59,8 +67,8 @@ class _QueryWidgetState extends State<QueryWidget> {
       showClearButton = false;
       _controller.clear();
       clearState();
-      clearCategory();
       clearClassification();
+      clearItem();
       requestQuery.query = ""; // Set query to an empty string
     });
 
@@ -76,8 +84,8 @@ class _QueryWidgetState extends State<QueryWidget> {
       // If the query is empty, clear state, category, and classification
       if (query.isEmpty) {
         clearState();
-        clearCategory();
         clearClassification();
+        clearItem();
       }
 
       // Trigger data reload
@@ -94,6 +102,39 @@ class _QueryWidgetState extends State<QueryWidget> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              // Recall Category Widget
+              Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(10.0),
+                  color: Colors.grey[200],
+                ),
+                padding: const EdgeInsets.all(16.0),
+                child: DropdownButton<String>(
+                  dropdownColor: Colors.grey[300],
+                  underline: const SizedBox(),
+                  isExpanded: true,
+                  hint: Text(
+                    itemHintText, // Assuming this should be a placeholder text
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                  ),
+                  items: NewsTexts.itemList().map((String value) {
+                    return DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(value),
+                    );
+                  }).toList(),
+                  onChanged: (String? newValue) {
+                    setState(() {
+                      itemHintText = newValue ?? 'Recall Category';
+                      requestQuery.item = newValue ?? NewsTexts.itemList()[0];
+                      CategoryData.category = newValue;
+                    });
+                  },
+                ),
+              ),
+              const SizedBox(height: 10.0), // Adding padding between elements
+              // Search Bar
               Container(
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(10.0),
@@ -109,113 +150,104 @@ class _QueryWidgetState extends State<QueryWidget> {
                   ),
                 ),
               ),
-              // const SizedBox(width: 10.0),
-              // Flexible(
-              //   child: Container(
-              //     decoration: BoxDecoration(
-              //       borderRadius: BorderRadius.circular(10.0),
-              //       color: Colors.grey[200],
-              //     ),
-              //     padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              //     child: DropdownButton<String>(
-              //       dropdownColor: Colors.grey[300],
-              //       underline: const SizedBox(),
-              //       isExpanded: true,
-              //       hint: Text(
-              //         itemHintText,
-              //         overflow: TextOverflow.ellipsis,
-              //         maxLines: 1,
-              //       ),
-              //       items: NewsTexts.itemList().map((String value) {
-              //         return DropdownMenuItem<String>(
-              //           value: value,
-              //           child: Text(value),
-              //         );
-              //       }).toList(),
-              //       onChanged: (String? newValue) {
-              //         setState(() {
-              //           itemHintText = newValue ?? 'Recall Item';
-              //           requestQuery.category = newValue ?? NewsTexts.itemList()[0];
-              //         });
-              //       },
-              //     ),
-              //   ),
-              // ),
-              // const SizedBox(height: 12.0),
-              Row(
-                children: [
-                  Flexible(
-                    child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(10.0),
-                        color: Colors.grey[200],
-                      ),
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                      child: DropdownButton<String>(
-                        dropdownColor: Colors.grey[300],
-                        underline: const SizedBox(),
-                        isExpanded: true,
-                        hint: Text(
-                          stateHintText,
-                          overflow: TextOverflow.ellipsis,
-                          maxLines: 1,
-                        ),
-                        items: NewsTexts.stateList().map((String value) {
-                          return DropdownMenuItem<String>(
-                            value: value,
-                            child: Text(value),
-                          );
-                        }).toList(),
-                        onChanged: (String? newValue) {
-                          setState(() {
-                            stateHintText = newValue ?? 'State';
-                            requestQuery.state = newValue ?? NewsTexts.stateList()[0];
-                          });
-                        },
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 10.0),
-                  Flexible(
-                    child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(10.0),
-                        color: Colors.grey[200],
-                      ),
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                      child: DropdownButton<String>(
-                        dropdownColor: Colors.grey[300],
-                        underline: const SizedBox(),
-                        isExpanded: true,
-                        hint: Text(
-                          categoryHintText,
-                          overflow: TextOverflow.ellipsis,
-                          maxLines: 1,
-                        ),
-                        items: NewsTexts.classificationList().map((String value) {
-                          return DropdownMenuItem<String>(
-                            value: value,
-                            child: Text(value),
-                          );
-                        }).toList(),
-                        onChanged: (String? newValue) {
-                          setState(() {
-                            categoryHintText = newValue ?? 'Classification';
-                            requestQuery.classification =
-                                newValue ?? NewsTexts.classificationList()[0];
-                          });
-                        },
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              // const SizedBox(
-              //   height: 8,
-              // ),
+              const SizedBox(height: 10.0), // Adding padding between elements
+              // Dropdowns
+        Row(
+
+          children: [
+          Flexible(
+          child: Container(
+          decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(10.0),
+          color: Colors.grey[200],
+
+          ),
+
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: DropdownButton<String>(
+          dropdownColor: Colors.grey[300],
+          underline: const SizedBox(),
+          isExpanded: true,
+          hint: Text(
+
+          stateHintText,
+          overflow: TextOverflow.ellipsis,
+          maxLines: 1,
+          ),
+
+          items: NewsTexts.stateList().map((String value) {
+
+          return DropdownMenuItem<String>(
+
+          value: value,
+          child: Text(value),
+
+          );
+
+          }).toList(),
+
+          onChanged: (String? newValue) {
+          setState(() {
+
+          stateHintText = newValue ?? 'State';
+          requestQuery.state = newValue ?? NewsTexts.stateList()[0];
+
+          });
+          },
+
+          ),
+          ),
+          ),
+
+          const SizedBox(width: 10.0),
+
+          Flexible(
+
+          child: Container(
+          decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(10.0),
+          color: Colors.grey[200],
+
+          ),
+
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: DropdownButton<String>(
+          dropdownColor: Colors.grey[300],
+          underline: const SizedBox(),
+          isExpanded: true,
+
+          hint: Text(
+          classificationHintText,
+          overflow: TextOverflow.ellipsis,
+          maxLines: 1,
+
+          ),
+
+          items: NewsTexts.classificationList().map((String value) {
+          return DropdownMenuItem<String>(
+
+          value: value,
+          child: Text(value),
+
+          );
+
+          }).toList(),
+
+          onChanged: (String? newValue) {
+
+          setState(() {
+          classificationHintText = newValue ?? 'Classification';
+          requestQuery.classification = newValue ?? NewsTexts.classificationList()[0];
+          print(newValue);
+          });
+          },
+          ),
+          ),
+          ),
+      ]              ),
+              // Buttons
               TextButton(
                 onPressed: () async {
-                  // Remove the redundant line
                   reloadData();
                 },
                 child: Text(
@@ -240,122 +272,6 @@ class _QueryWidgetState extends State<QueryWidget> {
       },
     );
   }
-  // @override
-  // Widget build(BuildContext context) {
-  //   return BlocBuilder<ThemeCubit, ThemeState>(
-  //     builder: (context, state) {
-  //       return Padding(
-  //         padding: const EdgeInsets.symmetric(horizontal: 10),
-  //         child: Column(
-  //           crossAxisAlignment: CrossAxisAlignment.stretch,
-  //           children: [
-  //             // ... other widgets
-  //
-  //             /// Enclose the filter row in a SingleChildScrollView for horizontal scrolling
-  //             SingleChildScrollView(
-  //               scrollDirection: Axis.horizontal,
-  //               child: Row(
-  //                 children: [
-  //                   /// Wrap each widget in a Flexible to ensure proportional space allocation
-  //                   Flexible(
-  //                     child: Container(
-  //                       decoration: BoxDecoration(
-  //                         borderRadius: BorderRadius.circular(10.0),
-  //                         color: Colors.grey[200],
-  //                       ),
-  //                       padding: const EdgeInsets.symmetric(horizontal: 10.0),
-  //                       child: DropdownButton<String>(
-  //                         dropdownColor: Colors.grey[300],
-  //                         underline: const SizedBox(),
-  //                         isExpanded: false,
-  //                         hint: Text(
-  //                           stateHintText,
-  //                           overflow: TextOverflow.ellipsis,
-  //                           maxLines: 1,
-  //                         ),
-  //                         items: NewsTexts.stateList().map((String value) {
-  //                           return DropdownMenuItem<String>(
-  //                             value: value,
-  //                             child: Text(value),
-  //                           );
-  //                         }).toList(),
-  //                         onChanged: (String? newValue) {
-  //                           setState(() {
-  //                             stateHintText = newValue ?? 'State';
-  //                             requestQuery.state = newValue ?? NewsTexts.stateList()[0];
-  //                           });
-  //                         },
-  //                       ),
-  //                     ),
-  //                   ),
-  //                   const SizedBox(width: 5.0),
-  //                   Flexible(
-  //                     child: Container(
-  //                       decoration: BoxDecoration(
-  //                         borderRadius: BorderRadius.circular(10.0),
-  //                         color: Colors.grey[200],
-  //                       ),
-  //                       padding: const EdgeInsets.symmetric(horizontal: 16.0),
-  //                       child: DropdownButton<String>(
-  //                         dropdownColor: Colors.grey[300],
-  //                         underline: const SizedBox(),
-  //                         isExpanded: false,
-  //                         hint: Text(
-  //                           categoryHintText,
-  //                           overflow: TextOverflow.ellipsis,
-  //                           maxLines: 1,
-  //                         ),
-  //                         items: NewsTexts.classificationList().map((String value) {
-  //                           return DropdownMenuItem<String>(
-  //                             value: value,
-  //                             child: Text(value),
-  //                           );
-  //                         }).toList(),
-  //                         onChanged: (String? newValue) {
-  //                           setState(() {
-  //                             categoryHintText = newValue ?? 'Classification';
-  //                             requestQuery.classification =
-  //                                 newValue ?? NewsTexts.classificationList()[0];
-  //                           });
-  //                         },
-  //                       ),
-  //                     ),
-  //                   ),
-  //                   const SizedBox(width: 10.0),
-  //                   Flexible(
-  //                     child: Container(
-  //                       decoration: BoxDecoration(
-  //                         borderRadius: BorderRadius.circular(10.0),
-  //                         color: Colors.grey[200],
-  //                       ),
-  //                       padding: const EdgeInsets.symmetric(horizontal: 16.0),
-  //                       child: TextButton(
-  //                         onPressed: () async {
-  //                           // Remove the redundant line
-  //                           reloadData();
-  //                         },
-  //                         child: Text(
-  //                           NewsTexts.get()['search']!,
-  //                           style: const TextStyle(
-  //                             color: Colors.green,
-  //                             fontSize: 16,
-  //                             fontWeight: FontWeight.w600,
-  //                           ),
-  //                         ),
-  //                       ),
-  //                     ),
-  //                   ),
-  //                 ],
-  //               ),
-  //             ),
-  //
-  //             // ... other widgets
-  //           ],
-  //         ),
-  //       );
-  //     },
-  //   );
-  // }
 
   @override
   void dispose() {
@@ -363,7 +279,6 @@ class _QueryWidgetState extends State<QueryWidget> {
     super.dispose();
   }
 }
-
 
 // import 'package:daily_news/model/request_query.dart';
 // import 'package:daily_news/ui/shared/theme/theme_cubit.dart';

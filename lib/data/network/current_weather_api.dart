@@ -10,6 +10,10 @@ import 'base_api/base_api.dart';
 
 class ApiData {
   static List<dynamic>? responseJson;
+
+  // Option 1: Make responseJson public
+  static List<dynamic>? getResponseJson() => responseJson;
+
 }
 
 
@@ -29,16 +33,14 @@ class TopHeadlinesApi extends BaseApi<TopHeadlinesQueryParams,
 
   @override
   BaseModel mapSuccessResponse(Map<String, dynamic>? responseJson) {
-    // Inside the method where you get responseJson
-      // Assuming you have responseJson available here
-
-
     // Filter items based on the 'status' field
     List<dynamic> ongoingItems = responseJson?['results']
         .where((item) => item['status'] == "Ongoing")
         .toList();
 
     ApiData.responseJson = ongoingItems;
+    var data = ApiData.responseJson;
+    print("getting my data: $data");
 
     if (requestQuery.query.trim().isNotEmpty) {
       print("Searching for results");
@@ -51,12 +53,12 @@ class TopHeadlinesApi extends BaseApi<TopHeadlinesQueryParams,
       print("No search query entered");
     }
 
-    if (requestQuery.state.trim().isNotEmpty || requestQuery.category.trim().isNotEmpty) {
+    if (requestQuery.state.trim().isNotEmpty || requestQuery.classification.trim().isNotEmpty) {
       print("Searching for results");
 
       ongoingItems = ongoingItems.where((item) {
         bool stateMatch = true; // Default to true
-        bool categoryMatch = true; // Default to true
+        bool classificationMatch = true; // Default to true
 
         // Check if the state matches
         if (requestQuery.state.trim().isNotEmpty) {
@@ -71,18 +73,22 @@ class TopHeadlinesApi extends BaseApi<TopHeadlinesQueryParams,
         // Check if any state condition is met or nationOrCountryMatch is true
         bool stateCondition = stateMatch || nationOrCountryMatch;
 
-        // Check if the category matches
+        // Check if the classification matches exactly
         if (requestQuery.classification.trim().isNotEmpty) {
-          categoryMatch = item['classification'].toLowerCase().contains(requestQuery.classification.toLowerCase());
+          classificationMatch = item['classification'].toLowerCase() ==
+              requestQuery.classification.toLowerCase();
         }
 
         // Return true only if both conditions (state and category) are met
-        return stateCondition && (categoryMatch || !requestQuery.classification.trim().isNotEmpty);
+        return stateCondition && (classificationMatch || !requestQuery.classification.trim().isNotEmpty);
       }).toList();
     } else {
       print("No state or category selected");
     }
 
+
+    // Sort the ongoingItems list by 'event_id' in descending order
+    ongoingItems.sort((a, b) => b['event_id'].compareTo(a['event_id']));
 
     // Create a new response JSON with only filtered items
     Map<String, dynamic> filteredResponseJson = {

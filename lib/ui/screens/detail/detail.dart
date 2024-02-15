@@ -55,6 +55,14 @@ class Detail extends StatelessWidget {
                         fontWeight: FontWeight.w300,
                       ),
                     ),
+                    const Spacer(),
+                    Text(
+                      detailDataModel.classification,
+                      style: const TextStyle(
+                        fontSize: 14.0,
+                        fontWeight: FontWeight.w300,
+                      ),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 16.0),

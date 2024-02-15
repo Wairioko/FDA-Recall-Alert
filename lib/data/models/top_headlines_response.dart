@@ -1,3 +1,5 @@
+import 'dart:ffi';
+
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:hive/hive.dart';
 import 'package:daily_news/data/storage/hive_type_ids.dart';
@@ -88,6 +90,7 @@ class ArticleResponseModel with _$ArticleResponseModel {
     @HiveField(4)  String? recalling_firm,
     @HiveField(5)  String? voluntary_mandated,
     @HiveField(6)  String? distribution_pattern,
+    @HiveField(7)  dynamic event_id,
   ) = _ArticleResponseModel;
 
 
@@ -102,6 +105,7 @@ class ArticleResponseModel with _$ArticleResponseModel {
     recalling_firm: recalling_firm,
     voluntary_mandated: voluntary_mandated,
     distribution_pattern: distribution_pattern,
+    event_id: event_id,
   );
 }
 

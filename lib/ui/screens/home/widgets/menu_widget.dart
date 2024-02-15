@@ -301,6 +301,7 @@ class MenuWidget extends StatelessWidget {
                         : 'assets/icons/light_logged_in_icon.svg',
                     text: 'Logged In',
                   ),
+                if (user != null)
                   _buildMenuItem(
                     onTap: () {
                       Navigator.of(context).pushNamed(MainScreen.path);
@@ -310,6 +311,7 @@ class MenuWidget extends StatelessWidget {
                         : 'assets/icons/light_camera.jpg',
                     text: 'Scan Receipt/Item',
                   ),
+                if (user != null)
                   _buildMenuItem(
                     onTap: () {
                       Navigator.of(context).pushNamed(ReceiptListScreen.path);
@@ -319,6 +321,7 @@ class MenuWidget extends StatelessWidget {
                         : 'assets/icons/light_about.svg',
                     text: 'Receipts',
                   ),
+                if (user != null)
                 _buildMenuItem(
                   onTap: () {
                     Navigator.of(context).pushNamed(ReceiptListScreen.path);
