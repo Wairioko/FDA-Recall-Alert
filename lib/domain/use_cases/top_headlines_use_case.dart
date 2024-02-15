@@ -12,7 +12,8 @@ class TopHeadlinesUseCase extends BaseUseCase<TopHeadlines?, RequestQuery> {
   @override
   Future<TopHeadlines?> call(RequestQuery input) async{
       return await _topHeadlinesRepository.
-      getTopHeadlines(input.state, input.category, input.query, input.classification
+      getTopHeadlines(input.state, input.category, input.query, input.classification,
+        input.item
           );
   }
 }

@@ -15,10 +15,11 @@ class QueryWidget extends StatefulWidget {
 }
 
 class _QueryWidgetState extends State<QueryWidget> {
-  RequestQuery requestQuery = RequestQuery("", "", "", "");
+  RequestQuery requestQuery = RequestQuery("", "", "", "", "");
   String categoryHintText = "Classification";
   String stateHintText = "State";
-  String itemHintText = "Category";
+  String itemHintText = "Recall Category";
+
   final TextEditingController _controller = TextEditingController();
   bool showClearButton = false;
 
@@ -26,6 +27,13 @@ class _QueryWidgetState extends State<QueryWidget> {
     setState(() {
       stateHintText = "State";
       requestQuery.state = "";
+    });
+  }
+
+  void clearItem() {
+    setState(() {
+      itemHintText = "Recall Category";
+      requestQuery.item = "";
     });
   }
 
@@ -61,6 +69,7 @@ class _QueryWidgetState extends State<QueryWidget> {
       clearState();
       clearCategory();
       clearClassification();
+      clearItem();
       requestQuery.query = ""; // Set query to an empty string
     });
 
@@ -78,6 +87,7 @@ class _QueryWidgetState extends State<QueryWidget> {
         clearState();
         clearCategory();
         clearClassification();
+        clearItem();
       }
 
       // Trigger data reload
@@ -109,39 +119,6 @@ class _QueryWidgetState extends State<QueryWidget> {
                   ),
                 ),
               ),
-              // const SizedBox(width: 10.0),
-              // Flexible(
-              //   child: Container(
-              //     decoration: BoxDecoration(
-              //       borderRadius: BorderRadius.circular(10.0),
-              //       color: Colors.grey[200],
-              //     ),
-              //     padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              //     child: DropdownButton<String>(
-              //       dropdownColor: Colors.grey[300],
-              //       underline: const SizedBox(),
-              //       isExpanded: true,
-              //       hint: Text(
-              //         itemHintText,
-              //         overflow: TextOverflow.ellipsis,
-              //         maxLines: 1,
-              //       ),
-              //       items: NewsTexts.itemList().map((String value) {
-              //         return DropdownMenuItem<String>(
-              //           value: value,
-              //           child: Text(value),
-              //         );
-              //       }).toList(),
-              //       onChanged: (String? newValue) {
-              //         setState(() {
-              //           itemHintText = newValue ?? 'Recall Item';
-              //           requestQuery.category = newValue ?? NewsTexts.itemList()[0];
-              //         });
-              //       },
-              //     ),
-              //   ),
-              // ),
-              // const SizedBox(height: 12.0),
               Row(
                 children: [
                   Flexible(
@@ -208,6 +185,39 @@ class _QueryWidgetState extends State<QueryWidget> {
                       ),
                     ),
                   ),
+                  const SizedBox(width: 10.0),
+                  Flexible(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(10.0),
+                        color: Colors.grey[200],
+                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      child: DropdownButton<String>(
+                        dropdownColor: Colors.grey[300],
+                        underline: const SizedBox(),
+                        isExpanded: true,
+                        hint: Text(
+                          itemHintText, // Assuming this should be a placeholder text
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                        ),
+                        items: NewsTexts.itemList().map((String value) {
+                          return DropdownMenuItem<String>(
+                            value: value,
+                            child: Text(value),
+                          );
+                        }).toList(),
+                        onChanged: (String? newValue) {
+                          setState(() {
+                            itemHintText = newValue ?? 'Recall Category';
+                            requestQuery.classification =
+                                newValue ?? NewsTexts.itemList()[0];
+                          });
+                        },
+                      ),
+                    ),
+                  ),
                 ],
               ),
               // const SizedBox(
@@ -240,6 +250,7 @@ class _QueryWidgetState extends State<QueryWidget> {
       },
     );
   }
+
   // @override
   // Widget build(BuildContext context) {
   //   return BlocBuilder<ThemeCubit, ThemeState>(

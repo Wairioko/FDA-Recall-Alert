@@ -5,6 +5,7 @@ abstract class TopHeadlinesRepository {
     String country,
     String category,
     String query,
-      String classification
+    String classification,
+    String item
   );
 }
