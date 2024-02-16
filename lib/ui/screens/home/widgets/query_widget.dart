@@ -28,6 +28,7 @@ class _QueryWidgetState extends State<QueryWidget> {
 
   final TextEditingController _controller = TextEditingController();
   bool showClearButton = false;
+  bool showSearchParameters = true;
 
   void clearState() {
     setState(() {
@@ -93,8 +94,6 @@ class _QueryWidgetState extends State<QueryWidget> {
       reloadData();
     });
   }
-
-  @override
   Widget build(BuildContext context) {
     return BlocBuilder<ThemeCubit, ThemeState>(
       builder: (context, state) {
@@ -104,168 +103,167 @@ class _QueryWidgetState extends State<QueryWidget> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               // Recall Category Widget
-              Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(10.0),
-                  color: Colors.grey[200],
-                ),
-                padding: const EdgeInsets.all(16.0),
-                child: DropdownButton<String>(
-                  dropdownColor: Colors.grey[300],
-                  underline: const SizedBox(),
-                  isExpanded: true,
-                  hint: Text(
-                    itemHintText, // Assuming this should be a placeholder text
-                    overflow: TextOverflow.ellipsis,
-                    maxLines: 1,
+              if (showSearchParameters)
+                Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10.0),
+                    color: Colors.grey[200],
                   ),
-                  items: InformationTexts.itemList().map((String value) {
-                    return DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(value),
-                    );
-                  }).toList(),
-                  onChanged: (String? newValue) {
-                    setState(() {
-                      itemHintText = newValue ?? 'Recall Category';
-                      requestQuery.item = newValue ?? InformationTexts.itemList()[0];
-                      CategoryData.category = newValue;
-                    });
-                  },
+                  padding: const EdgeInsets.all(16.0),
+                  child: DropdownButton<String>(
+                    dropdownColor: Colors.grey[300],
+                    underline: const SizedBox(),
+                    isExpanded: true,
+                    hint: Text(
+                      itemHintText, // Assuming this should be a placeholder text
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                    ),
+                    items: InformationTexts.itemList().map((String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value),
+                      );
+                    }).toList(),
+                    onChanged: (String? newValue) {
+                      setState(() {
+                        itemHintText = newValue ?? 'Recall Category';
+                        requestQuery.item = newValue ?? InformationTexts.itemList()[0];
+                        CategoryData.category = newValue;
+                      });
+                    },
+                  ),
                 ),
-              ),
               const SizedBox(height: 10.0), // Adding padding between elements
               // Search Bar
-              Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(10.0),
-                  color: Colors.grey[200],
-                ),
-                child: TextField(
-                  controller: _controller,
-                  onChanged: _filterItems, // Call _filterItems when the text changes
-                  decoration: const InputDecoration(
-                    hintText: 'Enter Query',
-                    contentPadding: EdgeInsets.all(16.0),
-                    border: InputBorder.none,
+              if (showSearchParameters)
+                Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10.0),
+                    color: Colors.grey[200],
+                  ),
+                  child: TextField(
+                    controller: _controller,
+                    onChanged: _filterItems, // Call _filterItems when the text changes
+                    decoration: const InputDecoration(
+                      hintText: 'Enter Query',
+                      contentPadding: EdgeInsets.all(16.0),
+                      border: InputBorder.none,
+                    ),
                   ),
                 ),
-              ),
               const SizedBox(height: 10.0), // Adding padding between elements
               // Dropdowns
-        Row(
-
-          children: [
-          Flexible(
-          child: Container(
-          decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(10.0),
-          color: Colors.grey[200],
-
-          ),
-
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: DropdownButton<String>(
-          dropdownColor: Colors.grey[300],
-          underline: const SizedBox(),
-          isExpanded: true,
-          hint: Text(
-
-          stateHintText,
-          overflow: TextOverflow.ellipsis,
-          maxLines: 1,
-          ),
-
-          items: InformationTexts.stateList().map((String value) {
-
-          return DropdownMenuItem<String>(
-
-          value: value,
-          child: Text(value),
-
-          );
-
-          }).toList(),
-
-          onChanged: (String? newValue) {
-          setState(() {
-
-          stateHintText = newValue ?? 'State';
-          requestQuery.state = newValue ?? InformationTexts.stateList()[0];
-
-          });
-          },
-
-          ),
-          ),
-          ),
-
-          const SizedBox(width: 10.0),
-
-          Flexible(
-
-          child: Container(
-          decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(10.0),
-          color: Colors.grey[200],
-
-          ),
-
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: DropdownButton<String>(
-          dropdownColor: Colors.grey[300],
-          underline: const SizedBox(),
-          isExpanded: true,
-
-          hint: Text(
-          classificationHintText,
-          overflow: TextOverflow.ellipsis,
-          maxLines: 1,
-
-          ),
-
-          items: InformationTexts.classificationList().map((String value) {
-          return DropdownMenuItem<String>(
-
-          value: value,
-          child: Text(value),
-
-          );
-
-          }).toList(),
-
-          onChanged: (String? newValue) {
-
-          setState(() {
-          classificationHintText = newValue ?? 'Classification';
-          requestQuery.classification = newValue ?? InformationTexts.classificationList()[0];
-          print(newValue);
-          });
-          },
-          ),
-          ),
-          ),
-      ]              ),
+              if (showSearchParameters)
+                Row(
+                  children: [
+                    Flexible(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(10.0),
+                          color: Colors.grey[200],
+                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                        child: DropdownButton<String>(
+                          dropdownColor: Colors.grey[300],
+                          underline: const SizedBox(),
+                          isExpanded: true,
+                          hint: Text(
+                            stateHintText,
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                          ),
+                          items: InformationTexts.stateList().map((String value) {
+                            return DropdownMenuItem<String>(
+                              value: value,
+                              child: Text(value),
+                            );
+                          }).toList(),
+                          onChanged: (String? newValue) {
+                            setState(() {
+                              stateHintText = newValue ?? 'State';
+                              requestQuery.state = newValue ?? InformationTexts.stateList()[0];
+                            });
+                          },
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10.0),
+                    Flexible(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(10.0),
+                          color: Colors.grey[200],
+                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                        child: DropdownButton<String>(
+                          dropdownColor: Colors.grey[300],
+                          underline: const SizedBox(),
+                          isExpanded: true,
+                          hint: Text(
+                            classificationHintText,
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                          ),
+                          items: InformationTexts.classificationList().map((String value) {
+                            return DropdownMenuItem<String>(
+                              value: value,
+                              child: Text(value),
+                            );
+                          }).toList(),
+                          onChanged: (String? newValue) {
+                            setState(() {
+                              classificationHintText = newValue ?? 'Classification';
+                              requestQuery.classification =
+                                  newValue ?? InformationTexts.classificationList()[0];
+                              print(newValue);
+                            });
+                          },
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               // Buttons
-              TextButton(
-                onPressed: () async {
-                  reloadData();
-                },
-                child: Text(
-                  InformationTexts.get()['search']!,
-                  style: const TextStyle(
-                    color: Colors.green,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
+              if (showSearchParameters)
+                TextButton(
+                  onPressed: () async {
+                    reloadData();
+                    setState(() {
+                      showSearchParameters = false;
+                    });
+                  },
+                  child: Text(
+                    InformationTexts.get()['search']!,
+                    style: const TextStyle(
+                      color: Colors.green,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
-              ),
-              if (showClearButton)
-                ElevatedButton(
-                  onPressed: () {
-                    clearAllParameters();
-                  },
-                  child: Text('Clear All Parameters'),
+              if (!showSearchParameters)
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    ElevatedButton(
+                      onPressed: () {
+                        clearAllParameters();
+                        setState(() {
+                          showSearchParameters = true;
+                        });
+                      },
+                      child: Text('Clear All Parameters'),
+                    ),
+                    ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          showSearchParameters = true;
+                        });
+                      },
+                      child: Text('Search Again'),
+                    ),
+                  ],
                 ),
             ],
           ),
@@ -274,13 +272,14 @@ class _QueryWidgetState extends State<QueryWidget> {
     );
   }
 
+
+
   @override
   void dispose() {
     _controller.dispose();
     super.dispose();
   }
 }
-
 // import 'package:daily_news/model/request_query.dart';
 // import 'package:daily_news/ui/shared/theme/theme_cubit.dart';
 // import 'package:flutter/material.dart';
