@@ -15,9 +15,6 @@ Future<void> setUpServiceLocators() async {
   await sl.reset();
 
   sl.registerSingleton<NewsApiProvider>(NewsApiProvider());
-  String? category = CategoryData.category;
-  print("showing cat not empty: $category");
-
   RequestQuery requestQuery = RequestQuery('', '', '', "", "");
   sl.registerFactory<TopHeadlinesApi>(() => TopHeadlinesApi(requestQuery:requestQuery));
   sl.registerFactory<TopHeadlinesRemoteDataSource>(() => TopHeadlinesRemoteDataSourceImpl());
