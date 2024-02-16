@@ -19,6 +19,7 @@ class CategoryData {
 }
 
 
+
 class _QueryWidgetState extends State<QueryWidget> {
   RequestQuery requestQuery = RequestQuery("", "", "", "", "");
   String classificationHintText = "Classification";
@@ -118,7 +119,7 @@ class _QueryWidgetState extends State<QueryWidget> {
                     overflow: TextOverflow.ellipsis,
                     maxLines: 1,
                   ),
-                  items: NewsTexts.itemList().map((String value) {
+                  items: InformationTexts.itemList().map((String value) {
                     return DropdownMenuItem<String>(
                       value: value,
                       child: Text(value),
@@ -127,7 +128,7 @@ class _QueryWidgetState extends State<QueryWidget> {
                   onChanged: (String? newValue) {
                     setState(() {
                       itemHintText = newValue ?? 'Recall Category';
-                      requestQuery.item = newValue ?? NewsTexts.itemList()[0];
+                      requestQuery.item = newValue ?? InformationTexts.itemList()[0];
                       CategoryData.category = newValue;
                     });
                   },
@@ -175,7 +176,7 @@ class _QueryWidgetState extends State<QueryWidget> {
           maxLines: 1,
           ),
 
-          items: NewsTexts.stateList().map((String value) {
+          items: InformationTexts.stateList().map((String value) {
 
           return DropdownMenuItem<String>(
 
@@ -190,7 +191,7 @@ class _QueryWidgetState extends State<QueryWidget> {
           setState(() {
 
           stateHintText = newValue ?? 'State';
-          requestQuery.state = newValue ?? NewsTexts.stateList()[0];
+          requestQuery.state = newValue ?? InformationTexts.stateList()[0];
 
           });
           },
@@ -223,7 +224,7 @@ class _QueryWidgetState extends State<QueryWidget> {
 
           ),
 
-          items: NewsTexts.classificationList().map((String value) {
+          items: InformationTexts.classificationList().map((String value) {
           return DropdownMenuItem<String>(
 
           value: value,
@@ -237,7 +238,7 @@ class _QueryWidgetState extends State<QueryWidget> {
 
           setState(() {
           classificationHintText = newValue ?? 'Classification';
-          requestQuery.classification = newValue ?? NewsTexts.classificationList()[0];
+          requestQuery.classification = newValue ?? InformationTexts.classificationList()[0];
           print(newValue);
           });
           },
@@ -251,7 +252,7 @@ class _QueryWidgetState extends State<QueryWidget> {
                   reloadData();
                 },
                 child: Text(
-                  NewsTexts.get()['search']!,
+                  InformationTexts.get()['search']!,
                   style: const TextStyle(
                     color: Colors.green,
                     fontSize: 16,

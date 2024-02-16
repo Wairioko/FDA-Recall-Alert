@@ -3,10 +3,10 @@ import 'package:flutter/material.dart';
 import '../../../../model/new_item_model.dart';
 import '../../detail/detail.dart';
 
-class NewsItem extends StatelessWidget {
-  final NewsItemModel newsItemModel;
+class Recall_Item extends StatelessWidget {
+  final Recall_ItemModel newsItemModel;
 
-  const NewsItem({super.key, required this.newsItemModel});
+  const Recall_Item({super.key, required this.newsItemModel});
 
   @override
   Widget build(BuildContext context) {

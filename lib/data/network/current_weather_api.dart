@@ -5,23 +5,30 @@ import '../api_provider/news_api_provider.dart';
 import '../models/base_model/base_model.dart';
 import '../models/error_response.dart';
 import '../models/top_headlines_response.dart';
+import 'package:daily_news/ui/screens/home/widgets/query_widget.dart';
 import 'base_api/base_api.dart';
 
 
 class ApiData {
   static List<dynamic>? responseJson;
-
   // Option 1: Make responseJson public
   static List<dynamic>? getResponseJson() => responseJson;
-
 }
 
 
 class TopHeadlinesApi extends BaseApi<TopHeadlinesQueryParams,
     TopHeadlinesResponse, ErrorResponse> {
 
+
   TopHeadlinesApi({required this.requestQuery})
-      : super(NewsApiProvider.topHeadlines, sl<NewsApiProvider>());
+
+      // : super(NewsApiProvider.topHeadlines,
+      // sl<NewsApiProvider>());
+      : super(CategoryData.category == 'DRUGS' ? NewsApiProvider.drugsRecalls :
+              CategoryData.category == 'DEVICE' ? NewsApiProvider.deviceRecalls
+      : NewsApiProvider.topHeadlines,
+      sl<NewsApiProvider>());
+
 
   RequestQuery requestQuery;
 
@@ -34,27 +41,23 @@ class TopHeadlinesApi extends BaseApi<TopHeadlinesQueryParams,
   @override
   BaseModel mapSuccessResponse(Map<String, dynamic>? responseJson) {
     // Filter items based on the 'status' field
+    print(CategoryData.category);
     List<dynamic> ongoingItems = responseJson?['results']
         .where((item) => item['status'] == "Ongoing")
         .toList();
 
+
     ApiData.responseJson = ongoingItems;
-    var data = ApiData.responseJson;
-    print("getting my data: $data");
+    // var data = ApiData.responseJson;
 
     if (requestQuery.query.trim().isNotEmpty) {
-      print("Searching for results");
-
       ongoingItems = ongoingItems.where((item) {
         // Check if the "product_description" contains the search query
         return item['product_description'].toLowerCase().contains(requestQuery.query.toLowerCase());
       }).toList();
-    } else {
-      print("No search query entered");
     }
 
     if (requestQuery.state.trim().isNotEmpty || requestQuery.classification.trim().isNotEmpty) {
-      print("Searching for results");
 
       ongoingItems = ongoingItems.where((item) {
         bool stateMatch = true; // Default to true
@@ -82,8 +85,7 @@ class TopHeadlinesApi extends BaseApi<TopHeadlinesQueryParams,
         // Return true only if both conditions (state and category) are met
         return stateCondition && (classificationMatch || !requestQuery.classification.trim().isNotEmpty);
       }).toList();
-    } else {
-      print("No state or category selected");
+
     }
 
 

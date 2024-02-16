@@ -97,7 +97,7 @@ class ArticleResponseModel with _$ArticleResponseModel {
   factory ArticleResponseModel.fromJson(Map<String, dynamic> json) =>
       _$$_ArticleResponseModelFromJson(json);
 
-  Article toEntity() => Article(
+  Recall_Article toEntity() => Recall_Article(
     status: status,
     product_description: product_description,
     classification: classification,

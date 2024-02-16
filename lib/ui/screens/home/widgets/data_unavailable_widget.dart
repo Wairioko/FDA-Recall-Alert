@@ -39,7 +39,7 @@ class DataUnavailableWidget extends StatelessWidget {
                 context.read<HomeCubit>().getTopHeadlines();
               },
               child: Text(
-                NewsTexts.get()['refreshCTA'],
+                InformationTexts.get()['refreshCTA'],
                 style: const TextStyle(
                     color: Colors.green,
                     fontSize: 16,

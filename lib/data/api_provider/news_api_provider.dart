@@ -1,11 +1,18 @@
 import 'dart:io';
 import 'package:dio/dio.dart';
 import '../../model/request_query.dart';
+import '../../ui/screens/home/widgets/query_widget.dart';
 import '../../utility/news_texts.dart';
 import '../../utility/utility.dart';
 import '../models/top_headlines_query_params.dart';
 import 'base_api_provider.dart';
-import 'package:daily_news/ui/screens/home/widgets/query_widget.dart';
+
+
+
+DateTime now = DateTime.now();
+String formattedNow = "${now.year}${now.month.toString().padLeft(2, '0')}${now.day.
+toString().padLeft(2, '0')}";
+
 
 class NewsApiProvider extends BaseApiProvider {
 
@@ -32,9 +39,9 @@ class NewsApiProvider extends BaseApiProvider {
       handler.next(response); // continue
     },
     onError: (DioError error, ErrorInterceptorHandler handler) async {
-      String errorMessage = NewsTexts.get()['Errorrequesting'];
+      String errorMessage = InformationTexts.get()['Errorrequesting'];
       if (error.response != null && error.response!.data != null) {
-        errorMessage = NewsTexts.get()['Errorrequesting'];
+        errorMessage = InformationTexts.get()['Errorrequesting'];
       } else if (error.message!.isNotEmpty) {
         errorMessage = await connectionCheck();
       }
@@ -47,22 +54,19 @@ class NewsApiProvider extends BaseApiProvider {
     try {
       final result = await InternetAddress.lookup('example.com');
       if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
-        return NewsTexts.get()['noOrSlowInternetConnection'];
+        return InformationTexts.get()['noOrSlowInternetConnection'];
       }
     } on SocketException catch (_) {
-      return NewsTexts.get()['networkConnectivityError'];
+      return InformationTexts.get()['networkConnectivityError'];
     }
-    return NewsTexts.get()['anErrorOccurred'];
+    return InformationTexts.get()['anErrorOccurred'];
   }
 
-  void getCategory() {
-    String? category = CategoryData.category;
-    print("my item category $category");
-  }
+
+
 
   BaseOptions createBaseOptions() {
     // Call getCategory() method to retrieve category
-    getCategory();
     DateTime now = DateTime.now();
     String formattedNow = "${now.year}${now.month.toString().padLeft(2, '0')}${now.day.
     toString().padLeft(2, '0')}";
@@ -75,7 +79,12 @@ class NewsApiProvider extends BaseApiProvider {
     return options;
   }
 
+
   static String get topHeadlines => '';
+  static String get drugsRecalls =>  'https://api.fda.gov/drug/enforcement.json?search='
+      'report_date:[20230101+TO+$formattedNow]&limit=1000';
+  static String get deviceRecalls => 'https://api.fda.gov/device/enforcement.json?search='
+      'report_date:[20230101+TO+$formattedNow]&limit=1000';
 }
 
 

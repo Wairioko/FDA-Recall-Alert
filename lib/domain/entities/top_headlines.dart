@@ -9,11 +9,11 @@ class TopHeadlines {
 
   // final String status;
   // final int totalResults;
-  final List<Article> articles;
+  final List<Recall_Article> articles;
 }
 
-class Article {
-  Article({
+class Recall_Article {
+  Recall_Article({
     required this.status,
     required this.product_description,
     required this.reason_for_recall,
