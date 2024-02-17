@@ -301,7 +301,7 @@ class MenuWidget extends StatelessWidget {
                         : 'assets/icons/light_logged_in_icon.svg',
                     text: 'Logged In',
                   ),
-                if (user != null)
+                // if (user != null)
                   _buildMenuItem(
                     onTap: () {
                       Navigator.of(context).pushNamed(MainScreen.path);

@@ -28,14 +28,12 @@ class _ResultScreenState extends State<ResultScreen> {
   bool _textEdited = false; // Flag to track text edits
   List<String> _lines = []; // List to store lines of text
 
-
   @override
   void initState() {
     super.initState();
     _textEditingController = TextEditingController(text: widget.text);
     _editedText = widget.text;
     _lines = _editedText.split('\n'); // Split the text into lines
-    _checkItems(); // Initial check
     _focusNode = FocusNode();
 
     // Add focus listener
@@ -92,7 +90,6 @@ class _ResultScreenState extends State<ResultScreen> {
     });
   }
 
-
   Future<void> _updateText(User? loggedInUser) async {
     if (_isUploading || !_textEdited) {
       // Upload only if editing, text has been edited, and not already uploading
@@ -103,11 +100,6 @@ class _ResultScreenState extends State<ResultScreen> {
       _isUploading = true;
     });
 
-    setState(() {
-      _isUploading = false;
-      _textEdited = false; // Reset after upload
-    });
-
     if (loggedInUser != null) {
       try {
         // **Perform search before upload**
@@ -115,8 +107,6 @@ class _ResultScreenState extends State<ResultScreen> {
 
         // If no matches found, upload the edited text
         if (_searchResults.isEmpty) {
-          // Combine lines into one string
-          _editedText = _lines.join('\n');
           // Reference to the user's document in "user-registration-data" collection
           DocumentReference userDoc = FirebaseFirestore.instance
               .collection('receipts-data')
@@ -157,13 +147,12 @@ class _ResultScreenState extends State<ResultScreen> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text("Upload Successful"),
-          content: const Text("The receipt has been successfully uploaded."),
+          content:
+          const Text("The receipt has been successfully uploaded."),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.pop(context);
-                Navigator.pop(
-                    context); // Pop twice to return to the home screen
               },
               child: const Text("OK"),
             ),
@@ -172,8 +161,6 @@ class _ResultScreenState extends State<ResultScreen> {
       },
     );
   }
-
-
 
   @override
   void dispose() {
@@ -201,7 +188,6 @@ class _ResultScreenState extends State<ResultScreen> {
     });
   }
 
-
   Widget _buildNotebookList() {
     return Container(
       color: Colors.black,
@@ -209,54 +195,41 @@ class _ResultScreenState extends State<ResultScreen> {
         itemCount: _lines.length,
         itemBuilder: (context, index) {
           return GestureDetector(
-              onTap: () {
-                if (!_isEditing) {
-                  _editLine(index);
-                } else if (_editingLineIndex == index) {
-                  setState(() {
-                    _isEditing = false;
-                    _editingLineIndex = -1;
-                  });
-                }
-              },
+            onTap: () {
+              _editLine(index);
+              // if (!_isEditing) {
+              //   _editLine(index);
+              // } else if (_editingLineIndex == index) {
+              //   setState(() {
+              //     _isEditing = false;
+              //     _editingLineIndex = -1;
+              //   }
+              //   );
+              // }
+            },
             child: Column(
               children: [
                 _isEditing && index == _editingLineIndex
                     ? TextField(
+                  style: TextStyle(color: Colors.white), // Set text color
                   keyboardType: TextInputType.multiline,
                   maxLines: null,
                   autofocus: false,
-            controller: _textEditingController,
-              focusNode: _focusNode,
-              onChanged: (value) {
-                setState(() {
-                  _lines[index] = value; // Update the line in the list
-                  // _textEditingController.text = value; // Update the text controller
-                  _textEdited = true;
-                });
-              },
-
-              // Other properties...
-                  onSubmitted: (value) {
+                  controller: _textEditingController,
+                  focusNode: _focusNode,
+                  onChanged: (value) {
                     setState(() {
-                      _lines[index] = value + '\n'; // Add newline character
-                      _isEditing = false;
-                      _editingLineIndex = -1;
+                      _lines[index] = value; // Update the line in the list
+                      _textEdited = true;
                     });
                   },
-              // onSubmitted: (value) {
-              //       setState(() {
-              //         // Insert the edited text as a new line after the current line
-              //         _lines.insert(index + 1, value);
-              //         // Remove the edited line (the current line)
-              //         _lines.removeAt(index);
-              //         // Reset the text controller
-              //         // _textEditingController.text = '';
-              //         _isEditing = false;
-              //         _editingLineIndex = -1;
-              //       });
-              //     },
-
+                  onSubmitted: (value) {
+                    setState(() {
+                      _lines.insert(index + 1, '');
+                      // Move focus to the new line
+                      _editLine(index + 1);
+                    });
+                  },
                 )
                     : ListTile(
                   title: Padding(
@@ -264,7 +237,8 @@ class _ResultScreenState extends State<ResultScreen> {
                     child: Text(
                       _lines[index],
                       style: TextStyle(
-                        color: _lines[index].contains('Potential Match Found')
+                        color: _lines[index]
+                            .contains('Potential Match Found')
                             ? Colors.red
                             : _lines[index].contains('Item cleared')
                             ? Colors.green
@@ -287,16 +261,6 @@ class _ResultScreenState extends State<ResultScreen> {
   }
 
 
-  FloatingActionButton _buildEditButton() {
-    return FloatingActionButton(
-      onPressed: () {
-        _enableTextEditing();
-      },
-      child: const Icon(Icons.edit),
-      backgroundColor: Colors.blue,
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -310,12 +274,14 @@ class _ResultScreenState extends State<ResultScreen> {
               },
               icon: const Icon(Icons.cloud_upload),
             ),
+          ElevatedButton(onPressed: () {
+            _enableTextEditing();
+          },child: const Icon(Icons.edit),
+
+          )
         ],
       ),
       body: _buildNotebookList(),
-      persistentFooterButtons: [
-        _buildEditButton(),
-      ],
       bottomNavigationBar: BottomAppBar(
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -331,8 +297,6 @@ class _ResultScreenState extends State<ResultScreen> {
       ),
     );
   }
-
-
 }
 
 // import 'package:cloud_firestore/cloud_firestore.dart';
