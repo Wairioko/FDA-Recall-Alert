@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:daily_news/ui/screens/home/widgets/query_widget.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:daily_news/data/network/current_weather_api.dart';
@@ -125,6 +126,7 @@ class _ResultScreenState extends State<ResultScreen> {
           userDoc.collection('user_receipts');
           // Call the user's CollectionReference to add a new receipt
           await receiptsCollection.add({
+            'items_category': CategoryData.category,
             'receipt': _editedText,
           });
           // Show successful upload pop-up
