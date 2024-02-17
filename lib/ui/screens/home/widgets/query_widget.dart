@@ -1,9 +1,13 @@
+import 'package:daily_news/data/network/current_weather_api.dart';
 import 'package:daily_news/model/request_query.dart';
 import 'package:daily_news/ui/shared/theme/theme_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../utility/news_texts.dart';
 import '../cubit/home_cubit.dart';
+import 'package:share_plus/share_plus.dart';
+
+
 
 class QueryWidget extends StatefulWidget {
   final HomeCubit homeCubit;
@@ -17,6 +21,8 @@ class QueryWidget extends StatefulWidget {
 class CategoryData {
   static String? category;
 }
+
+String? state_value;
 
 
 
@@ -183,6 +189,7 @@ class _QueryWidgetState extends State<QueryWidget> {
                             setState(() {
                               stateHintText = newValue ?? 'State';
                               requestQuery.state = newValue ?? InformationTexts.stateList()[0];
+                              state_value = requestQuery.state;
                             });
                           },
                         ),
@@ -216,7 +223,6 @@ class _QueryWidgetState extends State<QueryWidget> {
                               classificationHintText = newValue ?? 'Classification';
                               requestQuery.classification =
                                   newValue ?? InformationTexts.classificationList()[0];
-                              print(newValue);
                             });
                           },
                         ),
@@ -263,10 +269,98 @@ class _QueryWidgetState extends State<QueryWidget> {
                       },
                       child: Text('Search Again'),
                     ),
+
                   ],
                 ),
+
+              SizedBox(height: 10),
+              if (!showSearchParameters)// Add some spacing between the buttons and the share button
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center, // Align the share button to the center
+                children: [
+
+                  IconButton(
+                    icon: Icon(Icons.share),
+                    color: Colors.greenAccent,
+                    tooltip: "Share data for With Loved Ones",
+                    hoverColor: Colors.green,
+                    iconSize: 25, // Adjust the size of the icon
+                    padding: EdgeInsets.all(15), // Add padding to make the touch area larger
+                    splashRadius: 25,
+                    onPressed: () {
+                      var data = ApiData.responseJson;
+                      // Extract product descriptions
+                      List<String> descriptions = [];
+                      for (var item in data!) {
+                        String? description = item['product_description'];
+                        if (description != null && description.isNotEmpty) {
+                          descriptions.add(description);
+                        }
+                      }
+
+                      // Display as numbered list in a dialog
+                      if (descriptions.isNotEmpty) {
+                        String message = '';
+                        for (int i = 0; i < 10; i++) {
+                          message += '${i + 1}. ${descriptions[i]}\n';
+                        }
+                        showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return AlertDialog(
+                              title: Text('10 Recalled Items For $state_value'),
+                              content: SingleChildScrollView(
+                                child: Text(message),
+                              ),
+                              actions: <Widget>[
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.of(context).pop(); // Close the dialog
+                                  },
+                                  child: Text('Close'),
+                                ),
+                                TextButton(
+                                  onPressed: () {
+                                    // Share the message
+
+                                    Share.share(message); // This will share the message to other apps
+                                    // Navigator.of(context).pop(); // Close the dialog
+                                    Navigator.of(context).pop(); // Close the dialog
+                                  },
+                                  child: Text('Share'),
+                                ),
+                              ],
+                            );
+                          },
+                        );
+                      } else {
+                        // Show a message if there are no descriptions
+                        showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return AlertDialog(
+                              title: Text('No Descriptions Found'),
+                              content: Text('There are no product descriptions to share.'),
+                              actions: <Widget>[
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.of(context).pop(); // Close the dialog
+                                  },
+                                  child: Text('OK'),
+                                ),
+                              ],
+                            );
+                          },
+                        );
+                      }
+                    },
+
+                  ),
+                ],
+              ),
             ],
           ),
+
         );
       },
     );

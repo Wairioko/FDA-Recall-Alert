@@ -46,8 +46,7 @@ class TopHeadlinesApi extends BaseApi<TopHeadlinesQueryParams,
         .where((item) => item['status'] == "Ongoing")
         .toList();
 
-
-    ApiData.responseJson = ongoingItems;
+    // ApiData.responseJson = ongoingItems;
     // var data = ApiData.responseJson;
 
     if (requestQuery.query.trim().isNotEmpty) {
@@ -91,7 +90,7 @@ class TopHeadlinesApi extends BaseApi<TopHeadlinesQueryParams,
 
     // Sort the ongoingItems list by 'event_id' in descending order
     ongoingItems.sort((a, b) => b['event_id'].compareTo(a['event_id']));
-
+    ApiData.responseJson = ongoingItems;
     // Create a new response JSON with only filtered items
     Map<String, dynamic> filteredResponseJson = {
       ...responseJson!,

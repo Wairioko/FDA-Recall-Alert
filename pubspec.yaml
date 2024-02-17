@@ -42,6 +42,7 @@ dependencies:
   http: ^1.2.0
   flutter_riverpod: ^2.0.0
   firebase_messaging: ^14.7.13
+  share_plus: ^7.2.2
 #  firebase_core_platform_interface: .0
 #  firebase_database: ^10.6.0
 
@@ -49,6 +50,7 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  share: ^2.0.4
   flutter_lints: ^3.0.1
   flutter_launcher_icons: ^0.13.1
   flutter_native_splash: ^2.1.6
@@ -67,7 +69,7 @@ flutter_icons:
   ios: true
   image_path_android: assets/image/launcher_icon/launcher_icon.png
   image_path_ios: assets/image/launcher_icon/launcher_icon.png
-  min_sdk_android: 29
+  min_sdk_android: 25
 #  multiDexEnabled true
   web:
     generate: true
