@@ -8,7 +8,43 @@ import 'package:flutter/services.dart';
 import '../../../model/detail_data_model.dart';
 import '../detail/detail.dart';
 
+
 User? loggedInUser = FirebaseAuth.instance.currentUser;
+
+
+class SelectionScreen extends StatelessWidget {
+  final List<DetailDataModel> matches;
+
+  const SelectionScreen({Key? key, required this.matches}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Select Match'),
+      ),
+      body: ListView.builder(
+        itemCount: matches.length,
+        itemBuilder: (context, index) {
+          return ListTile(
+            title: Text(matches[index].product_description),
+            subtitle: Text(matches[index].reason_for_recall),
+            onTap: () {
+              // Navigate to detail screen for the selected match
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => Detail(detailDataModel: matches[index]),
+                ),
+              );
+            },
+          );
+        },
+      ),
+    );
+  }
+}
+
 
 class ResultScreen extends StatefulWidget {
   final String text;
@@ -27,11 +63,11 @@ class _ResultScreenState extends State<ResultScreen> {
   bool _isEditing = false;
   bool _isUploading = false;
   late List<dynamic> _searchResults = [];
-  late List<dynamic> _selectedItems = [];
   bool _allItemsChecked = false;
   bool _isSearching = false;
   bool _textEdited = false; // Flag to track text edits
   List<String> _lines = []; // List to store lines of text
+  List<dynamic>? responseJson;
 
   @override
   void initState() {
@@ -51,98 +87,67 @@ class _ResultScreenState extends State<ResultScreen> {
         });
       }
     });
+
+    // Load responseJson as a list of dynamic objects
+    responseJson = ApiData.responseJson;
   }
 
-  void _navigateToDetail(DetailDataModel detailDataModel) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => Detail(detailDataModel: detailDataModel),
-      ),
-    );
-  }
-
-  // Function to show options when multiple matches are found
-  void _showMatchOptions(List<DetailDataModel> matches) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text("Multiple Matches Found"),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: List.generate(
-              matches.length,
-                  (index) => ListTile(
-                title: Text(matches[index].product_description ?? ""),
-                onTap: () {
-                  Navigator.pop(context);
-                  _navigateToDetail(matches[index]);
-                },
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  // Define a list to store matched items
-  List<DetailDataModel> _matchedItems = [];
-
-  // Modify your _checkItems() method to store relevant data
   Future<void> _checkItems() async {
     setState(() {
-      _isSearching = true;// Start searching
+      _isSearching = true; // Start searching
     });
 
     // Clear previous search results
     _searchResults.clear();
     // Resetting _lines - Remove any old "Potential Match Found" or "Item Cleared" labels
     _lines = _lines.map((line) => line.split(' - ')[0]).toList();
-    // Load responseJson as a list of dynamic objects
-    List<dynamic>? responseJson = ApiData.responseJson;
 
-    // Your existing implementation to search for items
     for (int i = 0; i < _lines.length; i++) {
       String line = _lines[i];
-      if (line.isNotEmpty) { // Skip empty lines
-        bool matchFound = false;
+      bool matchFound = false;
+      List<DetailDataModel> matches = []; // Store multiple matches
 
-        for (dynamic item in responseJson ?? []) {
-          if (item['product_description'] != null &&
-              item['product_description']
-                  .toString()
-                  .toLowerCase()
-                  .contains(line.toLowerCase())) {
-            matchFound = true;
-            // Store the relevant data for the match
-            _matchedItems.add(DetailDataModel(
-              product_description: item['product_description'],
-              reason_for_recall: item['reason_for_recall'],
-              status: item['status'],
-              classification: item['classification'],
-              recalling_firm: item['recalling_firm'],
-              voluntary_mandated: item['voluntary_mandated'],
-            ));
-          }
-        }
+      // Check if the line is empty
+      if (line.trim().isEmpty) {
+        _lines[i] = ""; // Clear the line if it's empty
+        continue; // Move to the next line
+      }
 
-        // Update the label based on match status
-        if (matchFound) {
-          _lines[i] = "$line - Potential Match Found";
-        } else {
-          _lines[i] = "$line - Item cleared";
+      // Loop through each entry in responseJson to check for matches
+      for (dynamic item in responseJson ?? []) {
+        if (item['product_description'] != null &&
+            item['product_description']
+                .toString()
+                .toLowerCase()
+                .contains(line.toLowerCase())) {
+          matchFound = true;
+          // Store the relevant data for the match
+          matches.add(DetailDataModel(
+            product_description: item['product_description'],
+            reason_for_recall: item['reason_for_recall'],
+            status: item['status'],
+            classification: item['classification'],
+            recalling_firm: item['recalling_firm'],
+            voluntary_mandated: item['voluntary_mandated'],
+          ));
         }
       }
 
+      // Update the label based on match status
+      if (matchFound) {
+        // Display "Potential Match Found" label with index
+        _lines[i] = "$line - Potential Matches Found (${matches.length}), Click to see Details";
+        _searchResults.addAll(matches); // Add all matches
+      } else {
+        _lines[i] = "$line - Item Cleared";
+      }
     }
 
     setState(() {
       _isSearching = false; // Stop searching
     });
   }
+
 
   Future<void> _updateText(User? loggedInUser) async {
     if (_isUploading || !_textEdited) {
@@ -177,7 +182,6 @@ class _ResultScreenState extends State<ResultScreen> {
           _showUploadSuccessDialog();
           print("Receipt Added");
         } else {
-
           // Notify the user or take appropriate action if matches are found
           // You may choose to display a message or perform a specific action here
           print("Matches found, not uploading the edited text.");
@@ -202,8 +206,7 @@ class _ResultScreenState extends State<ResultScreen> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text("Upload Successful"),
-          content:
-          const Text("The receipt has been successfully uploaded."),
+          content: const Text("The receipt has been successfully uploaded."),
           actions: [
             TextButton(
               onPressed: () {
@@ -222,7 +225,6 @@ class _ResultScreenState extends State<ResultScreen> {
     _focusNode.dispose();
     super.dispose();
     _keyboardListenerFocusNode.dispose();
-    super.dispose();
   }
 
   void _editLine(int index) {
@@ -245,7 +247,6 @@ class _ResultScreenState extends State<ResultScreen> {
     });
   }
 
-  // Adjust your _buildNotebookList() method
   Widget _buildNotebookList() {
     // Ensure at least 20 empty lines are available
     while (_lines.length < 20) {
@@ -279,13 +280,35 @@ class _ResultScreenState extends State<ResultScreen> {
           itemBuilder: (context, index) {
             return GestureDetector(
               onTap: () {
-                if (_lines[index].contains('Potential Match Found')) {
-                  _navigateToDetail(_matchedItems[index]);
+                if (_lines[index].contains('Potential Matches Found')) {
+                  // If multiple matches found, navigate to selection screen
+                  List<DetailDataModel> selectedMatches = [];
+                  for (int i = index; i < _searchResults.length; i++) {
+                    if (_searchResults[i] is DetailDataModel) {
+                      selectedMatches.add(_searchResults[i] as DetailDataModel);
+                    }
+                  }
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => SelectionScreen(matches: selectedMatches),
+                    ),
+                  );
+                } else if (_lines[index].contains('Potential Match Found')) {
+                  // If single match found, navigate to detail screen
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => Detail(detailDataModel: _searchResults[index] as DetailDataModel),
+                    ),
+                  );
                 } else {
                   // Otherwise, allow editing
                   _editLine(index);
                 }
               },
+
+
               child: Column(
                 children: [
                   _isEditing && index == _editingLineIndex
@@ -309,7 +332,7 @@ class _ResultScreenState extends State<ResultScreen> {
                       child: Text(
                         _lines[index],
                         style: TextStyle(
-                          color: _lines[index].contains('Potential Match Found')
+                          color: _lines[index].contains('Potential Match - Click to See Details')
                               ? Colors.red
                               : _lines[index].contains('Item cleared')
                               ? Colors.green
@@ -331,24 +354,22 @@ class _ResultScreenState extends State<ResultScreen> {
     );
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Result'),
-
         actions: [
           if (_isUploading)
             const Center(child: CircularProgressIndicator()),
           if (!_isUploading)
             IconButton(
-            onPressed: () => _updateText(FirebaseAuth.instance.currentUser),
-            icon: const Icon(Icons.cloud_upload),
+              onPressed: () => _updateText(FirebaseAuth.instance.currentUser),
+              icon: const Icon(Icons.cloud_upload),
             ),
           IconButton(
-          onPressed: () => _enableTextEditing(),
-          icon: const Icon(Icons.edit),
+            onPressed: () => _enableTextEditing(),
+            icon: const Icon(Icons.edit),
           ),
         ],
       ),
