@@ -3,6 +3,10 @@ import 'package:daily_news/ui/screens/home/widgets/query_widget.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:daily_news/data/network/current_weather_api.dart';
+import 'package:flutter/services.dart';
+
+import '../../../model/detail_data_model.dart';
+import '../detail/detail.dart';
 
 User? loggedInUser = FirebaseAuth.instance.currentUser;
 
@@ -16,6 +20,7 @@ class ResultScreen extends StatefulWidget {
 
 class _ResultScreenState extends State<ResultScreen> {
   late TextEditingController _textEditingController;
+  late FocusNode _keyboardListenerFocusNode;
   late String _editedText;
   late FocusNode _focusNode;
   int _editingLineIndex = -1;
@@ -35,6 +40,7 @@ class _ResultScreenState extends State<ResultScreen> {
     _editedText = widget.text;
     _lines = _editedText.split('\n'); // Split the text into lines
     _focusNode = FocusNode();
+    _keyboardListenerFocusNode = FocusNode();
 
     // Add focus listener
     _focusNode.addListener(() {
@@ -47,44 +53,92 @@ class _ResultScreenState extends State<ResultScreen> {
     });
   }
 
+  void _navigateToDetail(DetailDataModel detailDataModel) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => Detail(detailDataModel: detailDataModel),
+      ),
+    );
+  }
+
+  // Function to show options when multiple matches are found
+  void _showMatchOptions(List<DetailDataModel> matches) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Multiple Matches Found"),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: List.generate(
+              matches.length,
+                  (index) => ListTile(
+                title: Text(matches[index].product_description ?? ""),
+                onTap: () {
+                  Navigator.pop(context);
+                  _navigateToDetail(matches[index]);
+                },
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  // Define a list to store matched items
+  List<DetailDataModel> _matchedItems = [];
+
+  // Modify your _checkItems() method to store relevant data
   Future<void> _checkItems() async {
     setState(() {
-      _isSearching = true; // Start searching
+      _isSearching = true;// Start searching
     });
 
     // Clear previous search results
     _searchResults.clear();
-
+    // Resetting _lines - Remove any old "Potential Match Found" or "Item Cleared" labels
+    _lines = _lines.map((line) => line.split(' - ')[0]).toList();
     // Load responseJson as a list of dynamic objects
     List<dynamic>? responseJson = ApiData.responseJson;
 
+    // Your existing implementation to search for items
     for (int i = 0; i < _lines.length; i++) {
       String line = _lines[i];
-      bool matchFound = false;
-      // Check if the line is empty
-      if (line.trim().isEmpty) {
-        _lines[i] = ""; // Clear the line if it's empty
-        continue; // Move to the next line
-      }
+      if (line.isNotEmpty) { // Skip empty lines
+        bool matchFound = false;
 
-      // Loop through each entry in responseJson to check for matches
-      for (dynamic item in responseJson ?? []) {
-        if (item['product_description'] != null &&
-            item['product_description']
-                .toString()
-                .toLowerCase()
-                .contains(line.toLowerCase())) {
-          matchFound = true;
-          break;
+        for (dynamic item in responseJson ?? []) {
+          if (item['product_description'] != null &&
+              item['product_description']
+                  .toString()
+                  .toLowerCase()
+                  .contains(line.toLowerCase())) {
+            matchFound = true;
+            // Store the relevant data for the match
+            _matchedItems.add(DetailDataModel(
+              product_description: item['product_description'],
+              reason_for_recall: item['reason_for_recall'],
+              status: item['status'],
+              classification: item['classification'],
+              recalling_firm: item['recalling_firm'],
+              voluntary_mandated: item['voluntary_mandated'],
+            ));
+          }
+        }
+
+        // Update the label based on match status
+        if (matchFound) {
+          _lines[i] = "$line - Potential Match Found";
+        } else {
+          _lines[i] = "$line - Item cleared";
         }
       }
-      // Update the label based on match status
-      if (matchFound) {
-        _lines[i] = "$line - Potential Match Found";
-      } else {
-        _lines[i] = "$line - Item cleared";
-      }
+
     }
+
     setState(() {
       _isSearching = false; // Stop searching
     });
@@ -123,6 +177,7 @@ class _ResultScreenState extends State<ResultScreen> {
           _showUploadSuccessDialog();
           print("Receipt Added");
         } else {
+
           // Notify the user or take appropriate action if matches are found
           // You may choose to display a message or perform a specific action here
           print("Matches found, not uploading the edited text.");
@@ -166,6 +221,8 @@ class _ResultScreenState extends State<ResultScreen> {
   void dispose() {
     _focusNode.dispose();
     super.dispose();
+    _keyboardListenerFocusNode.dispose();
+    super.dispose();
   }
 
   void _editLine(int index) {
@@ -188,74 +245,88 @@ class _ResultScreenState extends State<ResultScreen> {
     });
   }
 
+  // Adjust your _buildNotebookList() method
   Widget _buildNotebookList() {
-    return Container(
-      color: Colors.black,
-      child: ListView.builder(
-        itemCount: _lines.length,
-        itemBuilder: (context, index) {
-          return GestureDetector(
-            onTap: () {
-              _editLine(index);
-              // if (!_isEditing) {
-              //   _editLine(index);
-              // } else if (_editingLineIndex == index) {
-              //   setState(() {
-              //     _isEditing = false;
-              //     _editingLineIndex = -1;
-              //   }
-              //   );
-              // }
-            },
-            child: Column(
-              children: [
-                _isEditing && index == _editingLineIndex
-                    ? TextField(
-                  style: TextStyle(color: Colors.white), // Set text color
-                  keyboardType: TextInputType.multiline,
-                  maxLines: null,
-                  autofocus: false,
-                  controller: _textEditingController,
-                  focusNode: _focusNode,
-                  onChanged: (value) {
-                    setState(() {
-                      _lines[index] = value; // Update the line in the list
-                      _textEdited = true;
-                    });
-                  },
-                  onSubmitted: (value) {
-                    setState(() {
-                      _lines.insert(index + 1, '');
-                      // Move focus to the new line
-                      _editLine(index + 1);
-                    });
-                  },
-                )
-                    : ListTile(
-                  title: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Text(
-                      _lines[index],
-                      style: TextStyle(
-                        color: _lines[index]
-                            .contains('Potential Match Found')
-                            ? Colors.red
-                            : _lines[index].contains('Item cleared')
-                            ? Colors.green
-                            : Colors.white,
+    // Ensure at least 20 empty lines are available
+    while (_lines.length < 20) {
+      _lines.add('');
+    }
+
+    return RawKeyboardListener(
+      focusNode: _keyboardListenerFocusNode,
+      onKey: (event) {
+        if (event is RawKeyDownEvent && event.logicalKey == LogicalKeyboardKey.enter) {
+          // Loop through your Listview to find the TextField that's in focus
+          for (int index = 0; index < _lines.length; index++) {
+            if (_isEditing && index == _editingLineIndex && _focusNode.hasFocus) {
+              setState(() {
+                final newLineIndex = index + 1;
+                _lines.insert(newLineIndex, '');
+                _editingLineIndex = newLineIndex;
+                _textEditingController.text = _lines[newLineIndex];
+                _textEditingController.selection = TextSelection.collapsed(offset: 0);
+                FocusScope.of(context).requestFocus(_focusNode); // Refocus TextField
+              });
+              break; // Exit the loop once you've found the TextField
+            }
+          }
+        }
+      },
+      child: Container(
+        color: Colors.black,
+        child: ListView.builder(
+          itemCount: _lines.length,
+          itemBuilder: (context, index) {
+            return GestureDetector(
+              onTap: () {
+                if (_lines[index].contains('Potential Match Found')) {
+                  _navigateToDetail(_matchedItems[index]);
+                } else {
+                  // Otherwise, allow editing
+                  _editLine(index);
+                }
+              },
+              child: Column(
+                children: [
+                  _isEditing && index == _editingLineIndex
+                      ? TextField(
+                    style: TextStyle(color: Colors.white),
+                    keyboardType: TextInputType.multiline,
+                    maxLines: null,
+                    autofocus: false,
+                    controller: _textEditingController,
+                    focusNode: _focusNode,
+                    onChanged: (value) {
+                      setState(() {
+                        _lines[index] = value;
+                        _textEdited = true;
+                      });
+                    },
+                  )
+                      : ListTile(
+                    title: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Text(
+                        _lines[index],
+                        style: TextStyle(
+                          color: _lines[index].contains('Potential Match Found')
+                              ? Colors.red
+                              : _lines[index].contains('Item cleared')
+                              ? Colors.green
+                              : Colors.white,
+                        ),
                       ),
                     ),
                   ),
-                ),
-                Container(
-                  height: 1,
-                  width: double.infinity,
-                  color: Colors.amber,
-                ),
-              ],
-            ),
-          );
-        },
+                  Container(
+                    height: 1,
+                    color: Colors.amber, // Adjust color as needed
+                  ), // Add Container here
+                ],
+              ),
+            );
+          },
+        ),
       ),
     );
   }
@@ -266,19 +337,19 @@ class _ResultScreenState extends State<ResultScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Result'),
-        actions: [
-          if (_isSearching || _isUploading || !_textEdited)
-            IconButton(
-              onPressed: () {
-                _updateText(FirebaseAuth.instance.currentUser);
-              },
-              icon: const Icon(Icons.cloud_upload),
-            ),
-          ElevatedButton(onPressed: () {
-            _enableTextEditing();
-          },child: const Icon(Icons.edit),
 
-          )
+        actions: [
+          if (_isUploading)
+            const Center(child: CircularProgressIndicator()),
+          if (!_isUploading)
+            IconButton(
+            onPressed: () => _updateText(FirebaseAuth.instance.currentUser),
+            icon: const Icon(Icons.cloud_upload),
+            ),
+          IconButton(
+          onPressed: () => _enableTextEditing(),
+          icon: const Icon(Icons.edit),
+          ),
         ],
       ),
       body: _buildNotebookList(),
