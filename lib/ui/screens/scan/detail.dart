@@ -94,7 +94,7 @@ class _ResultScreenState extends State<ResultScreen> {
 
   Future<void> _checkItems() async {
     setState(() {
-      _isSearching = true; // Start searching
+      _isSearching = true;
     });
 
     // Clear previous search results
@@ -102,15 +102,17 @@ class _ResultScreenState extends State<ResultScreen> {
     // Resetting _lines - Remove any old "Potential Match Found" or "Item Cleared" labels
     _lines = _lines.map((line) => line.split(' - ')[0]).toList();
 
+    // Initialize a map to store item matches
+    Map<String, List<DetailDataModel>> itemMatchesMap = {};
+
     for (int i = 0; i < _lines.length; i++) {
       String line = _lines[i];
       bool matchFound = false;
-      List<DetailDataModel> matches = []; // Store multiple matches
 
       // Check if the line is empty
       if (line.trim().isEmpty) {
         _lines[i] = ""; // Clear the line if it's empty
-        continue; // Move to the next line
+        continue;
       }
 
       // Loop through each entry in responseJson to check for matches
@@ -120,33 +122,47 @@ class _ResultScreenState extends State<ResultScreen> {
                 .toString()
                 .toLowerCase()
                 .contains(line.toLowerCase())) {
+
           matchFound = true;
-          // Store the relevant data for the match
-          matches.add(DetailDataModel(
-            product_description: item['product_description'],
-            reason_for_recall: item['reason_for_recall'],
-            status: item['status'],
-            classification: item['classification'],
-            recalling_firm: item['recalling_firm'],
-            voluntary_mandated: item['voluntary_mandated'],
-          ));
+
+          // Add the match to the itemMatchesMap
+          String key = line.trim();
+          if (!itemMatchesMap.containsKey(key)) {
+            itemMatchesMap[key] = [];
+          }
+          itemMatchesMap[key]?.add(
+            DetailDataModel(
+              product_description: item['product_description'],
+              reason_for_recall: item['reason_for_recall'],
+              status: item['status'],
+              classification: item['classification'],
+              recalling_firm: item['recalling_firm'],
+              voluntary_mandated: item['voluntary_mandated'],
+            ),
+          );
         }
       }
 
-      // Update the label based on match status
+      // Update line item labels
       if (matchFound) {
-        // Display "Potential Match Found" label with index
-        _lines[i] = "$line - Potential Matches Found (${matches.length}), Click to see Details";
-        _searchResults.addAll(matches); // Add all matches
+        int numMatches = itemMatchesMap[line]?.length ?? 0;
+        _lines[i] = "$line - Potential Matches Found ($numMatches), Click to see Details";
       } else {
         _lines[i] = "$line - Item Cleared";
       }
     }
 
+    // Convert itemMatchesMap to the desired format and assign it to _searchResults
+    _searchResults = itemMatchesMap.entries
+        .map((entry) => {entry.key: entry.value})
+        .toList();
+
     setState(() {
-      _isSearching = false; // Stop searching
+      _isSearching = false;
     });
   }
+
+
 
 
   Future<void> _updateText(User? loggedInUser) async {
@@ -281,32 +297,44 @@ class _ResultScreenState extends State<ResultScreen> {
             return GestureDetector(
               onTap: () {
                 if (_lines[index].contains('Potential Matches Found')) {
-                  // If multiple matches found, navigate to selection screen
-                  List<DetailDataModel> selectedMatches = [];
-                  for (int i = index; i < _searchResults.length; i++) {
-                    if (_searchResults[i] is DetailDataModel) {
-                      selectedMatches.add(_searchResults[i] as DetailDataModel);
+                  try {
+                    print("Searching for match for ${_lines[index]}");
+                    print("_searchResults: $_searchResults");
+
+                    var isolatedSearchTerm = _lines[index].split('-')[0].trim().toLowerCase(); // Ensure lowercase
+                    print("Isolated search term: $isolatedSearchTerm");
+
+                    var matchesForLineItem = _searchResults.firstWhere(
+                          (resultDict) => resultDict.keys.any((key) => key.toLowerCase() == isolatedSearchTerm),
+                    );
+
+                    if (matchesForLineItem.containsKey(isolatedSearchTerm)) {
+                      List<DetailDataModel> selectedMatches = matchesForLineItem[isolatedSearchTerm]!;
+
+                      // Debug print to check selectedMatches
+                      print("Selected matches: $selectedMatches");
+
+                      if (selectedMatches.isNotEmpty) {
+                        // Navigate to SelectionScreen with the list of matches
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => SelectionScreen(matches: selectedMatches),
+                          ),
+                        );
+                      }
+                    } else {
+                      print("No matches found for search term: $isolatedSearchTerm");
                     }
+                  } catch (e) {
+                    print("Error: $e");
                   }
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => SelectionScreen(matches: selectedMatches),
-                    ),
-                  );
-                } else if (_lines[index].contains('Potential Match Found')) {
-                  // If single match found, navigate to detail screen
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => Detail(detailDataModel: _searchResults[index] as DetailDataModel),
-                    ),
-                  );
                 } else {
-                  // Otherwise, allow editing
                   _editLine(index);
                 }
               },
+
+
 
 
               child: Column(
