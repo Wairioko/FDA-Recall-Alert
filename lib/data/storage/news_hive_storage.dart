@@ -23,8 +23,8 @@ class NewsHiveStorage {
     Directory directory = await getApplicationDocumentsDirectory();
     Hive.init("${directory.path}/news");
 
-    if (!Hive.isAdapterRegistered(HiveTypeIds.topHeadlinesResponse)) Hive.registerAdapter(TopHeadlinesResponseAdapter());
-    if (!Hive.isAdapterRegistered(HiveTypeIds.articlesResponseModel)) Hive.registerAdapter(ArticleResponseModelAdapter());
+    if (!Hive.isAdapterRegistered(HiveTypeIds.recallsResponse)) Hive.registerAdapter(RecallResponseAdapter());
+    if (!Hive.isAdapterRegistered(HiveTypeIds.recallEventResponseModel)) Hive.registerAdapter(RecallResponseModelAdapter());
   }
 
   static void clear() async {

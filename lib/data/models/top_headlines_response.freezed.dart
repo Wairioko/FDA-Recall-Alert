@@ -14,10 +14,10 @@ T _$identity<T>(T value) => value;
 final _privateConstructorUsedError = UnsupportedError(
     'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#custom-getters-and-methods');
 
-ArticleResponseModel _$ArticleResponseModelFromJson(Map<String, dynamic> json) {
-  return _ArticleResponseModel.fromJson(json);
+RecallResponseModel _$ArticleResponseModelFromJson(Map<String, dynamic> json) {
+  return _RecallResponseModel.fromJson(json);
 }
-mixin _$ArticleResponseModel {
+mixin _$RecallResponseModel {
   @HiveField(0)
   String? get status => throw _privateConstructorUsedError;
   @HiveField(1)
@@ -38,9 +38,9 @@ mixin _$ArticleResponseModel {
 /// @nodoc
 @JsonSerializable(createToJson: false)
 @HiveType(
-    typeId: HiveTypeIds.articlesResponseModel,
+    typeId: HiveTypeIds.recallEventResponseModel,
     adapterName: 'ArticleResponseModelAdapter')
-class _$_ArticleResponseModel extends _ArticleResponseModel {
+class _$_ArticleResponseModel extends _RecallResponseModel {
   const _$_ArticleResponseModel(
       @HiveField(0)
       this.status,
@@ -62,7 +62,7 @@ class _$_ArticleResponseModel extends _ArticleResponseModel {
 
 
   factory _$_ArticleResponseModel.fromJson(Map<String, dynamic> json) =>
-      _$$_ArticleResponseModelFromJson(json);
+      _$$_RecallResponseModelFromJson(json);
 
   @override
   @HiveField(0)
@@ -90,7 +90,7 @@ class _$_ArticleResponseModel extends _ArticleResponseModel {
 
   @override
   String toString() {
-    return '_$_ArticleResponseModel(status: $status, product_description: $product_description, '
+    return '_$_RecallResponseModel(status: $status, product_description: $product_description, '
         'classification: $classification, reason_for_recall: $reason_for_recall, '
         'recalling_firm: $recalling_firm, voluntary_mandated: $voluntary_mandated,'
         ' distribution_pattern: $distribution_pattern),'
@@ -99,8 +99,8 @@ class _$_ArticleResponseModel extends _ArticleResponseModel {
   }
 }
 
-abstract class _ArticleResponseModel extends ArticleResponseModel {
-  const factory _ArticleResponseModel(
+abstract class _RecallResponseModel extends RecallResponseModel {
+  const factory _RecallResponseModel(
       @HiveField(0)
       final String? status,
       @HiveField(1)
@@ -118,9 +118,9 @@ abstract class _ArticleResponseModel extends ArticleResponseModel {
       @HiveField(7)
       final dynamic event_id
       ) = _$_ArticleResponseModel;
-  const _ArticleResponseModel._() : super._();
+  const _RecallResponseModel._() : super._();
 
-  factory _ArticleResponseModel.fromJson(Map<String, dynamic> json) =
+  factory _RecallResponseModel.fromJson(Map<String, dynamic> json) =
       _$_ArticleResponseModel.fromJson;
 
   @override

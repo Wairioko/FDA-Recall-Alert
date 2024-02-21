@@ -8,31 +8,30 @@ import '../models/top_headlines_response.dart';
 import 'data_sources/top_headlines_local_data_source.dart';
 import 'data_sources/top_headlines_remote_data_source.dart';
 
-class TopHeadlinesRepositoryImpl implements TopHeadlinesRepository {
-  late TopHeadlinesRemoteDataSource _topHeadlinesRemoteDataSource;
-  late TopHeadlinesLocalDataSource _topHeadlinesLocalDataSource;
+class RecallsRepositoryImpl implements RecallsRepository {
+  late RecallsRemoteDataSource _recallsRemoteDataSource;
+  late RecallsLocalDataSource _recallsLocalDataSource;
 
-  TopHeadlinesRepositoryImpl() {
-    _topHeadlinesRemoteDataSource = sl.get<TopHeadlinesRemoteDataSource>();
-    _topHeadlinesLocalDataSource = sl.get<TopHeadlinesLocalDataSource>();
+  RecallsRepositoryImpl() {
+    _recallsRemoteDataSource = sl.get<RecallsRemoteDataSource>();
+    _recallsLocalDataSource = sl.get<RecallsLocalDataSource>();
   }
 
   @override
-  Future<TopHeadlines?> getTopHeadlines(String state, String category, String query,
+  Future<Recalls?> getRecalls(String state, String category, String query,
       String classification, String item) async {
-    // TopHeadlinesQueryParams queryParams = TopHeadlinesQueryParams(state, category, query);
 
-    Either<TopHeadlinesResponse, ErrorResponse> response =
-    await _topHeadlinesRemoteDataSource.getTopHeadlines(state, category, query, classification, item);
+    Either<RecallsResponse, ErrorResponse> response =
+    await _recallsRemoteDataSource.getTopHeadlines(state, category, query, classification, item);
     //
     var result = response.fold(
           (apiResponse) async {
-        _topHeadlinesLocalDataSource.putTopHeadlinesResponse(apiResponse, state, category);
+        _recallsLocalDataSource.putTopHeadlinesResponse(apiResponse, state, category);
         return apiResponse.toEntity();
       },
           (error) async {
         var localResponse =
-        await _topHeadlinesLocalDataSource.getTopHeadlinesResponse(state, category);
+        await _recallsLocalDataSource.getTopHeadlinesResponse(state, category);
         if (localResponse != null) {
           return localResponse.toEntity();
         } else {
@@ -44,50 +43,3 @@ class TopHeadlinesRepositoryImpl implements TopHeadlinesRepository {
     return result;
   }
 }
-
-
-// import 'package:dartz/dartz.dart';
-// import '../../core/service_locator.dart';
-// import '../../domain/entities/top_headlines.dart';
-// import '../../domain/repositories/top_headlines_repository.dart';
-// import '../models/error_response.dart';
-// import '../models/top_headlines_response.dart';
-// import 'data_sources/top_headlines_local_data_source.dart';
-// import 'data_sources/top_headlines_remote_data_source.dart';
-//
-//
-// class TopHeadlinesRepositoryImpl implements TopHeadlinesRepository {
-//   late TopHeadlinesRemoteDataSource _topHeadlinesRemoteDataSource;
-//   late TopHeadlinesLocalDataSource _topHeadlinesLocalDataSource;
-//
-//   TopHeadlinesRepositoryImpl() {
-//     _topHeadlinesRemoteDataSource = sl.get<TopHeadlinesRemoteDataSource>();
-//     _topHeadlinesLocalDataSource = sl.get<TopHeadlinesLocalDataSource>();
-//   }
-//
-//   @override
-//   Future<TopHeadlines?> getTopHeadlines(String state, String category) async {
-//     Either<TopHeadlinesResponse, ErrorResponse> response =
-//     await _topHeadlinesRemoteDataSource.getTopHeadlines(state, category);
-//     // country,
-//     // category, query
-//
-//     var result = response.fold((apiResponse) async {
-//       _topHeadlinesLocalDataSource.putTopHeadlinesResponse
-//         (apiResponse, state, category);
-//       return apiResponse.toEntity();
-//     }, (error) async {
-//       var localResponse = await _topHeadlinesLocalDataSource.getTopHeadlinesResponse
-//         (state, category);
-//       if (localResponse != null) {
-//         return localResponse.toEntity();
-//       } else {
-//         return null;
-//       }
-//     });
-//
-//     return result;
-//   }
-//
-// }
-//

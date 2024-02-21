@@ -13,11 +13,11 @@ GetIt sl = GetIt.instance;
 Future<void> setUpServiceLocators() async {
   await sl.reset();
 
-  sl.registerSingleton<NewsApiProvider>(NewsApiProvider());
+  sl.registerSingleton<RecallDataApiProvider>(RecallDataApiProvider());
   RequestQuery requestQuery = RequestQuery('', '', '', "", "");
-  sl.registerFactory<TopHeadlinesApi>(() => TopHeadlinesApi(requestQuery:requestQuery));
-  sl.registerFactory<TopHeadlinesRemoteDataSource>(() => TopHeadlinesRemoteDataSourceImpl());
-  sl.registerFactory<TopHeadlinesRepository>(() => TopHeadlinesRepositoryImpl());
-  sl.registerFactory<TopHeadlinesLocalDataSource>(() => TopHeadlinesLocalDataSourceImpl());
+  sl.registerFactory<RecallApi>(() => RecallApi(requestQuery:requestQuery));
+  sl.registerFactory<RecallsRemoteDataSource>(() => TopHeadlinesRemoteDataSourceImpl());
+  sl.registerFactory<RecallsRepository>(() => RecallsRepositoryImpl());
+  sl.registerFactory<RecallsLocalDataSource>(() => TopHeadlinesLocalDataSourceImpl());
 
 }

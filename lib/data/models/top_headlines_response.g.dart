@@ -6,7 +6,7 @@ part of 'top_headlines_response.dart';
 // TypeAdapterGenerator
 // **************************************************************************
 
-class TopHeadlinesResponseAdapter extends TypeAdapter<TopHeadlinesResponse> {
+class RecallResponseAdapter extends TypeAdapter<RecallsResponse> {
   @override
   final int typeId = 0;
 
@@ -26,20 +26,20 @@ class TopHeadlinesResponseAdapter extends TypeAdapter<TopHeadlinesResponse> {
   // }
 
   @override
-  TopHeadlinesResponse read(BinaryReader reader) {
+  RecallsResponse read(BinaryReader reader) {
     final numOfFields = reader.readByte();
     final fields = <int, dynamic>{
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
 
-    List<ArticleResponseModel> articles = [];
+    List<RecallResponseModel> articles = [];
 
     // Check if fields[0] is not null and is a List
     if (fields[0] != null && fields[0] is List) {
-      articles = (fields[0] as List).cast<ArticleResponseModel>();
+      articles = (fields[0] as List).cast<RecallResponseModel>();
     }
 
-    return TopHeadlinesResponse(articles);
+    return RecallsResponse(articles);
   }
   // TopHeadlinesResponse read(BinaryReader reader) {
   //   final numOfFields = reader.readByte();
@@ -54,7 +54,7 @@ class TopHeadlinesResponseAdapter extends TypeAdapter<TopHeadlinesResponse> {
   // }
 
   @override
-  void write(BinaryWriter writer, TopHeadlinesResponse obj) {
+  void write(BinaryWriter writer, RecallsResponse obj) {
     writer
       ..writeByte(1)
       // ..writeByte(0)
@@ -62,7 +62,7 @@ class TopHeadlinesResponseAdapter extends TypeAdapter<TopHeadlinesResponse> {
       // ..writeByte(1)
       // ..write(obj.totalResults)
       ..writeByte(2)
-      ..write(obj.articles);
+      ..write(obj.recall_events);
   }
 
   @override
@@ -71,12 +71,12 @@ class TopHeadlinesResponseAdapter extends TypeAdapter<TopHeadlinesResponse> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is TopHeadlinesResponseAdapter &&
+      other is RecallResponseAdapter &&
           runtimeType == other.runtimeType &&
           typeId == other.typeId;
 }
 
-class ArticleResponseModelAdapter extends TypeAdapter<_$_ArticleResponseModel> {
+class RecallResponseModelAdapter extends TypeAdapter<_$_ArticleResponseModel> {
   @override
   final int typeId = 1;
 
@@ -126,7 +126,7 @@ class ArticleResponseModelAdapter extends TypeAdapter<_$_ArticleResponseModel> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is ArticleResponseModelAdapter &&
+      other is RecallResponseModelAdapter &&
           runtimeType == other.runtimeType &&
           typeId == other.typeId;
 }
@@ -142,24 +142,24 @@ class ArticleResponseModelAdapter extends TypeAdapter<_$_ArticleResponseModel> {
 //         .toList(),
 //   );
 // }
-TopHeadlinesResponse _$TopHeadlinesResponseFromJson(Map<String, dynamic> json) {
+RecallsResponse _$TopHeadlinesResponseFromJson(Map<String, dynamic> json) {
   final metaResults = json['results'];
 
   if (metaResults is List<dynamic>) {
-    return TopHeadlinesResponse(
+    return RecallsResponse(
       metaResults
-          .map((e) => ArticleResponseModel.fromJson(e as Map<String, dynamic>))
+          .map((e) => RecallResponseModel.fromJson(e as Map<String, dynamic>))
           .toList(),
     );
   } else {
     // Handle the case where 'meta.results' is not a List
     // You might want to provide a default value or throw an exception
     print("THIS IS $metaResults");
-    return TopHeadlinesResponse([]);
+    return RecallsResponse([]);
   }
 }
 
-_$_ArticleResponseModel _$$_ArticleResponseModelFromJson(
+_$_ArticleResponseModel _$$_RecallResponseModelFromJson(
         Map<String, dynamic> json) =>
     _$_ArticleResponseModel(
       json['status'] as String?,

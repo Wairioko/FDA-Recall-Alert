@@ -1,27 +1,27 @@
 import 'package:hive/hive.dart';
 import '../../models/top_headlines_response.dart';
 
-abstract class TopHeadlinesLocalDataSource {
-  Future<TopHeadlinesResponse?> getTopHeadlinesResponse(String state, String category);
-  Future<void> putTopHeadlinesResponse(TopHeadlinesResponse topHeadlinesResponse, String state
+abstract class RecallsLocalDataSource {
+  Future<RecallsResponse?> getTopHeadlinesResponse(String state, String category);
+  Future<void> putTopHeadlinesResponse(RecallsResponse topHeadlinesResponse, String state
       , String category);
 }
 
-class TopHeadlinesLocalDataSourceImpl extends TopHeadlinesLocalDataSource {
+class TopHeadlinesLocalDataSourceImpl extends RecallsLocalDataSource {
   String _createKey(String state,
       String category) => "$state/$category";
 
-  Future<Box<TopHeadlinesResponse>> _getTopHeadlinesResponseBox() async {
-    return await Hive.openBox<TopHeadlinesResponse>('TopHeadlineResponse');
+  Future<Box<RecallsResponse>> _getTopHeadlinesResponseBox() async {
+    return await Hive.openBox<RecallsResponse>('TopHeadlineResponse');
   }
 
   @override
-  Future<TopHeadlinesResponse?> getTopHeadlinesResponse(
+  Future<RecallsResponse?> getTopHeadlinesResponse(
       String state,
       String category,
       ) async{
-    Box<TopHeadlinesResponse> currentNewsBox = await _getTopHeadlinesResponseBox();
-    TopHeadlinesResponse? topHeadlinesResponse = currentNewsBox.
+    Box<RecallsResponse> currentNewsBox = await _getTopHeadlinesResponseBox();
+    RecallsResponse? topHeadlinesResponse = currentNewsBox.
     get(_createKey(state, category));
     await currentNewsBox.close();
     return topHeadlinesResponse;
@@ -29,12 +29,12 @@ class TopHeadlinesLocalDataSourceImpl extends TopHeadlinesLocalDataSource {
 
   @override
   Future<void> putTopHeadlinesResponse(
-      TopHeadlinesResponse topHeadlinesResponse,
+      RecallsResponse topHeadlinesResponse,
       String state,
       String category,
 
       ) async {
-    Box<TopHeadlinesResponse> currentNewsBox = await _getTopHeadlinesResponseBox();
+    Box<RecallsResponse> currentNewsBox = await _getTopHeadlinesResponseBox();
     String key = _createKey(state, category);
     await currentNewsBox.delete(key);
     await currentNewsBox.put(key, topHeadlinesResponse);

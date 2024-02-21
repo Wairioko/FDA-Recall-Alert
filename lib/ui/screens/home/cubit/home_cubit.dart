@@ -19,7 +19,7 @@ class HomeCubit extends Cubit<HomeState> {
       if (requestQuery != null) {
         lastRequestQuery = requestQuery;
       }
-      var topHeadlines = await TopHeadlinesUseCase(sl.get<TopHeadlinesRepository>())
+      var topHeadlines = await RecallUseCase(sl.get<RecallsRepository>())
           .call(lastRequestQuery);
       if (topHeadlines == null) {
         emit(DataUnavailableState(InformationTexts.get()["noLocalData"]));

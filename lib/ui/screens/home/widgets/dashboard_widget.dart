@@ -64,7 +64,7 @@ class _DashBoardWidgetState extends State<DashBoardWidget> {
                 builder: (context, state) {
                   return state.when(
                     homeInitialState: () => Container(),
-                    dataAvailableState: (TopHeadlines topHeadlines) =>
+                    dataAvailableState: (Recalls topHeadlines) =>
                         NewsList(
                           articles: topHeadlines.articles,
                         ),

@@ -1,5 +1,5 @@
-name: daily_news
-description: A new Flutter project for showcasing daily news.
+name: safe scan
+description: An app alerting you on recalls for items you have bought.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
 version: 1.0.0+1

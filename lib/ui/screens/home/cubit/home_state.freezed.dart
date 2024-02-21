@@ -19,7 +19,7 @@ mixin _$HomeState {
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
     required TResult Function() homeInitialState,
-    required TResult Function(TopHeadlines topHeadlines) dataAvailableState,
+    required TResult Function(Recalls topHeadlines) dataAvailableState,
     required TResult Function(String reason) dataUnavailableState,
   }) =>
       throw _privateConstructorUsedError;
@@ -27,7 +27,7 @@ mixin _$HomeState {
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? homeInitialState,
-    TResult Function(TopHeadlines topHeadlines)? dataAvailableState,
+    TResult Function(Recalls topHeadlines)? dataAvailableState,
     TResult Function(String reason)? dataUnavailableState,
     required TResult orElse(),
   }) =>
@@ -48,7 +48,7 @@ class _$HomeInitialState implements HomeInitialState {
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
     required TResult Function() homeInitialState,
-    required TResult Function(TopHeadlines topHeadlines) dataAvailableState,
+    required TResult Function(Recalls topHeadlines) dataAvailableState,
     required TResult Function(String reason) dataUnavailableState,
   }) {
     return homeInitialState();
@@ -58,7 +58,7 @@ class _$HomeInitialState implements HomeInitialState {
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? homeInitialState,
-    TResult Function(TopHeadlines topHeadlines)? dataAvailableState,
+    TResult Function(Recalls topHeadlines)? dataAvailableState,
     TResult Function(String reason)? dataUnavailableState,
     required TResult orElse(),
   }) {
@@ -79,7 +79,7 @@ class _$DataAvailableState implements DataAvailableState {
   const _$DataAvailableState(this.topHeadlines);
 
   @override
-  final TopHeadlines topHeadlines;
+  final Recalls topHeadlines;
 
   @override
   String toString() {
@@ -90,7 +90,7 @@ class _$DataAvailableState implements DataAvailableState {
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
     required TResult Function() homeInitialState,
-    required TResult Function(TopHeadlines topHeadlines) dataAvailableState,
+    required TResult Function(Recalls topHeadlines) dataAvailableState,
     required TResult Function(String reason) dataUnavailableState,
   }) {
     return dataAvailableState(topHeadlines);
@@ -100,7 +100,7 @@ class _$DataAvailableState implements DataAvailableState {
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? homeInitialState,
-    TResult Function(TopHeadlines topHeadlines)? dataAvailableState,
+    TResult Function(Recalls topHeadlines)? dataAvailableState,
     TResult Function(String reason)? dataUnavailableState,
     required TResult orElse(),
   }) {
@@ -112,10 +112,10 @@ class _$DataAvailableState implements DataAvailableState {
 }
 
 abstract class DataAvailableState implements HomeState {
-  const factory DataAvailableState(final TopHeadlines topHeadlines) =
+  const factory DataAvailableState(final Recalls topHeadlines) =
       _$DataAvailableState;
 
-  TopHeadlines get topHeadlines;
+  Recalls get topHeadlines;
 }
 
 /// @nodoc
@@ -135,7 +135,7 @@ class _$DataUnavailableState implements DataUnavailableState {
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
     required TResult Function() homeInitialState,
-    required TResult Function(TopHeadlines topHeadlines) dataAvailableState,
+    required TResult Function(Recalls topHeadlines) dataAvailableState,
     required TResult Function(String reason) dataUnavailableState,
   }) {
     return dataUnavailableState(reason);
@@ -145,7 +145,7 @@ class _$DataUnavailableState implements DataUnavailableState {
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? homeInitialState,
-    TResult Function(TopHeadlines topHeadlines)? dataAvailableState,
+    TResult Function(Recalls topHeadlines)? dataAvailableState,
     TResult Function(String reason)? dataUnavailableState,
     required TResult orElse(),
   }) {

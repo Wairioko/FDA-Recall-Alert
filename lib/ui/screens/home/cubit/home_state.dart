@@ -11,7 +11,7 @@ part 'home_state.freezed.dart';
 )
 abstract class HomeState with _$HomeState{
   const factory HomeState.homeInitialState() = HomeInitialState;
-  const factory HomeState.dataAvailableState(TopHeadlines topHeadlines)
+  const factory HomeState.dataAvailableState(Recalls topHeadlines)
   = DataAvailableState;
   const factory HomeState.dataUnavailableState(String reason)
   = DataUnavailableState;

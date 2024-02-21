@@ -11,78 +11,50 @@ part 'top_headlines_response.g.dart';
 
 @JsonSerializable(createToJson: false)
 @HiveType(
-    typeId: HiveTypeIds.topHeadlinesResponse,
+    typeId: HiveTypeIds.recallsResponse,
     adapterName: 'TopHeadlinesResponseAdapter')
-class TopHeadlinesResponse extends BaseModel<TopHeadlinesResponse> {
+class RecallsResponse extends BaseModel<RecallsResponse> {
   @HiveField(2)
-  final List<ArticleResponseModel> articles;
+  final List<RecallResponseModel> recall_events;
 
-  TopHeadlinesResponse(
-      this.articles,
+  RecallsResponse(
+      this.recall_events,
       );
 
-  factory TopHeadlinesResponse.fromJson(Map<String, dynamic> json) {
+  factory RecallsResponse.fromJson(Map<String, dynamic> json) {
     final metaResults = json['results'];
 
     if (metaResults is List<dynamic>) {
-      return TopHeadlinesResponse(
+      return RecallsResponse(
         metaResults
-            .map((e) => ArticleResponseModel.fromJson(e as Map<String, dynamic>))
+            .map((e) => RecallResponseModel.fromJson(e as Map<String, dynamic>))
             .toList(),
       );
     } else {
       // Handle the case where 'results' is not a List
       // You might want to provide a default value or throw an exception
       print("THIS IS $metaResults");
-      return TopHeadlinesResponse([]);
+      return RecallsResponse([]);
     }
   }
 
   @override
   Map<String, dynamic> toJson() => {};
 
-  TopHeadlines toEntity() => TopHeadlines(
-    articles: articles.map((e) => e.toEntity()).toList(),
+  Recalls toEntity() => Recalls(
+    articles: recall_events.map((e) => e.toEntity()).toList(),
   );
 }
 
-// class TopHeadlinesResponse extends BaseModel<TopHeadlinesResponse> {
-//   // @HiveField(0)
-//   // final String status;
-//   // @HiveField(1)
-//   // final int totalResults;
-//   @HiveField(2)
-//   final List<ArticleResponseModel> articles;
-//
-//   TopHeadlinesResponse(
-//     // this.status,
-//     // this.totalResults,
-//     this.articles,
-//
-//   );
-//
-//   factory TopHeadlinesResponse.fromJson(Map<String,
-//       dynamic> json) =>
-//       _$TopHeadlinesResponseFromJson(json);
-//
-//   @override
-//   Map<String, dynamic> toJson() => {};
-//
-//   TopHeadlines toEntity() => TopHeadlines(
-//         // status: status,
-//         // totalResults: totalResults,
-//         articles: articles.map((e) => e.toEntity()).toList(),
-//       );
-// }
 
 @Freezed(copyWith: false, equal: false, toJson: false)
-class ArticleResponseModel with _$ArticleResponseModel {
-  const ArticleResponseModel._();
+class RecallResponseModel with _$RecallResponseModel {
+  const RecallResponseModel._();
 
   @HiveType(
-      typeId: HiveTypeIds.articlesResponseModel,
+      typeId: HiveTypeIds.recallEventResponseModel,
       adapterName: 'ArticleResponseModelAdapter')
-  const factory ArticleResponseModel(
+  const factory RecallResponseModel(
     @HiveField(0)  String? status,
     @HiveField(1)  String? product_description,
     @HiveField(2)  String? classification,
@@ -91,13 +63,12 @@ class ArticleResponseModel with _$ArticleResponseModel {
     @HiveField(5)  String? voluntary_mandated,
     @HiveField(6)  String? distribution_pattern,
     @HiveField(7)  dynamic event_id,
-  ) = _ArticleResponseModel;
+  ) = _RecallResponseModel;
 
+  factory RecallResponseModel.fromJson(Map<String, dynamic> json) =>
+      _$$_RecallResponseModelFromJson(json);
 
-  factory ArticleResponseModel.fromJson(Map<String, dynamic> json) =>
-      _$$_ArticleResponseModelFromJson(json);
-
-  Recall_Article toEntity() => Recall_Article(
+  Recall_Event toEntity() => Recall_Event(
     status: status,
     product_description: product_description,
     classification: classification,
@@ -109,13 +80,3 @@ class ArticleResponseModel with _$ArticleResponseModel {
   );
 }
 
-
-// const ArticleResponseModel.internalConstructor({
-//   required String? status,
-//   required String? product_description,
-//   required String? classification,
-//   required String? reason_for_recall,
-//   required String? recalling_firm,
-//   required String? voluntary_mandated,
-//   required String? distribution_pattern,
-// });

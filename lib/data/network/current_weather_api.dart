@@ -16,18 +16,18 @@ class ApiData {
 }
 
 
-class TopHeadlinesApi extends BaseApi<TopHeadlinesQueryParams,
-    TopHeadlinesResponse, ErrorResponse> {
+class RecallApi extends BaseApi<TopHeadlinesQueryParams,
+    RecallsResponse, ErrorResponse> {
 
 
-  TopHeadlinesApi({required this.requestQuery})
+  RecallApi({required this.requestQuery})
 
       // : super(NewsApiProvider.topHeadlines,
       // sl<NewsApiProvider>());
-      : super(CategoryData.category == 'DRUGS' ? NewsApiProvider.drugsRecalls :
-              CategoryData.category == 'DEVICE' ? NewsApiProvider.deviceRecalls
-      : NewsApiProvider.topHeadlines,
-      sl<NewsApiProvider>());
+      : super(CategoryData.category == 'DRUGS' ? RecallDataApiProvider.drugsRecalls :
+              CategoryData.category == 'DEVICE' ? RecallDataApiProvider.deviceRecalls
+      : RecallDataApiProvider.topHeadlines,
+      sl<RecallDataApiProvider>());
 
 
   RequestQuery requestQuery;
@@ -98,7 +98,7 @@ class TopHeadlinesApi extends BaseApi<TopHeadlinesQueryParams,
     };
 
     print("Success Response: $filteredResponseJson");
-    return TopHeadlinesResponse.fromJson(filteredResponseJson);
+    return RecallsResponse.fromJson(filteredResponseJson);
   }
 
   String getStateInitials(String state) {

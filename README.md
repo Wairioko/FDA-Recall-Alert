@@ -16,73 +16,34 @@
    basic widgets.
 
 ### **Supported Platform:** 
-Android, iOS, Web
+Android, iOS
 
 ## Features
-- Material design
-- Clean architecture using [Business Logic Component][BLC]
-- Local data caching using [hive][H]
-- Network image caching using [Cached Network Image][CNI]
-- Inherited Widget using [provider][PV]
-- App Routing
-- Repository Pattern
-- Flare animation using [Flare Flutter][PV]
-- Proper Error Handling
-- Proper Permission Handling
-- Pull to refresh
-- Domain driven design
-- Search using country, category and query
-- Caching search result using hive
-- Using custom fonts
-- Light and Dark theme implementation
-- Beautiful modern UI with animation and sidebar
-- Shimmer if image url is null or empty [shimmer][SS]
-
+-
 ## Screenshot
 ### Dashboard/Home
 <div style="display: flex;">
-  <img src="screenshots/android/news_l.jpg" alt="screen shot 1" width="240" height="520" style="flex: 1; margin-right: 10px; border-radius: 2%;">
-  <img src="screenshots/android/news_d.jpg" alt="screen shot 2" width="240" height="520" style="flex: 1; margin-right: 10px; border-radius: 2%;">
-
-  <img src="screenshots/web/news_web_l.png" alt="screen shot 1" width="240" height="520" style="flex: 1; margin-right: 10px; border-radius: 2%;">
-  <img src="screenshots/web/news_web_d.png" alt="screen shot 2" width="240" height="520" style="flex: 1; margin-right: 10px; border-radius: 2%;">
-
+ 
 </div>
 
 ### Detail Page
 <div style="display: flex;">
-  <img src="screenshots/android/detail_l.jpg" alt="screen shot 1" width="240" height="520" style="flex: 1; margin-right: 10px; border-radius: 2%;">
-  <img src="screenshots/android/detail_d.jpg" alt="screen shot 2" width="240" height="520" style="flex: 1; margin-right: 10px; border-radius: 2%;">
- <img src="screenshots/web/detail_l.png" alt="screen shot 1" width="240" height="520" style="flex: 1; margin-right: 10px; border-radius: 2%;">
-  <img src="screenshots/web/detail_d.png" alt="screen shot 2" width="240" height="520" style="flex: 1; margin-right: 10px; border-radius: 2%;">
-
+  
 </div>
 
 ### Sidebar
 <div style="display: flex;">
-  <img src="screenshots/android/dashboard_l.jpg" alt="screen shot 1" width="240" height="520" style="flex: 1; margin-right: 10px; border-radius: 2%;">
-  <img src="screenshots/android/dashboard_d.jpg" alt="screen shot 2" width="240" height="520" style="flex: 1; margin-right: 10px; border-radius: 2%;">
- <img src="screenshots/web/side_l.png" alt="screen shot 1" width="240" height="520" style="flex: 1; margin-right: 10px; border-radius: 2%;">
-  <img src="screenshots/web/side_d.png" alt="screen shot 2" width="240" height="520" style="flex: 1; margin-right: 10px; border-radius: 2%;">
-
+  
 </div>
 
 ### About page
 <div style="display: flex;">
-  <img src="screenshots/android/about_l.jpg" alt="screen shot 1" width="240" height="520" style="flex: 1; margin-right: 10px; border-radius: 2%;">
-  <img src="screenshots/android/about_d.jpg" alt="screen shot 2" width="240" height="520" style="flex: 1; margin-right: 10px; border-radius: 2%;">
- <img src="screenshots/web/about_l.png" alt="screen shot 1" width="240" height="520" style="flex: 1; margin-right: 10px; border-radius: 2%;">
-  <img src="screenshots/web/about_d.png" alt="screen shot 2" width="240" height="520" style="flex: 1; margin-right: 10px; border-radius: 2%;">
-
+ 
 </div>
 
 ### No Internet Dashboard
 <div style="display: flex;">
-  <img src="screenshots/android/no_news_l.jpg" alt="screen shot 1" width="240" height="520" style="flex: 1; margin-right: 10px; border-radius: 2%;">
-  <img src="screenshots/android/no_news_d.jpg" alt="screen shot 2" width="240" height="520" style="flex: 1; margin-right: 10px; border-radius: 2%;">
- <img src="screenshots/web/search_l.png" alt="screen shot 1" width="240" height="520" style="flex: 1; margin-right: 10px; border-radius: 2%;">
-  <img src="screenshots/web/search_d.png" alt="screen shot 2" width="240" height="520" style="flex: 1; margin-right: 10px; border-radius: 2%;">
-
+ 
 </div>
 
 ## Build Requirements

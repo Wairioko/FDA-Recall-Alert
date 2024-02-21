@@ -7,7 +7,7 @@ import '../../../../model/new_item_model.dart';
 import 'news_item.dart';
 
 class NewsList extends StatelessWidget {
-  final List<Recall_Article> articles;
+  final List<Recall_Event> articles;
 
   const NewsList({super.key, required this.articles});
 

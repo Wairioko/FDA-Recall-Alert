@@ -1,7 +1,7 @@
 import 'dart:ffi';
 
-class TopHeadlines {
-  TopHeadlines({
+class Recalls {
+  Recalls({
     // required this.status,
     // required this.totalResults,
     required this.articles,
@@ -9,11 +9,11 @@ class TopHeadlines {
 
   // final String status;
   // final int totalResults;
-  final List<Recall_Article> articles;
+  final List<Recall_Event> articles;
 }
 
-class Recall_Article {
-  Recall_Article({
+class Recall_Event {
+  Recall_Event({
     required this.status,
     required this.product_description,
     required this.reason_for_recall,
