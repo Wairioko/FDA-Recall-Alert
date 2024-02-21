@@ -251,6 +251,7 @@ import '../../user_auth/login.dart';
 import '../../user_auth/signup.dart';
 import '../../user_auth/loggedin.dart';
 import '../../receipts/view_receipts.dart';
+import '../../watchlist/create_watchlist.dart';
 
 
 User? user = FirebaseAuth.instance.currentUser;
@@ -319,7 +320,17 @@ class MenuWidget extends StatelessWidget {
                     icon: Utility.isLightTheme(state.themeType)
                         ? 'assets/icons/about.svg'
                         : 'assets/icons/light_about.svg',
-                    text: 'Receipts',
+                    text: 'My Receipts',
+                  ),
+                if (user != null)
+                  _buildMenuItem(
+                    onTap: () {
+                      Navigator.of(context).pushNamed(WatchlistScreen.path);
+                    },
+                    icon: Utility.isLightTheme(state.themeType)
+                        ? 'assets/icons/about.svg'
+                        : 'assets/icons/light_about.svg',
+                    text: 'My Watchlist',
                   ),
                 if (user != null)
                 _buildMenuItem(

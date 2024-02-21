@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:daily_news/ui/screens/home/widgets/query_widget.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -164,6 +166,9 @@ class _ResultScreenState extends State<ResultScreen> {
 
 
 
+  // Declare a Completer
+  Completer<void> _uploadCompleter = Completer<void>();
+
 
   Future<void> _updateText(User? loggedInUser) async {
     if (_isUploading || !_textEdited) {
@@ -273,16 +278,18 @@ class _ResultScreenState extends State<ResultScreen> {
       focusNode: _keyboardListenerFocusNode,
       onKey: (event) {
         if (event is RawKeyDownEvent && event.logicalKey == LogicalKeyboardKey.enter) {
+          print("Key pressed: ${event.logicalKey}");
+          print("TextField has focus: ${_focusNode.hasFocus}");
+          print("Return key pressed");
           // Loop through your Listview to find the TextField that's in focus
           for (int index = 0; index < _lines.length; index++) {
             if (_isEditing && index == _editingLineIndex && _focusNode.hasFocus) {
               setState(() {
-                final newLineIndex = index + 1;
-                _lines.insert(newLineIndex, '');
-                _editingLineIndex = newLineIndex;
-                _textEditingController.text = _lines[newLineIndex];
-                _textEditingController.selection = TextSelection.collapsed(offset: 0);
-                FocusScope.of(context).requestFocus(_focusNode); // Refocus TextField
+                _lines.insert(_editingLineIndex + 1, '');
+                _editingLineIndex++;
+
+                // Explicitly request focus on the new TextField
+                _focusNode.requestFocus();
               });
               break; // Exit the loop once you've found the TextField
             }
@@ -298,11 +305,8 @@ class _ResultScreenState extends State<ResultScreen> {
               onTap: () {
                 if (_lines[index].contains('Potential Matches Found')) {
                   try {
-                    print("Searching for match for ${_lines[index]}");
-                    print("_searchResults: $_searchResults");
 
                     var isolatedSearchTerm = _lines[index].split('-')[0].trim().toLowerCase(); // Ensure lowercase
-                    print("Isolated search term: $isolatedSearchTerm");
 
                     var matchesForLineItem = _searchResults.firstWhere(
                           (resultDict) => resultDict.keys.any((key) => key.toLowerCase() == isolatedSearchTerm),
@@ -310,9 +314,6 @@ class _ResultScreenState extends State<ResultScreen> {
 
                     if (matchesForLineItem.containsKey(isolatedSearchTerm)) {
                       List<DetailDataModel> selectedMatches = matchesForLineItem[isolatedSearchTerm]!;
-
-                      // Debug print to check selectedMatches
-                      print("Selected matches: $selectedMatches");
 
                       if (selectedMatches.isNotEmpty) {
                         // Navigate to SelectionScreen with the list of matches
@@ -323,8 +324,6 @@ class _ResultScreenState extends State<ResultScreen> {
                           ),
                         );
                       }
-                    } else {
-                      print("No matches found for search term: $isolatedSearchTerm");
                     }
                   } catch (e) {
                     print("Error: $e");
@@ -343,8 +342,8 @@ class _ResultScreenState extends State<ResultScreen> {
                       ? TextField(
                     style: TextStyle(color: Colors.white),
                     keyboardType: TextInputType.multiline,
-                    maxLines: null,
-                    autofocus: false,
+                    maxLines: null, // Allow indefinite lines
+                    autofocus: true,
                     controller: _textEditingController,
                     focusNode: _focusNode,
                     onChanged: (value) {
@@ -392,12 +391,18 @@ class _ResultScreenState extends State<ResultScreen> {
             const Center(child: CircularProgressIndicator()),
           if (!_isUploading)
             IconButton(
-              onPressed: () => _updateText(FirebaseAuth.instance.currentUser),
+              onPressed: () async {
+              // Call _updateText function passing the current user and await its completion
+              await _updateText(FirebaseAuth.instance.currentUser);
+              // After _updateText completes, complete the Completer
+              _uploadCompleter.complete();
+              },
               icon: const Icon(Icons.cloud_upload),
             ),
           IconButton(
             onPressed: () => _enableTextEditing(),
             icon: const Icon(Icons.edit),
+
           ),
         ],
       ),
