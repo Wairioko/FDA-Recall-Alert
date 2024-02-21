@@ -322,7 +322,7 @@ class MenuWidget extends StatelessWidget {
                         : 'assets/icons/light_about.svg',
                     text: 'My Receipts',
                   ),
-                if (user != null)
+                // if (user != null)
                   _buildMenuItem(
                     onTap: () {
                       Navigator.of(context).pushNamed(WatchlistScreen.path);
@@ -332,6 +332,7 @@ class MenuWidget extends StatelessWidget {
                         : 'assets/icons/light_about.svg',
                     text: 'My Watchlist',
                   ),
+
                 if (user != null)
                 _buildMenuItem(
                   onTap: () {

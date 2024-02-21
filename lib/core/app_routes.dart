@@ -1,4 +1,5 @@
 import 'package:daily_news/ui/screens/about/about_screen.dart';
+import 'package:daily_news/ui/screens/watchlist/create_watchlist.dart';
 import 'package:flutter/material.dart';
 
 import '../model/detail_data_model.dart';
@@ -20,6 +21,7 @@ class AppRoutes {
       LogInPage.path: (context) => const LogInPage(),
       LoggedInPage.path: (context) => const LoggedInPage(),
       ReceiptListScreen.path: (context) => const ReceiptListScreen(),
+      WatchlistScreen.path: (context) =>  WatchlistScreen(),
       Detail.path: (context) {
         DetailDataModel detailDataModel = ModalRoute.of(context)?.settings.arguments as DetailDataModel;
         return Detail(detailDataModel: detailDataModel);

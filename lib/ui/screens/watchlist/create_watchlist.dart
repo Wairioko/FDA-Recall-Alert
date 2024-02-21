@@ -18,8 +18,8 @@ class WatchlistScreen extends StatefulWidget {
 
 class _WatchlistScreenState extends State<WatchlistScreen> {
 
-  List<String> _categories = ['Movies', 'TV Shows', 'Books', 'Games'];
-  String _selectedCategory = 'Movies';
+  List<String> _categories = ['FOOD', 'DRUGS', 'DEVICE'];
+  String _selectedCategory = 'FOOD';
   List<WatchlistItem> _watchlist = [];
 
   void _addItem(String itemName) {
