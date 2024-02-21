@@ -37,6 +37,9 @@ class _HomeState extends State<Home> {
               controller: drawerController,
               style: DrawerStyle.defaultStyle,
               showShadow: true,
+              angle: 0.0,
+              openCurve: Curves.fastOutSlowIn,
+              closeCurve: Curves.bounceIn,
               // slideWidth: 300,
               moveMenuScreen: true,
               menuScreen: const MenuWidget(),
@@ -45,11 +48,9 @@ class _HomeState extends State<Home> {
               ),
               borderRadius: 24.0,
               mainScreenTapClose: true,
-              drawerShadowsBackgroundColor: Colors.green,
+              drawerShadowsBackgroundColor: Colors.greenAccent,
               slideWidth: MediaQuery.of(context).size.width * .60,
-              openCurve: Curves.fastOutSlowIn,
-              closeCurve: Curves.fastOutSlowIn,
-              menuBackgroundColor: state.themeData.colorScheme.background,
+
             );
           },
         ),

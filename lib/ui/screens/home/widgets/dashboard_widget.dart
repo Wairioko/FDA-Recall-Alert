@@ -1,4 +1,3 @@
-import 'package:daily_news/data/network/current_weather_api.dart';
 import 'package:daily_news/domain/entities/top_headlines.dart';
 import 'package:daily_news/ui/screens/home/widgets/news_list.dart';
 import 'package:daily_news/ui/screens/home/widgets/query_widget.dart';
@@ -16,9 +15,9 @@ class DashBoardWidget extends StatefulWidget {
   final ZoomDrawerController zoomDrawerController;
 
   const DashBoardWidget({
-    super.key,
+    Key? key,
     required this.zoomDrawerController,
-  });
+  }) : super(key: key);
 
   @override
   _DashBoardWidgetState createState() => _DashBoardWidgetState();
@@ -54,7 +53,7 @@ class _DashBoardWidgetState extends State<DashBoardWidget> {
               child: CommonAppBar(
                 darkAssetLocation: 'assets/icons/menu.svg',
                 lightAssetLocation: 'assets/icons/light_menu.svg',
-                onTabCallback: () => widget.zoomDrawerController.toggle?.call(),
+                onTabCallback: () => widget.zoomDrawerController.toggle!(),
                 title: 'Safe Scan',
               ),
             ),
@@ -67,12 +66,12 @@ class _DashBoardWidgetState extends State<DashBoardWidget> {
                     homeInitialState: () => Container(),
                     dataAvailableState: (TopHeadlines topHeadlines) =>
                         NewsList(
-                      articles: topHeadlines.articles,
-                    ),
+                          articles: topHeadlines.articles,
+                        ),
                     dataUnavailableState: (String reason) =>
                         DataUnavailableWidget(
-                      dataUnavailableReason: reason,
-                    ),
+                          dataUnavailableReason: reason,
+                        ),
                   );
                 },
               ),
@@ -88,5 +87,19 @@ class _DashBoardWidgetState extends State<DashBoardWidget> {
     _homeCubit.close();
     NewsHiveStorage.clear();
     super.dispose();
+  }
+}
+
+class MenuScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Menu'),
+      ),
+      body: Center(
+        child: Text('Menu Content'),
+      ),
+    );
   }
 }
