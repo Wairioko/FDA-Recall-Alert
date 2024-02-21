@@ -1,4 +1,4 @@
-name: safe scan
+name: safe_scan
 description: An app alerting you on recalls for items you have bought.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 

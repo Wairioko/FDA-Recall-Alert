@@ -1,5 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:daily_news/data/models/base_model/base_model.dart';
+import 'package:safe_scan/data/models/base_model/base_model.dart';
 
 part 'error_response.freezed.dart';
 part 'error_response.g.dart';

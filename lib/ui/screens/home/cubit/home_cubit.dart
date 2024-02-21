@@ -1,5 +1,5 @@
 import 'package:bloc/bloc.dart';
-import 'package:daily_news/model/request_query.dart';
+import 'package:safe_scan/model/request_query.dart';
 import '../../../../core/service_locator.dart';
 import '../../../../domain/repositories/top_headlines_repository.dart';
 import '../../../../domain/use_cases/top_headlines_use_case.dart';

@@ -1,7 +1,7 @@
-import 'package:daily_news/model/request_query.dart';
-import 'package:daily_news/provider/user_provider.dart';
-import 'package:daily_news/ui/screens/home/widgets/query_widget.dart';
-import 'package:daily_news/ui/shared/theme/theme_cubit.dart';
+import 'package:safe_scan/model/request_query.dart';
+import 'package:safe_scan/provider/user_provider.dart';
+import 'package:safe_scan/ui/screens/home/widgets/query_widget.dart';
+import 'package:safe_scan/ui/shared/theme/theme_cubit.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';

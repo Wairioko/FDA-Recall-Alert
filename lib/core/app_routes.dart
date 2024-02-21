@@ -1,6 +1,6 @@
-import 'package:daily_news/ui/screens/about/about_screen.dart';
-import 'package:daily_news/ui/screens/watchlist/watchlist_home.dart';
-import 'package:daily_news/ui/screens/watchlist/watchlist_items.dart';
+import 'package:safe_scan/ui/screens/about/about_screen.dart';
+import 'package:safe_scan/ui/screens/watchlist/watchlist_home.dart';
+import 'package:safe_scan/ui/screens/watchlist/watchlist_items.dart';
 import 'package:flutter/material.dart';
 
 import '../model/detail_data_model.dart';
@@ -10,7 +10,7 @@ import '../ui/screens/scan/camera.dart';
 import '../ui/screens/user_auth/login.dart';
 import '../ui/screens/user_auth/signup.dart';
 import '../ui/screens/user_auth/loggedin.dart';
-import 'package:daily_news/ui/screens/receipts/view_receipts.dart';
+import 'package:safe_scan/ui/screens/receipts/view_receipts.dart';
 
 class AppRoutes {
   static Map<String, WidgetBuilder> configureRoutes() {

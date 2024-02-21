@@ -1,6 +1,6 @@
-import 'package:daily_news/data/network/current_weather_api.dart';
-import 'package:daily_news/model/request_query.dart';
-import 'package:daily_news/ui/shared/theme/theme_cubit.dart';
+import 'package:safe_scan/data/network/current_weather_api.dart';
+import 'package:safe_scan/model/request_query.dart';
+import 'package:safe_scan/ui/shared/theme/theme_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../utility/news_texts.dart';

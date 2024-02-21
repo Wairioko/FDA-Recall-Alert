@@ -1,11 +1,11 @@
-import 'package:daily_news/data/models/top_headlines_query_params.dart';
+import 'package:safe_scan/data/models/top_headlines_query_params.dart';
 import '../../core/service_locator.dart';
 import '../../model/request_query.dart';
 import '../api_provider/news_api_provider.dart';
 import '../models/base_model/base_model.dart';
 import '../models/error_response.dart';
 import '../models/top_headlines_response.dart';
-import 'package:daily_news/ui/screens/home/widgets/query_widget.dart';
+import 'package:safe_scan/ui/screens/home/widgets/query_widget.dart';
 import 'base_api/base_api.dart';
 
 

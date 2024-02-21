@@ -1,4 +1,4 @@
-import 'package:daily_news/utility/utility.dart';
+import 'package:safe_scan/utility/utility.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';

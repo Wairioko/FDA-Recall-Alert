@@ -1,6 +1,6 @@
-import 'package:daily_news/domain/entities/top_headlines.dart';
-import 'package:daily_news/ui/screens/home/widgets/news_list.dart';
-import 'package:daily_news/ui/screens/home/widgets/query_widget.dart';
+import 'package:safe_scan/domain/entities/top_headlines.dart';
+import 'package:safe_scan/ui/screens/home/widgets/news_list.dart';
+import 'package:safe_scan/ui/screens/home/widgets/query_widget.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_zoom_drawer/flutter_zoom_drawer.dart';
 import 'package:flutter/material.dart';

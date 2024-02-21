@@ -1,4 +1,4 @@
-import 'package:daily_news/model/request_query.dart';
+import 'package:safe_scan/model/request_query.dart';
 import 'package:get_it/get_it.dart';
 import '../data/api_provider/news_api_provider.dart';
 import '../data/network/current_weather_api.dart';

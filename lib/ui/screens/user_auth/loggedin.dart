@@ -1,8 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:daily_news/provider/user_provider.dart';
+import 'package:safe_scan/provider/user_provider.dart';
 import 'package:provider/provider.dart';
-import 'package:daily_news/ui/screens/home/home.dart';
+import 'package:safe_scan/ui/screens/home/home.dart';
 // import '../models/user_data.dart';
 //
 // class LoggedInWidget extends StatefulWidget {

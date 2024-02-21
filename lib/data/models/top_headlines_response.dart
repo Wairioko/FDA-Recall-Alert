@@ -2,8 +2,9 @@ import 'dart:ffi';
 
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:hive/hive.dart';
-import 'package:daily_news/data/storage/hive_type_ids.dart';
-import 'package:daily_news/domain/entities/top_headlines.dart';
+import 'package:safe_scan/data/storage/hive_type_ids.dart';
+import 'package:safe_scan/domain/entities/top_headlines.dart';
+import '../storage/hive_type_ids.dart';
 import 'base_model/base_model.dart';
 
 part 'top_headlines_response.freezed.dart';

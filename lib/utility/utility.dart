@@ -1,4 +1,4 @@
-import 'package:daily_news/core/news_provider.dart';
+import 'package:safe_scan/core/news_provider.dart';
 import 'package:intl/intl.dart';
 
 import '../ui/shared/theme/theme_cubit.dart';

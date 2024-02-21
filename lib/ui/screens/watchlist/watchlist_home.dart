@@ -1,4 +1,4 @@
-import 'package:daily_news/ui/screens/watchlist/watchlist_items.dart';
+import 'package:safe_scan/ui/screens/watchlist/watchlist_items.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 

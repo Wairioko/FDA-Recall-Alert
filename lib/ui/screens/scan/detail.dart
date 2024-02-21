@@ -1,10 +1,10 @@
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:daily_news/ui/screens/home/widgets/query_widget.dart';
+import 'package:safe_scan/ui/screens/home/widgets/query_widget.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:daily_news/data/network/current_weather_api.dart';
+import 'package:safe_scan/data/network/current_weather_api.dart';
 import 'package:flutter/services.dart';
 
 import '../../../model/detail_data_model.dart';

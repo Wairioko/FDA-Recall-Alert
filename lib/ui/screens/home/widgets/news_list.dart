@@ -1,5 +1,5 @@
-import 'package:daily_news/model/detail_data_model.dart';
-import 'package:daily_news/utility/news_texts.dart';
+import 'package:safe_scan/model/detail_data_model.dart';
+import 'package:safe_scan/utility/news_texts.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../domain/entities/top_headlines.dart';

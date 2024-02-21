@@ -1,5 +1,5 @@
-import 'package:daily_news/ui/shared/theme/theme_cubit.dart';
-import 'package:daily_news/utility/utility.dart';
+import 'package:safe_scan/ui/shared/theme/theme_cubit.dart';
+import 'package:safe_scan/utility/utility.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';

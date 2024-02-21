@@ -1,12 +1,12 @@
-import 'package:daily_news/ui/screens/home/home.dart';
+import 'package:safe_scan/ui/screens/home/home.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:daily_news/ui/screens/user_auth/signup.dart';
-import 'package:daily_news/provider/user_provider.dart';
+import 'package:safe_scan/ui/screens/user_auth/signup.dart';
+import 'package:safe_scan/provider/user_provider.dart';
 
 // class LogInPage extends StatelessWidget {
 //   static const String path = '/login';

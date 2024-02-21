@@ -1,4 +1,4 @@
-import 'package:daily_news/domain/entities/top_headlines.dart';
+import 'package:safe_scan/domain/entities/top_headlines.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'home_state.freezed.dart';
