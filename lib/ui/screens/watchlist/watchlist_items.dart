@@ -14,7 +14,7 @@ class WatchlistCategoryItemsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Stream<List<Map<String, dynamic>>> getUserWatchlist() {
+    Stream<List<Map<String, dynamic>>> getUserWatchlist(String category) {
       try {
         User? user = _auth.currentUser;
         if (user != null) {
@@ -22,7 +22,7 @@ class WatchlistCategoryItemsScreen extends StatelessWidget {
           return _firestore
               .collection('watchlists')
               .doc(userId)
-              .collection('items')
+              .collection(category) // Use the category name here
               .snapshots()
               .map((snapshot) => snapshot.docs
               .map((doc) => {...doc.data(), 'id': doc.id})
@@ -36,7 +36,7 @@ class WatchlistCategoryItemsScreen extends StatelessWidget {
       }
     }
 
-    void addItem(String itemName) async {
+    void addItem(String category, String itemName) async {
       try {
         User? user = _auth.currentUser;
         if (user != null) {
@@ -44,7 +44,7 @@ class WatchlistCategoryItemsScreen extends StatelessWidget {
           await _firestore
               .collection('watchlists')
               .doc(userId)
-              .collection('items')
+              .collection(category) // Use the category name here
               .add({'name': itemName});
         } else {
           throw Exception('User not authenticated');
@@ -54,7 +54,7 @@ class WatchlistCategoryItemsScreen extends StatelessWidget {
       }
     }
 
-    void deleteItem(String itemId) async {
+    void deleteItem(String category, String itemId) async {
       try {
         User? user = _auth.currentUser;
         if (user != null) {
@@ -62,7 +62,7 @@ class WatchlistCategoryItemsScreen extends StatelessWidget {
           await _firestore
               .collection('watchlists')
               .doc(userId)
-              .collection('items')
+              .collection(category) // Use the category name here
               .doc(itemId)
               .delete();
         } else {
@@ -78,7 +78,7 @@ class WatchlistCategoryItemsScreen extends StatelessWidget {
         title: Text(category),
       ),
       body: StreamBuilder<List<Map<String, dynamic>>>(
-        stream: getUserWatchlist(),
+        stream: getUserWatchlist(category),
         builder: (context, snapshot) {
           if (snapshot.hasData) {
             List<Map<String, dynamic>> items = snapshot.data!;
@@ -90,7 +90,7 @@ class WatchlistCategoryItemsScreen extends StatelessWidget {
                   title: Text(item['name']),
                   trailing: IconButton(
                     icon: Icon(Icons.delete),
-                    onPressed: () => deleteItem(item['id']),
+                    onPressed: () => deleteItem(category, item['id']),
                   ),
                 );
               },
@@ -129,7 +129,7 @@ class WatchlistCategoryItemsScreen extends StatelessWidget {
                   TextButton(
                     child: Text('Add'),
                     onPressed: () {
-                      addItem(itemName);
+                      addItem(category, itemName);
                       Navigator.of(context).pop();
                     },
                   ),
