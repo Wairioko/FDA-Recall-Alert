@@ -10,7 +10,7 @@ import '../ui/shared/theme/theme_cubit.dart';
 import 'news_provider.dart';
 
 class NewsApp extends StatelessWidget {
-  final NewsApplication _application;
+  final RecallEventApplication _application;
   final User? _user;
 
   const NewsApp(this._application, this._user, {super.key});
@@ -35,8 +35,8 @@ class NewsApp extends StatelessWidget {
         );
       },
     );
-    final appProvider = NewsProvider(_application, app);
-    NewsProvider.loadingCubit = LoadingCubit();
+    final appProvider = RecallEventProvider(_application, app);
+    RecallEventProvider.loadingCubit = LoadingCubit();
     return appProvider;
   }
 }

@@ -14,15 +14,15 @@ class Utility{
   }
 
   static void startLoadingAnimation() {
-    NewsProvider.loadingCubit.startLoading();
+    RecallEventProvider.loadingCubit.startLoading();
   }
 
   static void completeLoadingAnimation() {
-    NewsProvider.loadingCubit.resetLoading();
+    RecallEventProvider.loadingCubit.resetLoading();
   }
 
   static void showLoadingFailedError(String errorMessage) {
-    NewsProvider.loadingCubit.loadingFailed(errorMessage);
+    RecallEventProvider.loadingCubit.loadingFailed(errorMessage);
   }
 
   static bool isLightTheme(ThemeType themeType) {

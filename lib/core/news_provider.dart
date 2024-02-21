@@ -3,14 +3,14 @@ import 'package:flutter/material.dart';
 import 'news_application.dart';
 import '../ui/shared/loading/loading_cubit.dart';
 
-class NewsProvider extends InheritedWidget {
+class RecallEventProvider extends InheritedWidget {
 
-  static late NewsApplication appInstance;
+  static late RecallEventApplication appInstance;
   static late LoadingCubit loadingCubit;
 
-  final NewsApplication application;
+  final RecallEventApplication application;
 
-  NewsProvider(this.application, Widget child, {super.key})
+  RecallEventProvider(this.application, Widget child, {super.key})
       : super(child: child) {
     appInstance = application;
   }
@@ -18,7 +18,7 @@ class NewsProvider extends InheritedWidget {
   @override
   bool updateShouldNotify(_) => true;
 
-  static NewsProvider of(BuildContext context) {
-    return (context.dependOnInheritedWidgetOfExactType(aspect: NewsProvider) as NewsProvider);
+  static RecallEventProvider of(BuildContext context) {
+    return (context.dependOnInheritedWidgetOfExactType(aspect: RecallEventProvider) as RecallEventProvider);
   }
 }

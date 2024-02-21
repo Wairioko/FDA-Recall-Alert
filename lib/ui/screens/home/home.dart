@@ -29,7 +29,7 @@ class _HomeState extends State<Home> {
   @override
   Widget build(BuildContext context) {
     return LoadingWidget(
-      loadingCubit: NewsProvider.loadingCubit,
+      loadingCubit: RecallEventProvider.loadingCubit,
       child: Scaffold(
         body: BlocBuilder<ThemeCubit, ThemeState>(
           builder: (context, state) {
