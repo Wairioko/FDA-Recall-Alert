@@ -58,6 +58,8 @@ class _ResultScreenState extends State<ResultScreen> {
   late TextEditingController _textEditingController;
   late FocusNode _keyboardListenerFocusNode;
   late String _editedText;
+  // Define validIndices list
+  List<int> validIndices = [];
   late FocusNode _focusNode;
   int _editingLineIndex = -1;
   bool _isEditing = false;
@@ -70,6 +72,9 @@ class _ResultScreenState extends State<ResultScreen> {
   List<dynamic>? responseJson;
   // New property to keep track of selected lines
   Set<int> _selectedLines = Set<int>();
+  List<int> clearedIndices = [];
+
+
 
   @override
   void initState() {
@@ -78,6 +83,7 @@ class _ResultScreenState extends State<ResultScreen> {
     _editedText = widget.text;
     unfilteredLines = _editedText.split('\n'); // Split the text into lines
     _focusNode = FocusNode();
+    validIndices = List<int>.generate(unfilteredLines.length, (index) => index);
     _keyboardListenerFocusNode = FocusNode();
 
     // Add focus listener
@@ -94,84 +100,13 @@ class _ResultScreenState extends State<ResultScreen> {
     responseJson = ApiData.responseJson;
   }
 
-  Future<void> _checkItems() async {
-    setState(() {
-      _isSearching = true;
-    });
-
-    // Clear previous search results
-    _searchResults.clear();
-    // Resetting _lines - Remove any old "Potential Match Found" or "Item Cleared" labels
-    unfilteredLines = unfilteredLines.map((line) => line.split(' - ')[0]).toList();
-
-    // Initialize a map to store item matches
-    Map<String, List<DetailDataModel>> itemMatchesMap = {};
-
-    for (int i = 0; i < unfilteredLines.length; i++) {
-      String line = unfilteredLines[i];
-      bool matchFound = false;
-
-      // Check if the line is empty
-      if (line.trim().isEmpty) {
-        unfilteredLines[i] = ""; // Clear the line if it's empty
-        continue;
-      }
-
-      // Loop through each entry in responseJson to check for matches
-      for (dynamic item in responseJson ?? []) {
-        if (item['product_description'] != null &&
-            item['product_description']
-                .toString()
-                .toLowerCase()
-                .contains(line.toLowerCase())) {
-
-          matchFound = true;
-
-          // Add the match to the itemMatchesMap
-          String key = line.trim();
-          if (!itemMatchesMap.containsKey(key)) {
-            itemMatchesMap[key] = [];
-          }
-          itemMatchesMap[key]?.add(
-            DetailDataModel(
-              product_description: item['product_description'],
-              reason_for_recall: item['reason_for_recall'],
-              status: item['status'],
-              classification: item['classification'],
-              recalling_firm: item['recalling_firm'],
-              voluntary_mandated: item['voluntary_mandated'],
-            ),
-          );
-        }
-      }
-
-      // Update line item labels
-      if (matchFound) {
-        int numMatches = itemMatchesMap[line]?.length ?? 0;
-        unfilteredLines[i] = "$line - Potential Matches Found ($numMatches), Click to see Details";
-      } else {
-        unfilteredLines[i] = "$line - Item Cleared";
-      }
-    }
-
-    // Convert itemMatchesMap to the desired format and assign it to _searchResults
-    _searchResults = itemMatchesMap.entries
-        .map((entry) => {entry.key: entry.value})
-        .toList();
-
-    setState(() {
-      _isSearching = false;
-    });
-  }
-
-
 
   // Declare a Completer
   Completer<void> _uploadCompleter = Completer<void>();
 
 
-  Future<void> _updateText(User? loggedInUser) async {
-    if (_isUploading || !_textEdited) {
+  Future<void> _upLoad(User? loggedInUser) async {
+    if (_isUploading) {
       // Upload only if editing, text has been edited, and not already uploading
       return;
     }
@@ -182,30 +117,36 @@ class _ResultScreenState extends State<ResultScreen> {
 
     if (loggedInUser != null) {
       try {
-        // **Perform search before upload**
-        await _checkItems();
+        // Filter out items marked as "Item cleared" and without "Potential Matches Found", and upload the rest
+        List<String> itemsToUpload = [];
+        for (int i = 0; i < unfilteredLines.length; i++) {
+          String item = unfilteredLines[i];
+          if (!clearedIndices.contains(i) && !item.contains('Potential Matches Found')) {
+            // Remove " - Item Cleared" substring
+            item = item.replaceAll(' - Item Cleared', '');
+            itemsToUpload.add(item);
+          }
+        }
+        print(itemsToUpload);
 
-        // If no matches found, upload the edited text
-        if (_searchResults.isEmpty) {
+        if (itemsToUpload.isNotEmpty) {
           // Reference to the user's document in "user-registration-data" collection
           DocumentReference userDoc = FirebaseFirestore.instance
               .collection('receipts-data')
               .doc(loggedInUser.uid);
           // Reference to the "receipts" subcollection under the user's document
           CollectionReference receiptsCollection =
-          userDoc.collection('user_receipts');
+          userDoc.collection('cleared_items');
           // Call the user's CollectionReference to add a new receipt
           await receiptsCollection.add({
             'items_category': CategoryData.category,
-            'receipt': _editedText,
+            'cleared_items': itemsToUpload.join('\n'), // Join the items into a single string
           });
           // Show successful upload pop-up
           _showUploadSuccessDialog();
           print("Receipt Added");
         } else {
-          // Notify the user or take appropriate action if matches are found
-          // You may choose to display a message or perform a specific action here
-          print("Matches found, not uploading the edited text.");
+          print("No items to upload. All items marked as 'Item cleared' or contain 'Potential Matches Found'.");
         }
       } catch (error) {
         print("Failed to add receipt: $error");
@@ -216,10 +157,9 @@ class _ResultScreenState extends State<ResultScreen> {
           _isSearching = false; // Stop searching
         });
       }
-    } else {
-      print("User not logged in");
     }
   }
+
 
   void _showUploadSuccessDialog() {
     showDialog(
@@ -268,16 +208,96 @@ class _ResultScreenState extends State<ResultScreen> {
     });
   }
 
-  void _handleLineTap(int index) {
+  Future<void> _checkItems() async {
     setState(() {
-      _editingLineIndex = index;
-      _textEditingController.text = unfilteredLines[index];
-      FocusScope.of(context).requestFocus(_focusNode);
+      _isSearching = true;
+    });
+
+    // Clear previous search results
+    _searchResults.clear();
+
+    // Initialize a map to store item matches
+    Map<String, List<DetailDataModel>> itemMatchesMap = {};
+
+    for (String line in unfilteredLines) {
+      // Check if the line is empty
+      if (line.trim().isEmpty) {
+        continue;
+      }
+
+      List<DetailDataModel> matches = [];
+
+      // Loop through each entry in responseJson to check for matches
+      for (dynamic item in responseJson ?? []) {
+        if (item['product_description'] != null &&
+            item['product_description']
+                .toString()
+                .toLowerCase()
+                .contains(line.toLowerCase())) {
+
+          matches.add(
+            DetailDataModel(
+              product_description: item['product_description'],
+              reason_for_recall: item['reason_for_recall'],
+              status: item['status'],
+              classification: item['classification'],
+              recalling_firm: item['recalling_firm'],
+              voluntary_mandated: item['voluntary_mandated'],
+            ),
+          );
+        }
+      }
+
+      // Update line item labels and color
+      if (matches.isNotEmpty) {
+        // If a match is found, update the line text to include matches
+        unfilteredLines[unfilteredLines.indexOf(line)] = "$line - Potential Matches Found (${matches.length}), Click to see Details";
+      } else {
+        // If no match is found, update the line text to indicate that the item is cleared
+        unfilteredLines[unfilteredLines.indexOf(line)] = "$line - Item Cleared";
+        clearedIndices.add(unfilteredLines.indexOf(line));
+      }
+
+      // Add matches to the itemMatchesMap
+      itemMatchesMap[line] = matches;
+    }
+
+    // Convert itemMatchesMap to the desired format and assign it to _searchResults
+    _searchResults = itemMatchesMap.entries
+        .map((entry) => {entry.key: entry.value})
+        .toList();
+
+    setState(() {
+      _isSearching = false;
     });
   }
 
 
-
+  // Update _handleLineTap method to correctly handle line taps and navigation
+  void _handleLineTap(int index) {
+    if (!_isEditing) {
+      if (index < _searchResults.length) {
+        List<DetailDataModel> matches = _searchResults[index].values.first;
+        if (matches == null || clearedIndices.contains(index)) {
+          print('Item cleared. No matches found.');
+        } else if (matches.isNotEmpty) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => SelectionScreen(matches: matches),
+            ),
+          );
+        }
+      }
+    } else {
+      setState(() {
+        _editingLineIndex = index;
+        _isEditing = false;
+        _textEditingController.text = unfilteredLines[index];
+        FocusScope.of(context).requestFocus(_focusNode);
+      });
+    }
+  }
 
 
 
@@ -295,10 +315,6 @@ class _ResultScreenState extends State<ResultScreen> {
   List<int> selectedIndices = [];
 
   Widget _buildNotebookList() {
-    while (unfilteredLines.length < 20) {
-      unfilteredLines.add('');
-    }
-
     final filteredLines = unfilteredLines.where((line) {
       return !nonProductPatterns.any((pattern) => pattern.hasMatch(line.trim()));
     }).toList();
@@ -358,6 +374,10 @@ class _ResultScreenState extends State<ResultScreen> {
                         unfilteredLines.removeAt(originalIndex);
                         // If the item is dismissed, clear any selection
                         selectedIndices.remove(originalIndex);
+
+                        // Update valid indices for navigation
+                        validIndices.remove(originalIndex);
+
                       });
                     },
                     background: Container(color: Colors.red),
@@ -383,7 +403,7 @@ class _ResultScreenState extends State<ResultScreen> {
                           ),
                           onTap: () {
                             if (!_isEditing) {
-                              _editLine(index); // Enable editing mode on tap
+                              _handleLineTap(validIndices[index]); // Use valid indices for navigation
                             }
                           },
                         ),
@@ -403,55 +423,18 @@ class _ResultScreenState extends State<ResultScreen> {
 
 
 
-
-
-
-
-
-
-  void _toggleSelection(int index) {
-    setState(() {
-      if (selectedIndices.contains(index)) {
-        selectedIndices.remove(index);
-      } else {
-        selectedIndices.add(index);
-      }
-    });
-  }
-
-  void _deleteSelectedLines() {
-    setState(() {
-      // Create a new list with unselected items
-      final newLines = List<String>.from(unfilteredLines); // Make a copy of unfilteredLines as List<String>
-      selectedIndices.forEach((index) {
-        newLines.removeAt(index); // Remove lines based on indices in selectedIndices
-      });
-
-      // Clear the selected indices set
-      selectedIndices.clear();
-
-      // Assign the new list back to unfilteredLines
-      unfilteredLines = newLines;
-    });
-  }
-
-
-
-
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Result'),
         actions: [
-          if (_isUploading)
-            const Center(child: CircularProgressIndicator()),
+
           if (!_isUploading)
             IconButton(
               onPressed: () async {
                 // Call _updateText function passing the current user and await its completion
-                await _updateText(FirebaseAuth.instance.currentUser);
+                await _upLoad(FirebaseAuth.instance.currentUser);
                 // Complete the _uploadCompleter only if it hasn't been completed already
                 if (!_uploadCompleter.isCompleted) {
                   _uploadCompleter.complete();
@@ -459,13 +442,8 @@ class _ResultScreenState extends State<ResultScreen> {
               },
               icon: const Icon(Icons.cloud_upload),
             ),
-          if (selectedIndices.isNotEmpty)
-          IconButton(
-            onPressed: ()  {
-              _deleteSelectedLines();
-              },
-            icon: const Icon(Icons.delete_rounded),
-          ),
+          if (_isUploading)
+            const Center(child: CircularProgressIndicator()),
         ],
       ),
       body: Column(
@@ -494,6 +472,9 @@ class _ResultScreenState extends State<ResultScreen> {
     );
   }
 }
+
+
+
 //   @override
 //   Widget build(BuildContext context) {
 //     return Scaffold(
