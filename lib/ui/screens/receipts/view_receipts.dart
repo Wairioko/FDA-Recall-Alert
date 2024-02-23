@@ -73,6 +73,7 @@ class _ReceiptListScreenState extends State<ReceiptListScreen> {
         builder: (context) => ReceiptEditScreen(
           receiptId: receiptId,
           initialText: receiptText,
+          initialItems: [],
         ),
       ),
     );
@@ -123,8 +124,11 @@ class _ReceiptListScreenState extends State<ReceiptListScreen> {
 class ReceiptEditScreen extends StatefulWidget {
   final String receiptId;
   final String initialText;
+  final List<String> initialItems;
 
-  const ReceiptEditScreen({super.key, required this.receiptId, required this.initialText});
+
+  const ReceiptEditScreen({super.key, required this.receiptId, required this.initialText,
+    required this.initialItems});
 
   @override
   _ReceiptEditScreenState createState() => _ReceiptEditScreenState();
@@ -132,11 +136,13 @@ class ReceiptEditScreen extends StatefulWidget {
 
 class _ReceiptEditScreenState extends State<ReceiptEditScreen> {
   late TextEditingController _textEditingController;
+  late List<String> _items; // Track the updated list of items
 
   @override
   void initState() {
     super.initState();
     _textEditingController = TextEditingController(text: widget.initialText);
+    _items = List.from(widget.initialItems); // Initialize the items list
   }
 
   @override
@@ -158,7 +164,7 @@ class _ReceiptEditScreenState extends State<ReceiptEditScreen> {
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: () {
-                _updateReceipt();
+                _updateReceipt(_items);
               },
               child: const Text('Save Changes'),
             ),
@@ -168,8 +174,7 @@ class _ReceiptEditScreenState extends State<ReceiptEditScreen> {
     );
   }
 
-  void _updateReceipt() {
-    String updatedText = _textEditingController.text;
+  void _updateReceipt(List<String> updatedText) {
     FirebaseFirestore.instance
         .collection('receipts-data')
         .doc(FirebaseAuth.instance.currentUser!.uid)
@@ -183,4 +188,5 @@ class _ReceiptEditScreenState extends State<ReceiptEditScreen> {
       print("Error updating receipt: $error");
     });
   }
+
 }

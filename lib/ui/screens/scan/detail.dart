@@ -1,12 +1,10 @@
 import 'dart:async';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:safe_scan/ui/screens/home/widgets/query_widget.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:safe_scan/data/network/current_weather_api.dart';
 import 'package:flutter/services.dart';
-
 import '../../../model/detail_data_model.dart';
 import '../detail/detail.dart';
 
@@ -68,15 +66,17 @@ class _ResultScreenState extends State<ResultScreen> {
   bool _allItemsChecked = false;
   bool _isSearching = false;
   bool _textEdited = false; // Flag to track text edits
-  List<String> _lines = []; // List to store lines of text
+  List<String> unfilteredLines = []; // List to store lines of text
   List<dynamic>? responseJson;
+  // New property to keep track of selected lines
+  Set<int> _selectedLines = Set<int>();
 
   @override
   void initState() {
     super.initState();
     _textEditingController = TextEditingController(text: widget.text);
     _editedText = widget.text;
-    _lines = _editedText.split('\n'); // Split the text into lines
+    unfilteredLines = _editedText.split('\n'); // Split the text into lines
     _focusNode = FocusNode();
     _keyboardListenerFocusNode = FocusNode();
 
@@ -102,18 +102,18 @@ class _ResultScreenState extends State<ResultScreen> {
     // Clear previous search results
     _searchResults.clear();
     // Resetting _lines - Remove any old "Potential Match Found" or "Item Cleared" labels
-    _lines = _lines.map((line) => line.split(' - ')[0]).toList();
+    unfilteredLines = unfilteredLines.map((line) => line.split(' - ')[0]).toList();
 
     // Initialize a map to store item matches
     Map<String, List<DetailDataModel>> itemMatchesMap = {};
 
-    for (int i = 0; i < _lines.length; i++) {
-      String line = _lines[i];
+    for (int i = 0; i < unfilteredLines.length; i++) {
+      String line = unfilteredLines[i];
       bool matchFound = false;
 
       // Check if the line is empty
       if (line.trim().isEmpty) {
-        _lines[i] = ""; // Clear the line if it's empty
+        unfilteredLines[i] = ""; // Clear the line if it's empty
         continue;
       }
 
@@ -148,9 +148,9 @@ class _ResultScreenState extends State<ResultScreen> {
       // Update line item labels
       if (matchFound) {
         int numMatches = itemMatchesMap[line]?.length ?? 0;
-        _lines[i] = "$line - Potential Matches Found ($numMatches), Click to see Details";
+        unfilteredLines[i] = "$line - Potential Matches Found ($numMatches), Click to see Details";
       } else {
-        _lines[i] = "$line - Item Cleared";
+        unfilteredLines[i] = "$line - Item Cleared";
       }
     }
 
@@ -253,7 +253,7 @@ class _ResultScreenState extends State<ResultScreen> {
       _isEditing = true;
       _editingLineIndex = index;
     });
-    _textEditingController.text = _lines[index];
+    _textEditingController.text = unfilteredLines[index];
     FocusScope.of(context).requestFocus(_focusNode);
   }
 
@@ -268,118 +268,176 @@ class _ResultScreenState extends State<ResultScreen> {
     });
   }
 
+  void _handleLineTap(int index) {
+    setState(() {
+      _editingLineIndex = index;
+      _textEditingController.text = unfilteredLines[index];
+      FocusScope.of(context).requestFocus(_focusNode);
+    });
+  }
+
+
+
+
+
+
+  // Define a list of patterns and keywords indicating non-product lines
+  final nonProductPatterns = [
+    RegExp(r'^\d+\.$'), // Matches lines containing a number followed by a period
+    RegExp(r'^[a-zA-Z]$', caseSensitive: false), // Matches lines containing only a single letter
+    RegExp(r'^\d+$'),//filter for numbers only
+    RegExp(r'\b\d{2,12}\b'), // Barcode numbers (at least 12 digits)
+    RegExp(r'\b\d+\.\d+\b'), // Amounts (decimal numbers)
+    RegExp(r'\b\d+\s*(PCS|pack|pieces|amount|kgs|gms)\b', caseSensitive: false), // Quantities like "1.00PCS"
+    // Add more patterns as needed
+  ];
+
+  List<int> selectedIndices = [];
+
   Widget _buildNotebookList() {
-    // Ensure at least 20 empty lines are available
-    while (_lines.length < 20) {
-      _lines.add('');
+    while (unfilteredLines.length < 20) {
+      unfilteredLines.add('');
     }
 
-    return RawKeyboardListener(
-      focusNode: _keyboardListenerFocusNode,
-      onKey: (event) {
-        if (event is RawKeyDownEvent && event.logicalKey == LogicalKeyboardKey.enter) {
-          print("Key pressed: ${event.logicalKey}");
-          print("TextField has focus: ${_focusNode.hasFocus}");
-          print("Return key pressed");
-          // Loop through your Listview to find the TextField that's in focus
-          for (int index = 0; index < _lines.length; index++) {
-            if (_isEditing && index == _editingLineIndex && _focusNode.hasFocus) {
-              setState(() {
-                _lines.insert(_editingLineIndex + 1, '');
-                _editingLineIndex++;
+    final filteredLines = unfilteredLines.where((line) {
+      return !nonProductPatterns.any((pattern) => pattern.hasMatch(line.trim()));
+    }).toList();
 
-                // Explicitly request focus on the new TextField
-                _focusNode.requestFocus();
-              });
-              break; // Exit the loop once you've found the TextField
+    return Material(
+      child: RawKeyboardListener(
+        focusNode: _keyboardListenerFocusNode,
+        onKey: (event) {
+          if (event is RawKeyDownEvent && event.logicalKey == LogicalKeyboardKey.enter) {
+            for (int index = 0; index < filteredLines.length; index++) {
+              if (_isEditing && index == _editingLineIndex && _focusNode.hasFocus) {
+                setState(() {
+                  // Calculate the insertion index based on the current state of the list
+                  final insertionIndex = unfilteredLines.indexOf(filteredLines[index]);
+                  filteredLines.insert(insertionIndex + 1, '');
+                  unfilteredLines.insert(insertionIndex + 1, ''); // Insert into original data
+                  _editingLineIndex = insertionIndex + 1;
+                  _focusNode.requestFocus();
+                });
+                break;
+              }
             }
           }
-        }
-      },
-      child: Container(
-        color: Colors.black,
-        child: ListView.builder(
-          itemCount: _lines.length,
-          itemBuilder: (context, index) {
-            return GestureDetector(
-              onTap: () {
-                if (_lines[index].contains('Potential Matches Found')) {
-                  try {
-
-                    var isolatedSearchTerm = _lines[index].split('-')[0].trim().toLowerCase(); // Ensure lowercase
-
-                    var matchesForLineItem = _searchResults.firstWhere(
-                          (resultDict) => resultDict.keys.any((key) => key.toLowerCase() == isolatedSearchTerm),
-                    );
-
-                    if (matchesForLineItem.containsKey(isolatedSearchTerm)) {
-                      List<DetailDataModel> selectedMatches = matchesForLineItem[isolatedSearchTerm]!;
-
-                      if (selectedMatches.isNotEmpty) {
-                        // Navigate to SelectionScreen with the list of matches
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => SelectionScreen(matches: selectedMatches),
-                          ),
-                        );
-                      }
-                    }
-                  } catch (e) {
-                    print("Error: $e");
-                  }
-                } else {
-                  _editLine(index);
-                }
-              },
-
-
-
-
-              child: Column(
-                children: [
-                  _isEditing && index == _editingLineIndex
-                      ? TextField(
-                    style: TextStyle(color: Colors.white),
-                    keyboardType: TextInputType.multiline,
-                    maxLines: null, // Allow indefinite lines
-                    autofocus: true,
-                    controller: _textEditingController,
-                    focusNode: _focusNode,
-                    onChanged: (value) {
+        },
+        child: Container(
+          color: Colors.black,
+          child: SizedBox(
+            height: 400, // Set a finite height here
+            child: ListView.builder(
+              itemCount: filteredLines.length,
+              itemBuilder: (context, index) {
+                final isSelected = selectedIndices.contains(index);
+                if (!nonProductPatterns.any((pattern) => pattern.hasMatch(filteredLines[index]))) {
+                  return _isEditing && index == _editingLineIndex
+                      ? Material(
+                    color: Colors.black,
+                    child: TextFormField(
+                      controller: _textEditingController,
+                      focusNode: _focusNode,
+                      style: TextStyle(color: Colors.white), // Set text color to white
+                      onEditingComplete: () {
+                        setState(() {
+                          // Calculate the original index based on the current state of the list
+                          final originalIndex = unfilteredLines.indexOf(filteredLines[index]);
+                          unfilteredLines[originalIndex] = _textEditingController.text;
+                          _isEditing = false;
+                        });
+                      },
+                    ),
+                  )
+                      : Dismissible(
+                    key: Key(filteredLines[index]), // Unique key for each item
+                    onDismissed: (direction) {
                       setState(() {
-                        _lines[index] = value;
-                        _textEdited = true;
+                        // Calculate the original index based on the current state of the list
+                        final originalIndex = unfilteredLines.indexOf(filteredLines[index]);
+                        unfilteredLines.removeAt(originalIndex);
+                        // If the item is dismissed, clear any selection
+                        selectedIndices.remove(originalIndex);
                       });
                     },
-                  )
-                      : ListTile(
-                    title: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Text(
-                        _lines[index],
-                        style: TextStyle(
-                          color: _lines[index].contains('Potential Match - Click to See Details')
-                              ? Colors.red
-                              : _lines[index].contains('Item cleared')
-                              ? Colors.green
-                              : Colors.white,
+                    background: Container(color: Colors.red),
+                    child: Material(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: isSelected ? Colors.blue.withOpacity(0.5) : Colors.black,
+                          border: Border(
+                            top: BorderSide(color: Colors.amber),
+                            bottom: BorderSide(color: Colors.amber),
+                          ),
+                        ),
+                        child: ListTile(
+                          title: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text(
+                              filteredLines[index],
+                              style: TextStyle(
+                                color: isSelected ? Colors.white : Colors.white,
+                                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                              ),
+                            ),
+                          ),
+                          onTap: () {
+                            if (!_isEditing) {
+                              _editLine(index); // Enable editing mode on tap
+                            }
+                          },
                         ),
                       ),
                     ),
-                  ),
-                  Container(
-                    height: 1,
-                    color: Colors.amber, // Adjust color as needed
-                  ), // Add Container here
-                ],
-              ),
-            );
-          },
+                  );
+                } else {
+                  return Container();
+                }
+              },
+            ),
+          ),
         ),
       ),
     );
   }
+
+
+
+
+
+
+
+
+
+  void _toggleSelection(int index) {
+    setState(() {
+      if (selectedIndices.contains(index)) {
+        selectedIndices.remove(index);
+      } else {
+        selectedIndices.add(index);
+      }
+    });
+  }
+
+  void _deleteSelectedLines() {
+    setState(() {
+      // Create a new list with unselected items
+      final newLines = List<String>.from(unfilteredLines); // Make a copy of unfilteredLines as List<String>
+      selectedIndices.forEach((index) {
+        newLines.removeAt(index); // Remove lines based on indices in selectedIndices
+      });
+
+      // Clear the selected indices set
+      selectedIndices.clear();
+
+      // Assign the new list back to unfilteredLines
+      unfilteredLines = newLines;
+    });
+  }
+
+
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -392,28 +450,41 @@ class _ResultScreenState extends State<ResultScreen> {
           if (!_isUploading)
             IconButton(
               onPressed: () async {
-              // Call _updateText function passing the current user and await its completion
-              await _updateText(FirebaseAuth.instance.currentUser);
-              // After _updateText completes, complete the Completer
-              _uploadCompleter.complete();
+                // Call _updateText function passing the current user and await its completion
+                await _updateText(FirebaseAuth.instance.currentUser);
+                // Complete the _uploadCompleter only if it hasn't been completed already
+                if (!_uploadCompleter.isCompleted) {
+                  _uploadCompleter.complete();
+                }
               },
               icon: const Icon(Icons.cloud_upload),
             ),
+          if (selectedIndices.isNotEmpty)
           IconButton(
-            onPressed: () => _enableTextEditing(),
-            icon: const Icon(Icons.edit),
-
+            onPressed: ()  {
+              _deleteSelectedLines();
+              },
+            icon: const Icon(Icons.delete_rounded),
           ),
         ],
       ),
-      body: _buildNotebookList(),
+      body: Column(
+        children: [
+          Expanded(
+            child: _buildNotebookList(),
+          ),
+
+        ],
+      ),
       bottomNavigationBar: BottomAppBar(
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             ElevatedButton(
-              onPressed: () {
-                _updateText(FirebaseAuth.instance.currentUser);
+              onPressed: () async {
+                // _updateText(FirebaseAuth.instance.currentUser);
+                // Call _checkItems directly when the search button is pressed
+                await _checkItems();
               },
               child: const Text('Search All Items'),
             ),
@@ -423,6 +494,163 @@ class _ResultScreenState extends State<ResultScreen> {
     );
   }
 }
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       appBar: AppBar(
+//         title: const Text('Result'),
+//         actions: [
+//           if (_isUploading)
+//             const Center(child: CircularProgressIndicator()),
+//           if (!_isUploading)
+//             IconButton(
+//               onPressed: () async {
+//                 // Call _updateText function passing the current user and await its completion
+//                 await _updateText(FirebaseAuth.instance.currentUser);
+//                 // Complete the _uploadCompleter only if it hasn't been completed already
+//                 if (!_uploadCompleter.isCompleted) {
+//                   _uploadCompleter.complete();
+//                 }
+//               },
+//               icon: const Icon(Icons.cloud_upload),
+//             ),
+//         ],
+//       ),
+//       body: _buildNotebookList(),
+//       bottomNavigationBar: BottomAppBar(
+//         child: Row(
+//           mainAxisAlignment: MainAxisAlignment.center,
+//           children: [
+//             ElevatedButton(
+//               onPressed: () async {
+//                 // _updateText(FirebaseAuth.instance.currentUser);
+//                 // Call _checkItems directly when the search button is pressed
+//                 await _checkItems();
+//               },
+//               child: const Text('Search All Items'),
+//             ),
+//           ],
+//         ),
+//       ),
+//     );
+//   }
+// }
+//
+
+
+
+// Widget _buildNotebookList() {
+//   // Ensure at least 20 empty lines are available
+//   while (_lines.length < 20) {
+//     _lines.add('');
+//   }
+//
+//   return RawKeyboardListener(
+//     focusNode: _keyboardListenerFocusNode,
+//     onKey: (event) {
+//       if (event is RawKeyDownEvent && event.logicalKey == LogicalKeyboardKey.enter) {
+//         print("Key pressed: ${event.logicalKey}");
+//         print("TextField has focus: ${_focusNode.hasFocus}");
+//         print("Return key pressed");
+//         // Loop through your Listview to find the TextField that's in focus
+//         for (int index = 0; index < _lines.length; index++) {
+//           if (_isEditing && index == _editingLineIndex && _focusNode.hasFocus) {
+//             setState(() {
+//               _lines.insert(_editingLineIndex + 1, '');
+//               _editingLineIndex++;
+//
+//               // Explicitly request focus on the new TextField
+//               _focusNode.requestFocus();
+//             });
+//             break; // Exit the loop once you've found the TextField
+//           }
+//         }
+//       }
+//     },
+//     child: Container(
+//       color: Colors.black,
+//       child: ListView.builder(
+//         itemCount: _lines.length,
+//         itemBuilder: (context, index) {
+//           return GestureDetector(
+//             onTap: () {
+//               if (_lines[index].contains('Potential Matches Found')) {
+//                 try {
+//
+//                   var isolatedSearchTerm = _lines[index].split('-')[0].trim().toLowerCase(); // Ensure lowercase
+//
+//                   var matchesForLineItem = _searchResults.firstWhere(
+//                         (resultDict) => resultDict.keys.any((key) => key.toLowerCase() == isolatedSearchTerm),
+//                   );
+//
+//                   if (matchesForLineItem.containsKey(isolatedSearchTerm)) {
+//                     List<DetailDataModel> selectedMatches = matchesForLineItem[isolatedSearchTerm]!;
+//
+//                     if (selectedMatches.isNotEmpty) {
+//                       // Navigate to SelectionScreen with the list of matches
+//                       Navigator.push(
+//                         context,
+//                         MaterialPageRoute(
+//                           builder: (context) => SelectionScreen(matches: selectedMatches),
+//                         ),
+//                       );
+//                     }
+//                   }
+//                 } catch (e) {
+//                   print("Error: $e");
+//                 }
+//               } else {
+//                 _editLine(index);
+//               }
+//             },
+//
+//
+//
+//
+//             child: Column(
+//               children: [
+//                 _isEditing && index == _editingLineIndex
+//                     ? TextField(
+//                   style: TextStyle(color: Colors.white),
+//                   keyboardType: TextInputType.multiline,
+//                   maxLines: null, // Allow indefinite lines
+//                   autofocus: true,
+//                   controller: _textEditingController,
+//                   focusNode: _focusNode,
+//                   onChanged: (value) {
+//                     setState(() {
+//                       _lines[index] = value;
+//                       _textEdited = true;
+//                     });
+//                   },
+//                 )
+//                     : ListTile(
+//                   title: Padding(
+//                     padding: const EdgeInsets.all(8.0),
+//                     child: Text(
+//                       _lines[index],
+//                       style: TextStyle(
+//                         color: _lines[index].contains('Potential Match - Click to See Details')
+//                             ? Colors.red
+//                             : _lines[index].contains('Item cleared')
+//                             ? Colors.green
+//                             : Colors.white,
+//                       ),
+//                     ),
+//                   ),
+//                 ),
+//                 Container(
+//                   height: 1,
+//                   color: Colors.amber, // Adjust color as needed
+//                 ), // Add Container here
+//               ],
+//             ),
+//           );
+//         },
+//       ),
+//     ),
+//   );
+// }
 
 // import 'package:cloud_firestore/cloud_firestore.dart';
 // import 'package:firebase_auth/firebase_auth.dart';
