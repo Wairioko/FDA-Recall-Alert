@@ -21,7 +21,7 @@ class _ReceiptListScreenState extends State<ReceiptListScreen> {
     receiptsStream = FirebaseFirestore.instance
         .collection('receipts-data')
         .doc(loggedInUser.uid)
-        .collection('user_receipts')
+        .collection('cleared_items')
         .snapshots();
   }
 
@@ -29,17 +29,19 @@ class _ReceiptListScreenState extends State<ReceiptListScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Receipts List'),
+        title: Text('Receipts List'),
       ),
       body: StreamBuilder<QuerySnapshot>(
         stream: receiptsStream,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const CircularProgressIndicator();
+            return Center(
+              child: CircularProgressIndicator(),
+            );
           }
 
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-            return const Center(
+            return Center(
               child: Text('No receipts available.'),
             );
           }
@@ -47,16 +49,16 @@ class _ReceiptListScreenState extends State<ReceiptListScreen> {
           return ListView.builder(
             itemCount: snapshot.data!.docs.length,
             itemBuilder: (context, index) {
-              var receiptData = snapshot.data!.docs[index].data() as Map<String, dynamic>;
-              var receiptId = snapshot.data!.docs[index].id;
-
+              var receiptData =
+              snapshot.data!.docs[index].data() as Map<String, dynamic>;
               return ListTile(
-                title: Text(receiptData['receipt']),
+                title: Text(receiptData['cleared_items']),
                 onTap: () {
-                  _navigateToEditScreen(receiptId, receiptData['receipt']);
+                  _navigateToEditScreen(snapshot.data!.docs[index].id,
+                      receiptData['cleared_items']);
                 },
                 onLongPress: () {
-                  _showDeleteConfirmationDialog(receiptId);
+                  _showDeleteConfirmationDialog(snapshot.data!.docs[index].id);
                 },
               );
             },
@@ -84,21 +86,21 @@ class _ReceiptListScreenState extends State<ReceiptListScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text("Delete Receipt"),
-          content: const Text("Are you sure you want to delete this receipt?"),
+          title: Text("Delete Receipt"),
+          content: Text("Are you sure you want to delete this receipt?"),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.pop(context);
               },
-              child: const Text("Cancel"),
+              child: Text("Cancel"),
             ),
             TextButton(
               onPressed: () {
                 _deleteReceipt(receiptId);
                 Navigator.pop(context);
               },
-              child: const Text("Delete"),
+              child: Text("Delete"),
             ),
           ],
         );
@@ -110,7 +112,7 @@ class _ReceiptListScreenState extends State<ReceiptListScreen> {
     FirebaseFirestore.instance
         .collection('receipts-data')
         .doc(loggedInUser.uid)
-        .collection('user_receipts')
+        .collection('cleared_items')
         .doc(receiptId)
         .delete()
         .then((_) {
@@ -126,9 +128,12 @@ class ReceiptEditScreen extends StatefulWidget {
   final String initialText;
   final List<String> initialItems;
 
-
-  const ReceiptEditScreen({super.key, required this.receiptId, required this.initialText,
-    required this.initialItems});
+  const ReceiptEditScreen({
+    Key? key,
+    required this.receiptId,
+    required this.initialText,
+    required this.initialItems,
+  }) : super(key: key);
 
   @override
   _ReceiptEditScreenState createState() => _ReceiptEditScreenState();
@@ -136,37 +141,38 @@ class ReceiptEditScreen extends StatefulWidget {
 
 class _ReceiptEditScreenState extends State<ReceiptEditScreen> {
   late TextEditingController _textEditingController;
-  late List<String> _items; // Track the updated list of items
 
   @override
   void initState() {
     super.initState();
     _textEditingController = TextEditingController(text: widget.initialText);
-    _items = List.from(widget.initialItems); // Initialize the items list
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Edit Receipt'),
+        title: Text('Edit Receipt'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            TextField(
-              controller: _textEditingController,
-              onChanged: (value) {
-                // You can add any additional logic when the text changes
-              },
+            Expanded(
+              child: TextField(
+                controller: _textEditingController,
+                maxLines: null, // Allow unlimited lines
+                onChanged: (value) {
+                  // You can add any additional logic when the text changes
+                },
+              ),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16),
             ElevatedButton(
               onPressed: () {
-                _updateReceipt(_items);
+                _updateReceipt(_textEditingController.text);
               },
-              child: const Text('Save Changes'),
+              child: Text('Save Changes'),
             ),
           ],
         ),
@@ -174,13 +180,13 @@ class _ReceiptEditScreenState extends State<ReceiptEditScreen> {
     );
   }
 
-  void _updateReceipt(List<String> updatedText) {
+  void _updateReceipt(String updatedText) {
     FirebaseFirestore.instance
         .collection('receipts-data')
         .doc(FirebaseAuth.instance.currentUser!.uid)
-        .collection('user_receipts')
+        .collection('cleared_items')
         .doc(widget.receiptId)
-        .update({'receipt': updatedText})
+        .update({'cleared_items': updatedText})
         .then((_) {
       print("Receipt updated successfully");
       Navigator.pop(context); // Pop back to the receipts list screen
@@ -188,5 +194,4 @@ class _ReceiptEditScreenState extends State<ReceiptEditScreen> {
       print("Error updating receipt: $error");
     });
   }
-
 }
