@@ -6,51 +6,66 @@ import '../../../../domain/entities/top_headlines.dart';
 import '../../../../model/new_item_model.dart';
 import 'news_item.dart';
 
+
 class NewsList extends StatelessWidget {
   final List<Recall_Event> articles;
 
-  const NewsList({super.key, required this.articles});
+  const NewsList({Key? key, required this.articles}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    // Sort the articles list by the status field in descending order
-
     if (articles.isEmpty) {
       return Expanded(
         child: Padding(
           padding: const EdgeInsets.all(24),
           child: Text(
-            InformationTexts.get()["emptyQuery"],
+            'No articles available',
             textAlign: TextAlign.center,
-            style: const TextStyle(
-                color: Colors.red, fontSize: 16, fontWeight: FontWeight.w600),
+            style: TextStyle(
+              color: Colors.red,
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ),
       );
     }
     return Expanded(
-      child: SingleChildScrollView(
-        child: Column(
-          children: articles.map((currentRecall_Item) {
-            return Recall_Item(
+      child: ListView.separated(
+        itemCount: articles.length,
+        separatorBuilder: (context, index) => SizedBox(height: 16),
+        itemBuilder: (context, index) {
+          return Container(
+            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 6,
+                  offset: Offset(0, 3),
+                ),
+              ],
+            ),
+            child: Recall_Item(
               newsItemModel: Recall_ItemModel(
-                product_description: currentRecall_Item.product_description ?? "",
-                reason_for_recall: currentRecall_Item.reason_for_recall ?? "",
-                status: currentRecall_Item.status ?? "",
-                classification: currentRecall_Item.classification ?? "",
-                // imageUrl: currentArticle.urlToImage ?? "",
+                product_description: articles[index].product_description ?? "",
+                reason_for_recall: articles[index].reason_for_recall ?? "",
+                status: articles[index].status ?? "",
+                classification: articles[index].classification ?? "",
                 detailDataModel: DetailDataModel(
-                  product_description: currentRecall_Item.product_description ?? "",
-                  reason_for_recall: currentRecall_Item.reason_for_recall ?? "",
-                  classification: currentRecall_Item.classification ?? "",
-                  recalling_firm: currentRecall_Item.recalling_firm ?? "",
-                  status: currentRecall_Item.status ?? "",
-                  voluntary_mandated: currentRecall_Item.voluntary_mandated ?? "",
+                  product_description: articles[index].product_description ?? "",
+                  reason_for_recall: articles[index].reason_for_recall ?? "",
+                  classification: articles[index].classification ?? "",
+                  recalling_firm: articles[index].recalling_firm ?? "",
+                  status: articles[index].status ?? "",
+                  voluntary_mandated: articles[index].voluntary_mandated ?? "",
                 ),
               ),
-            );
-          }).toList(),
-        ),
+            ),
+          );
+        },
       ),
     );
   }
