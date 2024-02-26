@@ -68,8 +68,8 @@ class RecallDataApiProvider extends BaseApiProvider {
   BaseOptions createBaseOptions() {
     // Call getCategory() method to retrieve category
     DateTime now = DateTime.now();
-    String formattedNow = "${now.year}${now.month.toString().padLeft(2, '0')}${now.day.
-    toString().padLeft(2, '0')}";
+    // String formattedNow = "${now.year}${now.month.toString().padLeft(2, '0')}${now.day.
+    // toString().padLeft(2, '0')}";
     String baseUrl = 'https://api.fda.gov/food/enforcement.json?search='
         'report_date:[20230101+TO+$formattedNow]&limit=1000';
     BaseOptions options = BaseOptions(

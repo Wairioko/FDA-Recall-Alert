@@ -54,7 +54,7 @@ class _DashBoardWidgetState extends State<DashBoardWidget> {
                 darkAssetLocation: 'assets/icons/menu.svg',
                 lightAssetLocation: 'assets/icons/light_menu.svg',
                 onTabCallback: () => widget.zoomDrawerController.toggle!(),
-                title: 'Safe Scan',
+                title: 'Recall Safe',
               ),
             ),
             QueryWidget(homeCubit: _homeCubit),

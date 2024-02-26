@@ -24,7 +24,6 @@ class _ReceiptListScreenState extends State<ReceiptListScreen> {
         .collection('cleared_items')
         .snapshots();
   }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -46,27 +45,84 @@ class _ReceiptListScreenState extends State<ReceiptListScreen> {
             );
           }
 
-          return ListView.builder(
-            itemCount: snapshot.data!.docs.length,
-            itemBuilder: (context, index) {
-              var receiptData =
-              snapshot.data!.docs[index].data() as Map<String, dynamic>;
-              return ListTile(
-                title: Text(receiptData['cleared_items']),
-                onTap: () {
-                  _navigateToEditScreen(snapshot.data!.docs[index].id,
-                      receiptData['cleared_items']);
-                },
-                onLongPress: () {
-                  _showDeleteConfirmationDialog(snapshot.data!.docs[index].id);
-                },
-              );
-            },
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: GridView.builder(
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: 16.0,
+                mainAxisSpacing: 16.0,
+              ),
+              itemCount: snapshot.data!.docs.length,
+              itemBuilder: (context, index) {
+                var receiptData = snapshot.data!.docs[index].data()
+                as Map<String, dynamic>;
+                return GestureDetector(
+                  onTap: () {
+                    _navigateToEditScreen(snapshot.data!.docs[index].id,
+                        receiptData['cleared_items']);
+                  },
+                  onLongPress: () {
+                    _showDeleteConfirmationDialog(snapshot.data!.docs[index].id);
+                  },
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(8.0),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.green.withOpacity(0.5),
+                          spreadRadius: 2,
+                          blurRadius: 3,
+                          offset: Offset(0, 4), // changes position of shadow
+                        ),
+                      ],
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            _truncateText(receiptData['cleared_items'], 30), // Adjust the number of characters for preview
+                            style: TextStyle(
+                              fontSize: 16.0,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          SizedBox(height: 8.0),
+                          Text(
+                            // Add additional receipt information here if needed
+                            'Date: ${receiptData['date']}',
+                            style: TextStyle(
+                              fontSize: 14.0,
+                              color: Colors.grey,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
           );
         },
       ),
     );
   }
+
+  String _truncateText(String text, int maxLength) {
+    if (text.length <= maxLength) {
+      return text;
+    } else {
+      return text.substring(0, maxLength) + '...';
+    }
+  }
+
+
+
+
 
   void _navigateToEditScreen(String receiptId, String receiptText) {
     Navigator.push(

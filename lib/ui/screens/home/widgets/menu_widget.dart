@@ -38,8 +38,8 @@ class MenuWidget extends StatelessWidget {
                       Navigator.of(context).pushNamed(LogInPage.path);
                     },
                     icon: Utility.isLightTheme(state.themeType)
-                        ? 'assets/icons/about.svg'
-                        : 'assets/icons/light_about.svg',
+                        ? 'assets/icons/login.svg'
+                        : 'assets/icons/login.svg',
                     text: 'Login',
                   ),
                 if (user == null)
@@ -48,8 +48,8 @@ class MenuWidget extends StatelessWidget {
                       Navigator.of(context).pushNamed(SignUpPage.path);
                     },
                     icon: Utility.isLightTheme(state.themeType)
-                        ? 'assets/icons/about.svg'
-                        : 'assets/icons/light_about.svg',
+                        ? 'assets/icons/register.svg'
+                        : 'assets/icons/register.svg',
                     text: 'Sign Up',
                   ),
                 if (user != null)
@@ -68,8 +68,8 @@ class MenuWidget extends StatelessWidget {
                       Navigator.of(context).pushNamed(MainScreen.path);
                     },
                     icon: Utility.isLightTheme(state.themeType)
-                        ? 'assets/icons/camera.jpg'
-                        : 'assets/icons/light_camera.jpg',
+                        ? 'assets/icons/camera1.svg'
+                        : 'assets/icons/camera1.svg',
                     text: 'Scan Receipt/Item',
                   ),
                 if (user != null)
@@ -78,8 +78,8 @@ class MenuWidget extends StatelessWidget {
                       Navigator.of(context).pushNamed(ReceiptListScreen.path);
                     },
                     icon: Utility.isLightTheme(state.themeType)
-                        ? 'assets/icons/about.svg'
-                        : 'assets/icons/light_about.svg',
+                        ? 'assets/icons/shopping-cart.svg'
+                        : 'assets/icons/shopping-cart.svg',
                     text: 'My Receipts',
                   ),
                 // if (user != null)
@@ -88,8 +88,8 @@ class MenuWidget extends StatelessWidget {
                       Navigator.of(context).pushNamed(WatchlistScreen.path);
                     },
                     icon: Utility.isLightTheme(state.themeType)
-                        ? 'assets/icons/about.svg'
-                        : 'assets/icons/light_about.svg',
+                        ? 'assets/icons/watchlist.svg'
+                        : 'assets/icons/watchlist.svg',
                     text: 'My Watchlist',
                   ),
 
@@ -99,8 +99,8 @@ class MenuWidget extends StatelessWidget {
                     Navigator.of(context).pushNamed(ReceiptListScreen.path);
                   },
                   icon: Utility.isLightTheme(state.themeType)
-                      ? 'assets/icons/about.svg'
-                      : 'assets/icons/light_about.svg',
+                      ? 'assets/icons/notifications.svg'
+                      : 'assets/icons/notifications.svg',
                   text: 'Notifications',
                 ),
                 _buildMenuItem(

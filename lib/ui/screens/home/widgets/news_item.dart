@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-
 import '../../../../model/new_item_model.dart';
 import '../../detail/detail.dart';
+
 
 class Recall_Item extends StatelessWidget {
   final Recall_ItemModel newsItemModel;
