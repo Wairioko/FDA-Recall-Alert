@@ -2,6 +2,73 @@ import 'package:flutter/material.dart';
 import '../../../../model/new_item_model.dart';
 import '../../detail/detail.dart';
 
+
+// class Recall_Item extends StatelessWidget {
+//   final Recall_ItemModel newsItemModel;
+//
+//   const Recall_Item({Key? key, required this.newsItemModel}) : super(key: key);
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     return InkWell(
+//       onTap: () {
+//         Navigator.of(context).pushNamed(
+//           Detail.path,
+//           arguments: newsItemModel.detailDataModel,
+//         );
+//       },
+//       child: Container(
+//         width: double.infinity,
+//         child: ListTile(
+//           title: Text(
+//             newsItemModel.product_description,
+//             overflow: TextOverflow.ellipsis,
+//             maxLines: 3,
+//             style: TextStyle(
+//               fontSize: 16,
+//               fontWeight: FontWeight.w500,
+//             ),
+//           ),
+//           subtitle: Column(
+//             crossAxisAlignment: CrossAxisAlignment.start,
+//             children: [
+//               SizedBox(height: 4),
+//               Text(
+//                 'Reason: ${newsItemModel.reason_for_recall}',
+//                 maxLines: 1,
+//                 overflow: TextOverflow.ellipsis,
+//                 style: TextStyle(
+//                   fontSize: 14,
+//                   fontWeight: FontWeight.w300,
+//                 ),
+//               ),
+//               SizedBox(height: 2),
+//               Text(
+//                 'Status: ${newsItemModel.status}',
+//                 maxLines: 1,
+//                 overflow: TextOverflow.ellipsis,
+//                 style: TextStyle(
+//                   fontSize: 14,
+//                   fontWeight: FontWeight.w300,
+//                 ),
+//               ),
+//               SizedBox(height: 2),
+//               Text(
+//                 'Classification: ${newsItemModel.classification}',
+//                 maxLines: 1,
+//                 overflow: TextOverflow.ellipsis,
+//                 style: TextStyle(
+//                   fontSize: 14,
+//                   fontWeight: FontWeight.w300,
+//                 ),
+//               ),
+//             ],
+//           ),
+//         ),
+//       ),
+//     );
+//   }
+// }
 class Recall_Item extends StatelessWidget {
   final Recall_ItemModel newsItemModel;
 
@@ -17,58 +84,60 @@ class Recall_Item extends StatelessWidget {
         );
       },
       child: Container(
-        // Added Container to provide a fixed width for the ListTile
-        width: double.infinity, // Adjust width as needed
-        child: ListTile(
-          title: Text(
-            newsItemModel.product_description,
-            overflow: TextOverflow.ellipsis,
-            maxLines: 3,
-            style: TextStyle(
-              fontSize: 16, // Increased font size for better readability
-              fontWeight: FontWeight.w500,
+        padding: EdgeInsets.all(5.0), // Content padding
+        decoration: BoxDecoration( // Subtle decoration
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(8.0),
+          boxShadow: [
+            BoxShadow(color: Colors.grey.withOpacity(0.4), blurRadius: 5.0)
+          ],
+        ),
+        child: Column( // Adjusted spacing within the column
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              newsItemModel.product_description,
+              overflow: TextOverflow.ellipsis,
+              maxLines: 2,
+              style: TextStyle(
+                fontSize: 18, // Increased title size
+                fontWeight: FontWeight.w600,
+              ),
             ),
-          ),
-          subtitle: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(height: 4), // Adding spacing between title and subtitle
-              Text(
-                'Reason: ${newsItemModel.reason_for_recall}',
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w300,
-                ),
+            SizedBox(height: 5), // More vertical space
+            Text(
+              'Reason: ${newsItemModel.reason_for_recall}',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(fontSize: 15),
+            ),
+            SizedBox(height: 5),
+            Text(
+              'Status: ${newsItemModel.status}',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w300,
               ),
-              SizedBox(height: 2), // Adding spacing between subtitle items
-              Text(
-                'Status: ${newsItemModel.status}',
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w300,
-                ),
+            ),
+            SizedBox(height: 5),
+            Text(
+              'Classification: ${newsItemModel.classification}',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w300,
               ),
-              SizedBox(height: 2), // Adding spacing between subtitle items
-              Text(
-                'Classification: ${newsItemModel.classification}',
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w300,
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
   }
 }
+
 
 
 

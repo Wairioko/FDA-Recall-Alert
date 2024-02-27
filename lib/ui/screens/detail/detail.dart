@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-
 import '../../../model/detail_data_model.dart';
 import '../../shared/common_appbar.dart';
+import 'package:google_generative_ai/google_generative_ai.dart';
+
 
 class Detail extends StatelessWidget {
   static const String path = '/detail';
@@ -9,100 +10,113 @@ class Detail extends StatelessWidget {
   final DetailDataModel detailDataModel;
 
   const Detail({
-    super.key,
+    Key? key,
     required this.detailDataModel,
-  });
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: ListView(
-        children: [
-          CommonAppBar(
-            onTabCallback: () => Navigator.of(context).pop(),
-            darkAssetLocation: 'assets/icons/arrow.svg',
-            lightAssetLocation: 'assets/icons/light_arrow.svg',
-            title: 'Recall Detail',
-            tooltip: 'Back to dashboard',
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Text(
-                  detailDataModel.product_description,
-                  style: const TextStyle(
-                    fontSize: 18.0,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 8.0),
-                Row(
-                  children: [
-                    Text(
-                      detailDataModel.reason_for_recall,
-                      style: const TextStyle(
-                        fontSize: 14.0,
-                        fontWeight: FontWeight.w300,
-                      ),
-                    ),
-                    const Spacer(),
-                    Text(
-                      detailDataModel.status,
-                      style: const TextStyle(
-                        fontSize: 14.0,
-                        fontWeight: FontWeight.w300,
-                      ),
-                    ),
-                    const Spacer(),
-                    Text(
-                      detailDataModel.classification,
-                      style: const TextStyle(
-                        fontSize: 14.0,
-                        fontWeight: FontWeight.w300,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16.0),
-                Text(
-                  detailDataModel.recalling_firm,
-                  style: const TextStyle(
-                    fontSize: 16.0,
-                    fontWeight: FontWeight.w300,
-                  ),
-                ),
-                const SizedBox(height: 16.0),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(10.0),
-                  // Adjust the radius as needed
-                  // child: CachedNetworkImage(
-                  //   cacheKey: detailDataModel.imageUrl,
-                  //   imageUrl: detailDataModel.imageUrl,
-                  //   height: 200,
-                  //   width: 200,
-                  //   placeholder: (_, __) => const ShimmerWidget(),
-                  //   errorWidget: (_, __, error) => const ShimmerWidget(),
-                  //   fit: BoxFit.cover,
-                  //   fadeOutDuration: const Duration(seconds: 1),
-                  //   fadeInDuration: const Duration(seconds: 2),
-                  //   cacheManager: DefaultCacheManager(),
-                  // ),
-                ),
-                const SizedBox(height: 16.0),
-                Text(
-                  detailDataModel.voluntary_mandated,
-                  style: const TextStyle(
-                    fontSize: 16.0,
-                    fontWeight: FontWeight.w300,
-                  ),
-                ),
-              ],
+      body: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(top: 5.0),
+              child: CommonAppBar(
+                onTabCallback: () => Navigator.of(context).pop(),
+                darkAssetLocation: 'assets/icons/arrow.svg',
+                lightAssetLocation: 'assets/icons/light_arrow.svg',
+                title: 'Product Recall Details',
+                tooltip: 'Back to dashboard',
+              ),
             ),
-          ),
-        ],
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _buildDetailTile(
+                    label: 'Product Description:',
+                    value: detailDataModel.product_description,
+                  ),
+                  _buildDetailTile(
+                    label: 'Reason for Recall:',
+                    value: detailDataModel.reason_for_recall,
+                  ),
+                  _buildDetailTile(
+                    label: 'Status:',
+                    value: detailDataModel.status,
+                  ),
+                  _buildDetailTile(
+                    label: 'Classification:',
+                    value: detailDataModel.classification,
+                  ),
+                  _buildDetailTile(
+                    label: 'Recalling Firm:',
+                    value: detailDataModel.recalling_firm,
+                  ),
+                  _buildDetailTile(
+                    label: 'Who Initiated Recall:',
+                    value: detailDataModel.voluntary_mandated,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
+
+  Widget _buildDetailTile({required String label, required String value}) {
+    return ListTile(
+      title: Text(
+        label,
+        style: const TextStyle(
+          fontSize: 16.0,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+      subtitle: value == detailDataModel.voluntary_mandated
+          ? FutureBuilder<GenerateContentResponse>(
+        future: fetchAdditionalInfo(detailDataModel.reason_for_recall),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return CircularProgressIndicator();
+          } else if (snapshot.hasError) {
+            return Text('Error: ${snapshot.error}');
+          } else {
+            final generatedText = snapshot.data?.text ?? '';
+            return Text(
+              generatedText,
+              style: const TextStyle(
+                fontSize: 16.0,
+                fontWeight: FontWeight.w300,
+              ),
+            );
+          }
+        },
+      )
+          : Text(
+        value,
+        style: const TextStyle(
+          fontSize: 16.0,
+          fontWeight: FontWeight.w300,
+        ),
+      ),
+    );
+  }
+
+  static const apiKey = 'AIzaSyAM-TzFrKzmQ_roOrqG_UwPqp27QigCzfw';
+  Future<GenerateContentResponse> fetchAdditionalInfo(
+      String reasonForRecall) async {
+    final model = await GenerativeModel(model: 'gemini-pro', apiKey: apiKey);
+    final prompt =
+        'Give responses for the effects of consuming a product that has been recalled for: $reasonForRecall and any additional resources you might have regarding this case';
+    final content = [Content.text(prompt)];
+    final response = await model.generateContent(content);
+    return response;
+  }
 }
+

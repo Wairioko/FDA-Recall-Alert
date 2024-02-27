@@ -1,3 +1,5 @@
+import 'package:flutter/cupertino.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:safe_scan/data/network/current_weather_api.dart';
 import 'package:safe_scan/model/request_query.dart';
 import 'package:safe_scan/ui/shared/theme/theme_cubit.dart';
@@ -104,7 +106,7 @@ class _QueryWidgetState extends State<QueryWidget> {
     return BlocBuilder<ThemeCubit, ThemeState>(
       builder: (context, state) {
         return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 10),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -115,7 +117,7 @@ class _QueryWidgetState extends State<QueryWidget> {
                     borderRadius: BorderRadius.circular(10.0),
                     color: Colors.grey[200],
                   ),
-                  padding: const EdgeInsets.all(16.0),
+                  padding: const EdgeInsets.all(10.0),
                   child: DropdownButton<String>(
                     dropdownColor: Colors.grey[300],
                     underline: const SizedBox(),
@@ -140,7 +142,7 @@ class _QueryWidgetState extends State<QueryWidget> {
                     },
                   ),
                 ),
-              const SizedBox(height: 10.0), // Adding padding between elements
+              const SizedBox(height: 6.0), // Adding padding between elements
               // Search Bar
               if (showSearchParameters)
                 Container(
@@ -232,22 +234,29 @@ class _QueryWidgetState extends State<QueryWidget> {
                 ),
               // Buttons
               if (showSearchParameters)
-                TextButton(
-                  onPressed: () async {
-                    reloadData();
-                    setState(() {
-                      showSearchParameters = false;
-                    });
-                  },
-                  child: Text(
-                    InformationTexts.get()['search']!,
-                    style: const TextStyle(
-                      color: Colors.green,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
+                Padding(
+                  padding: EdgeInsets.all(8), // Adjust the padding values as needed
+                  child: CupertinoButton(
+                    onPressed: () async {
+                      reloadData();
+                      setState(() {
+                        showSearchParameters = false;
+                      });
+                    },
+                    color: CupertinoColors.activeGreen, // Customize the color as needed
+                    borderRadius: BorderRadius.circular(10), // Adjust the border radius
+                    child: Text(
+                      InformationTexts.get()['search']!,
+                      style: const TextStyle(
+                        color: CupertinoColors.white, // Text color should contrast with the button color
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+
+                      ),
                     ),
                   ),
                 ),
+
               if (!showSearchParameters)
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -259,8 +268,16 @@ class _QueryWidgetState extends State<QueryWidget> {
                           showSearchParameters = true;
                         });
                       },
+                      style: ButtonStyle(
+                        backgroundColor: MaterialStateProperty.all<Color>(Colors.red),
+                        textStyle: MaterialStateProperty.all<TextStyle>(
+                          TextStyle(color: Colors.white),
+                        ),
+                      ),
                       child: Text('Clear All Parameters'),
                     ),
+
+
                     ElevatedButton(
                       onPressed: () {
                         setState(() {
@@ -269,7 +286,6 @@ class _QueryWidgetState extends State<QueryWidget> {
                       },
                       child: Text('Search Again'),
                     ),
-
                   ],
                 ),
 
@@ -280,7 +296,7 @@ class _QueryWidgetState extends State<QueryWidget> {
                 children: [
 
                   IconButton(
-                    icon: Icon(Icons.share),
+                    icon: Icon(Icons.ios_share_outlined),
                     color: Colors.greenAccent,
                     tooltip: "Share data for With Loved Ones",
                     hoverColor: Colors.green,
