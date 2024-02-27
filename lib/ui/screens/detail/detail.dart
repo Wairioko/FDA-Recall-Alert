@@ -1,7 +1,10 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 import '../../../model/detail_data_model.dart';
 import '../../shared/common_appbar.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 
 class Detail extends StatelessWidget {
@@ -22,7 +25,7 @@ class Detail extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Padding(
-              padding: const EdgeInsets.only(top: 5.0),
+              padding: const EdgeInsets.all(5.0),
               child: CommonAppBar(
                 onTabCallback: () => Navigator.of(context).pop(),
                 darkAssetLocation: 'assets/icons/arrow.svg',
@@ -59,6 +62,7 @@ class Detail extends StatelessWidget {
                   _buildDetailTile(
                     label: 'Who Initiated Recall:',
                     value: detailDataModel.voluntary_mandated,
+
                   ),
                 ],
               ),
@@ -68,6 +72,7 @@ class Detail extends StatelessWidget {
       ),
     );
   }
+
 
   Widget _buildDetailTile({required String label, required String value}) {
     return ListTile(
@@ -88,13 +93,7 @@ class Detail extends StatelessWidget {
             return Text('Error: ${snapshot.error}');
           } else {
             final generatedText = snapshot.data?.text ?? '';
-            return Text(
-              generatedText,
-              style: const TextStyle(
-                fontSize: 16.0,
-                fontWeight: FontWeight.w300,
-              ),
-            );
+            return _buildRichTextWithLinks(context, generatedText);
           }
         },
       )
@@ -108,12 +107,94 @@ class Detail extends StatelessWidget {
     );
   }
 
+  Widget _buildRichTextWithLinks(BuildContext context, String text) {
+    final pattern = RegExp(r'(?<=\*\*)(.*?)(?=\*\*)|http(s)?://\S+');
+    final matches = pattern.allMatches(text);
+
+    final spans = <InlineSpan>[];
+    int start = 0;
+
+    for (final match in matches) {
+      final matchText = match.group(0)!;
+      final isLink = matchText.startsWith('http');
+      final isHeadline = matchText.startsWith('**');
+
+      final matchStart = match.start;
+      final matchEnd = match.end;
+
+      if (matchStart > start) {
+        spans.add(TextSpan(
+          text: text.substring(start, matchStart),
+          style: const TextStyle(
+            fontSize: 16.0,
+            fontWeight: FontWeight.w300,
+          ),
+        ));
+      }
+
+      if (isLink) {
+        spans.add(
+          TextSpan(
+            text: matchText,
+            style: const TextStyle(
+              fontSize: 16.0,
+              fontWeight: FontWeight.w300,
+              color: Colors.blue, // Make links blue
+              decoration: TextDecoration.underline, // Underline links
+            ),
+            recognizer: TapGestureRecognizer()
+              ..onTap = () {
+                _launchURL(matchText);
+              },
+          ),
+        );
+      } else if (isHeadline) {
+        spans.add(
+          TextSpan(
+            text: matchText.substring(2, matchText.length - 2),
+            style: const TextStyle(
+              fontSize: 16.0,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        );
+      }
+
+      start = matchEnd;
+    }
+
+    if (start < text.length) {
+      spans.add(TextSpan(
+        text: text.substring(start),
+        style: const TextStyle(
+          fontSize: 16.0,
+          fontWeight: FontWeight.w300,
+        ),
+      ));
+    }
+
+    return RichText(text: TextSpan(children: spans));
+  }
+
+  void _launchURL(String url) async {
+    if (await canLaunch(url)) {
+      await launch(url);
+    } else {
+      throw 'Could not launch $url';
+    }
+  }
+
+
+
+
+
   static const apiKey = 'AIzaSyAM-TzFrKzmQ_roOrqG_UwPqp27QigCzfw';
   Future<GenerateContentResponse> fetchAdditionalInfo(
       String reasonForRecall) async {
     final model = await GenerativeModel(model: 'gemini-pro', apiKey: apiKey);
     final prompt =
-        'Give responses for the effects of consuming a product that has been recalled for: $reasonForRecall and any additional resources you might have regarding this case';
+        'Give responses for the effects of consuming a product that has been recalled for: $reasonForRecall '
+        'and any additional resources you might have regarding this case';
     final content = [Content.text(prompt)];
     final response = await model.generateContent(content);
     return response;
