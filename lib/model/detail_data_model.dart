@@ -7,6 +7,7 @@ class DetailDataModel {
   final String product_description;
 
 
+
   DetailDataModel({
     required this.status,
     required this.reason_for_recall,

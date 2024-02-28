@@ -39,30 +39,123 @@ class Detail extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  _buildDetailTile(
-                    label: 'Product Description:',
-                    value: detailDataModel.product_description,
+                  ListTile(
+                    title: Text(
+                      'Product Description:',
+                      style: const TextStyle(
+                        fontSize: 16.0,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    subtitle: Text(
+                      detailDataModel.product_description,
+                      style: const TextStyle(
+                        fontSize: 16.0,
+                        fontWeight: FontWeight.w300,
+                      ),
+                    ),
                   ),
-                  _buildDetailTile(
-                    label: 'Reason for Recall:',
-                    value: detailDataModel.reason_for_recall,
+                  ListTile(
+                    title: Text(
+                      'Reason for Recall:',
+                      style: const TextStyle(
+                        fontSize: 16.0,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    subtitle: Text(
+                      detailDataModel.reason_for_recall,
+                      style: const TextStyle(
+                        fontSize: 16.0,
+                        fontWeight: FontWeight.w300,
+                      ),
+                    ),
                   ),
-                  _buildDetailTile(
-                    label: 'Status:',
-                    value: detailDataModel.status,
+                  ListTile(
+                    title: Text(
+                      'Status:',
+                      style: const TextStyle(
+                        fontSize: 16.0,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    subtitle: Text(
+                      detailDataModel.status,
+                      style: const TextStyle(
+                        fontSize: 16.0,
+                        fontWeight: FontWeight.w300,
+                      ),
+                    ),
                   ),
-                  _buildDetailTile(
-                    label: 'Classification:',
-                    value: detailDataModel.classification,
+                  ListTile(
+                    title: Text(
+                      'Classification:',
+                      style: const TextStyle(
+                        fontSize: 16.0,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    subtitle: Text(
+                      detailDataModel.classification,
+                      style: const TextStyle(
+                        fontSize: 16.0,
+                        fontWeight: FontWeight.w300,
+                      ),
+                    ),
                   ),
-                  _buildDetailTile(
-                    label: 'Recalling Firm:',
-                    value: detailDataModel.recalling_firm,
+                  ListTile(
+                    title: Text(
+                      'Recalling Firm:',
+                      style: const TextStyle(
+                        fontSize: 16.0,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    subtitle: Text(
+                      detailDataModel.recalling_firm,
+                      style: const TextStyle(
+                        fontSize: 16.0,
+                        fontWeight: FontWeight.w300,
+                      ),
+                    ),
                   ),
-                  _buildDetailTile(
-                    label: 'Who Initiated Recall:',
-                    value: detailDataModel.voluntary_mandated,
-
+                  ListTile(
+                    title: Text(
+                      'Who Initiated Recall:',
+                      style: const TextStyle(
+                        fontSize: 16.0,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    subtitle: Text(
+                      detailDataModel.voluntary_mandated,
+                      style: const TextStyle(
+                        fontSize: 16.0,
+                        fontWeight: FontWeight.w300,
+                      ),
+                    ),
+                  ),
+                  ListTile(
+                    title: Text(
+                      'Generated Information:',
+                      style: const TextStyle(
+                        fontSize: 16.0,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    subtitle: FutureBuilder<GenerateContentResponse>(
+                      future: fetchAdditionalInfo(detailDataModel.reason_for_recall),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState == ConnectionState.waiting) {
+                          return CircularProgressIndicator();
+                        } else if (snapshot.hasError) {
+                          return Text('Error: ${snapshot.error}');
+                        } else {
+                          final generatedText = snapshot.data?.text ?? '';
+                          return _buildRichTextWithLinks(context, generatedText);
+                        }
+                      },
+                    ),
                   ),
                 ],
               ),
@@ -73,102 +166,92 @@ class Detail extends StatelessWidget {
     );
   }
 
-
-  Widget _buildDetailTile({required String label, required String value}) {
-    return ListTile(
-      title: Text(
-        label,
-        style: const TextStyle(
-          fontSize: 16.0,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-      subtitle: value == detailDataModel.voluntary_mandated
-          ? FutureBuilder<GenerateContentResponse>(
-        future: fetchAdditionalInfo(detailDataModel.reason_for_recall),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return CircularProgressIndicator();
-          } else if (snapshot.hasError) {
-            return Text('Error: ${snapshot.error}');
-          } else {
-            final generatedText = snapshot.data?.text ?? '';
-            return _buildRichTextWithLinks(context, generatedText);
-          }
-        },
-      )
-          : Text(
-        value,
-        style: const TextStyle(
-          fontSize: 16.0,
-          fontWeight: FontWeight.w300,
-        ),
-      ),
-    );
-  }
-
   Widget _buildRichTextWithLinks(BuildContext context, String text) {
-    final pattern = RegExp(r'(?<=\*\*)(.*?)(?=\*\*)|http(s)?://\S+');
-    final matches = pattern.allMatches(text);
+    final headlinePattern = RegExp(r'\*\*(.*?)\*\*');
+    final linkPattern = RegExp(r'http(s)?://\S+');
 
     final spans = <InlineSpan>[];
     int start = 0;
 
-    for (final match in matches) {
-      final matchText = match.group(0)!;
-      final isLink = matchText.startsWith('http');
-      final isHeadline = matchText.startsWith('**');
-
+    // Match headlines
+    for (final match in headlinePattern.allMatches(text)) {
       final matchStart = match.start;
       final matchEnd = match.end;
 
       if (matchStart > start) {
+        final nonLinkText = text.substring(start, matchStart);
         spans.add(TextSpan(
-          text: text.substring(start, matchStart),
+          text: nonLinkText,
           style: const TextStyle(
             fontSize: 16.0,
             fontWeight: FontWeight.w300,
+            color: Colors.black,
+            decoration: TextDecoration.none,
           ),
         ));
       }
 
-      if (isLink) {
-        spans.add(
-          TextSpan(
-            text: matchText,
-            style: const TextStyle(
-              fontSize: 16.0,
-              fontWeight: FontWeight.w300,
-              color: Colors.blue, // Make links blue
-              decoration: TextDecoration.underline, // Underline links
-            ),
-            recognizer: TapGestureRecognizer()
-              ..onTap = () {
-                _launchURL(matchText);
-              },
+      spans.add(TextSpan(
+        text: match.group(1),
+        style: const TextStyle(
+          fontSize: 16.0,
+          fontWeight: FontWeight.bold,
+          color: Colors.black,
+          wordSpacing: 2,
+          decoration: TextDecoration.none,
+        ),
+      ));
+
+      start = matchEnd;
+    }
+
+    // Match links
+    for (final match in linkPattern.allMatches(text)) {
+      final matchStart = match.start;
+      final matchEnd = match.end;
+
+      if (matchStart > start) {
+        final nonLinkText = text.substring(start, matchStart);
+        spans.add(TextSpan(
+          text: nonLinkText,
+          style: const TextStyle(
+            fontSize: 16.0,
+            fontWeight: FontWeight.w300,
+            color: Colors.black,
+            decoration: TextDecoration.none,
           ),
-        );
-      } else if (isHeadline) {
-        spans.add(
-          TextSpan(
-            text: matchText.substring(2, matchText.length - 2),
-            style: const TextStyle(
-              fontSize: 16.0,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        );
+        ));
       }
+
+      spans.add(
+        TextSpan(
+          text: match.group(0),
+          style: const TextStyle(
+            fontSize: 16.0,
+            fontWeight: FontWeight.w300,
+            color: Colors.blue, // Make links blue
+            decoration: TextDecoration.underline, // Underline links
+          ),
+          recognizer: TapGestureRecognizer()
+            ..onTap = () {
+              _launchURL(match.group(0)!);
+            },
+        ),
+      );
 
       start = matchEnd;
     }
 
     if (start < text.length) {
+      final nonLinkText = text.substring(start);
+      print("Non-link text segment: $nonLinkText");
       spans.add(TextSpan(
-        text: text.substring(start),
+        text: nonLinkText,
         style: const TextStyle(
           fontSize: 16.0,
           fontWeight: FontWeight.w300,
+          color: Colors.black,
+          decoration: TextDecoration.none,
         ),
       ));
     }
@@ -176,17 +259,15 @@ class Detail extends StatelessWidget {
     return RichText(text: TextSpan(children: spans));
   }
 
+
+
   void _launchURL(String url) async {
-    if (await canLaunch(url)) {
-      await launch(url);
+    if (await canLaunchUrlString(url)) {
+      await launchUrlString(url);
     } else {
       throw 'Could not launch $url';
     }
   }
-
-
-
-
 
   static const apiKey = 'AIzaSyAM-TzFrKzmQ_roOrqG_UwPqp27QigCzfw';
   Future<GenerateContentResponse> fetchAdditionalInfo(
@@ -200,4 +281,3 @@ class Detail extends StatelessWidget {
     return response;
   }
 }
-
