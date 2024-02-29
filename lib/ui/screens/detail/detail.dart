@@ -4,7 +4,7 @@ import 'package:url_launcher/url_launcher_string.dart';
 import '../../../model/detail_data_model.dart';
 import '../../shared/common_appbar.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
-import 'package:url_launcher/url_launcher.dart';
+
 
 
 class Detail extends StatelessWidget {
@@ -18,14 +18,18 @@ class Detail extends StatelessWidget {
   }) : super(key: key);
 
   @override
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: SingleChildScrollView(
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Padding(
-              padding: const EdgeInsets.all(5.0),
+            Container(
+              padding: EdgeInsets.all(18),
+              decoration: BoxDecoration(
+                border: Border(bottom: BorderSide(color: Colors.grey.shade300)),
+              ),
               child: CommonAppBar(
                 onTabCallback: () => Navigator.of(context).pop(),
                 darkAssetLocation: 'assets/icons/arrow.svg',
@@ -34,129 +38,31 @@ class Detail extends StatelessWidget {
                 tooltip: 'Back to dashboard',
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.all(16),
+            Container(
+              padding: EdgeInsets.all(18),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  ListTile(
-                    title: Text(
-                      'Product Description:',
-                      style: const TextStyle(
-                        fontSize: 16.0,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    subtitle: Text(
-                      detailDataModel.product_description,
-                      style: const TextStyle(
-                        fontSize: 16.0,
-                        fontWeight: FontWeight.w300,
-                      ),
-                    ),
-                  ),
-                  ListTile(
-                    title: Text(
-                      'Reason for Recall:',
-                      style: const TextStyle(
-                        fontSize: 16.0,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    subtitle: Text(
-                      detailDataModel.reason_for_recall,
-                      style: const TextStyle(
-                        fontSize: 16.0,
-                        fontWeight: FontWeight.w300,
-                      ),
-                    ),
-                  ),
-                  ListTile(
-                    title: Text(
-                      'Status:',
-                      style: const TextStyle(
-                        fontSize: 16.0,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    subtitle: Text(
-                      detailDataModel.status,
-                      style: const TextStyle(
-                        fontSize: 16.0,
-                        fontWeight: FontWeight.w300,
-                      ),
-                    ),
-                  ),
-                  ListTile(
-                    title: Text(
-                      'Classification:',
-                      style: const TextStyle(
-                        fontSize: 16.0,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    subtitle: Text(
-                      detailDataModel.classification,
-                      style: const TextStyle(
-                        fontSize: 16.0,
-                        fontWeight: FontWeight.w300,
-                      ),
-                    ),
-                  ),
-                  ListTile(
-                    title: Text(
-                      'Recalling Firm:',
-                      style: const TextStyle(
-                        fontSize: 16.0,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    subtitle: Text(
-                      detailDataModel.recalling_firm,
-                      style: const TextStyle(
-                        fontSize: 16.0,
-                        fontWeight: FontWeight.w300,
-                      ),
-                    ),
-                  ),
-                  ListTile(
-                    title: Text(
-                      'Who Initiated Recall:',
-                      style: const TextStyle(
-                        fontSize: 16.0,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    subtitle: Text(
-                      detailDataModel.voluntary_mandated,
-                      style: const TextStyle(
-                        fontSize: 16.0,
-                        fontWeight: FontWeight.w300,
-                      ),
-                    ),
-                  ),
-                  ListTile(
-                    title: Text(
-                      'Generated Information:',
-                      style: const TextStyle(
-                        fontSize: 16.0,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    subtitle: FutureBuilder<GenerateContentResponse>(
-                      future: fetchAdditionalInfo(detailDataModel.reason_for_recall),
-                      builder: (context, snapshot) {
-                        if (snapshot.connectionState == ConnectionState.waiting) {
-                          return CircularProgressIndicator();
-                        } else if (snapshot.hasError) {
-                          return Text('Error: ${snapshot.error}');
-                        } else {
-                          final generatedText = snapshot.data?.text ?? '';
-                          return _buildRichTextWithLinks(context, generatedText);
-                        }
-                      },
-                    ),
-                  ),
+                  _buildSectionTitle('Product Description:'),
+                  _buildSectionContent(detailDataModel.product_description),
+                  _buildSectionDivider(),
+                  _buildSectionTitle('Reason for Recall:'),
+                  _buildSectionContent(detailDataModel.reason_for_recall),
+                  _buildSectionDivider(),
+                  _buildSectionTitle('Status:'),
+                  _buildSectionContent(detailDataModel.status),
+                  _buildSectionDivider(),
+                  _buildSectionTitle('Classification:'),
+                  _buildSectionContent(detailDataModel.classification),
+                  _buildSectionDivider(),
+                  _buildSectionTitle('Recalling Firm:'),
+                  _buildSectionContent(detailDataModel.recalling_firm),
+                  _buildSectionDivider(),
+                  _buildSectionTitle('Who Initiated Recall:'),
+                  _buildSectionContent(detailDataModel.voluntary_mandated),
+                  _buildSectionDivider(),
+                  _buildSectionTitle('Generated Information:'),
+                  _buildGeneratedContent(context, detailDataModel.reason_for_recall),
                 ],
               ),
             ),
@@ -165,6 +71,62 @@ class Detail extends StatelessWidget {
       ),
     );
   }
+
+  Widget _buildSectionTitle(String title) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Text(
+        title,
+        style: TextStyle(
+          fontSize: 16.5,
+          fontWeight: FontWeight.bold,
+          color: Colors.black,
+          wordSpacing: 2,
+          fontFamily: 'SanFrancisco',
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSectionContent(String content) {
+    return Text(
+      content,
+      style: TextStyle(
+        fontSize: 16.5,
+        fontWeight: FontWeight.w300,
+        color: Colors.black,
+        decoration: TextDecoration.none,
+        fontFamily: 'SanFrancisco',
+      ),
+    );
+  }
+
+  Widget _buildSectionDivider() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      child: Divider(
+        color: Colors.grey.shade300,
+        thickness: 1,
+      ),
+    );
+  }
+
+  Widget _buildGeneratedContent(BuildContext context, String reason) {
+    return FutureBuilder<GenerateContentResponse>(
+      future: fetchAdditionalInfo(reason),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(child: CircularProgressIndicator());
+        } else if (snapshot.hasError) {
+          return Text('Error: ${snapshot.error}');
+        } else {
+          final generatedText = snapshot.data?.text ?? '';
+          return _buildRichTextWithLinks(context, generatedText);
+        }
+      },
+    );
+  }
+
 
   Widget _buildRichTextWithLinks(BuildContext context, String text) {
     final headlinePattern = RegExp(r'\*\*(.*?)\*\*');
@@ -183,10 +145,11 @@ class Detail extends StatelessWidget {
         spans.add(TextSpan(
           text: nonLinkText,
           style: const TextStyle(
-            fontSize: 16.0,
+            fontSize: 18,
             fontWeight: FontWeight.w300,
             color: Colors.black,
             decoration: TextDecoration.none,
+            fontFamily: 'SanFrancisco',
           ),
         ));
       }
@@ -194,9 +157,10 @@ class Detail extends StatelessWidget {
       spans.add(TextSpan(
         text: match.group(1),
         style: const TextStyle(
-          fontSize: 16.0,
+          fontSize: 18,
           fontWeight: FontWeight.bold,
           color: Colors.black,
+          fontFamily: 'SanFrancisco',
           wordSpacing: 2,
           decoration: TextDecoration.none,
         ),
@@ -210,27 +174,16 @@ class Detail extends StatelessWidget {
       final matchStart = match.start;
       final matchEnd = match.end;
 
-      if (matchStart > start) {
-        final nonLinkText = text.substring(start, matchStart);
-        spans.add(TextSpan(
-          text: nonLinkText,
-          style: const TextStyle(
-            fontSize: 16.0,
-            fontWeight: FontWeight.w300,
-            color: Colors.black,
-            decoration: TextDecoration.none,
-          ),
-        ));
-      }
-
       spans.add(
         TextSpan(
           text: match.group(0),
           style: const TextStyle(
-            fontSize: 16.0,
+            fontSize: 16.5,
             fontWeight: FontWeight.w300,
+            fontFamily: 'SanFrancisco',
             color: Colors.blue, // Make links blue
             decoration: TextDecoration.underline, // Underline links
+            wordSpacing: 2,
           ),
           recognizer: TapGestureRecognizer()
             ..onTap = () {
@@ -242,32 +195,20 @@ class Detail extends StatelessWidget {
       start = matchEnd;
     }
 
-    if (start < text.length) {
-      final nonLinkText = text.substring(start);
-      print("Non-link text segment: $nonLinkText");
-      spans.add(TextSpan(
-        text: nonLinkText,
-        style: const TextStyle(
-          fontSize: 16.0,
-          fontWeight: FontWeight.w300,
-          color: Colors.black,
-          decoration: TextDecoration.none,
-        ),
-      ));
-    }
-
     return RichText(text: TextSpan(children: spans));
   }
 
 
 
   void _launchURL(String url) async {
-    if (await canLaunchUrlString(url)) {
-      await launchUrlString(url);
+    final Uri _url = Uri.parse(url);
+    if (await canLaunchUrlString(_url.toString())) {
+      await launchUrlString(_url.toString());
     } else {
-      throw 'Could not launch $url';
+      throw 'Could not launch $_url';
     }
   }
+
 
   static const apiKey = 'AIzaSyAM-TzFrKzmQ_roOrqG_UwPqp27QigCzfw';
   Future<GenerateContentResponse> fetchAdditionalInfo(
@@ -275,7 +216,7 @@ class Detail extends StatelessWidget {
     final model = await GenerativeModel(model: 'gemini-pro', apiKey: apiKey);
     final prompt =
         'Give responses for the effects of consuming a product that has been recalled for: $reasonForRecall '
-        'and any additional resources you might have regarding this case';
+        'and next steps if you have consumed such a product';
     final content = [Content.text(prompt)];
     final response = await model.generateContent(content);
     return response;

@@ -72,6 +72,18 @@ import '../../detail/detail.dart';
 class Recall_Item extends StatelessWidget {
   final Recall_ItemModel newsItemModel;
 
+  Color _getColorForClassification(String classification) {
+    switch (classification) {
+      case 'CLASS I':
+        return Colors.red; // Most serious
+      case 'CLASS II':
+        return Colors.orange; // Moderate danger
+      case 'CLASS III':
+        return Colors.yellow; // Least serious
+      default:
+        return Colors.black; // Default color
+    }
+  }
   const Recall_Item({Key? key, required this.newsItemModel}) : super(key: key);
 
   @override
@@ -100,8 +112,8 @@ class Recall_Item extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
               maxLines: 2,
               style: TextStyle(
-                fontSize: 18, // Increased title size
-                fontWeight: FontWeight.w600,
+                fontSize: 16.5, // Increased title size
+                fontWeight: FontWeight.w700,
               ),
             ),
             SizedBox(height: 5), // More vertical space
@@ -109,17 +121,12 @@ class Recall_Item extends StatelessWidget {
               'Reason: ${newsItemModel.reason_for_recall}',
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(fontSize: 15),
-            ),
-            SizedBox(height: 5),
-            Text(
-              'Status: ${newsItemModel.status}',
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
               style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w300,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w400
+
               ),
+
             ),
             SizedBox(height: 5),
             Text(
@@ -128,9 +135,11 @@ class Recall_Item extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 fontSize: 14,
-                fontWeight: FontWeight.w300,
+                fontWeight: FontWeight.w200,
+                color: _getColorForClassification(newsItemModel.classification),
               ),
             ),
+
           ],
         ),
       ),
