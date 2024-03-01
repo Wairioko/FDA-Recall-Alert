@@ -10,7 +10,7 @@ import 'package:safe_scan/provider/user_provider.dart';
 
 class LogInPage extends StatelessWidget {
   static const String path = '/login';
-  const LogInPage({super.key});
+  const LogInPage({Key? key});
 
   @override
   Widget build(BuildContext context) {
@@ -49,102 +49,140 @@ class LogInPage extends StatelessWidget {
       }
     }
 
+
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('SAFE SCAN'),
-      ),
+      backgroundColor: Colors.grey.shade300,
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: Form(
-            key: formkey,
-            child: Column(
-              children: [
-                const SizedBox(
-                  height: 50.0,
-                ),
-                Padding(
-                  padding:
-                  const EdgeInsets.symmetric(horizontal: 10.0, vertical: 0.0),
-                  child: SvgPicture.asset(
-                    "assets/Images/LogIn.svg",
-                    height: 200.0,
-                    width: 200.0,
-                    // fit: BoxFit.cover,
+        child: Center(
+          child: SingleChildScrollView(
+            child: Form(
+              key: formkey, // Assign the GlobalKey<FormState> to the Form widget
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  //logo
+                  Container(
+                      height: 250,
+                      child: Image.asset('assets/image/login.png')
                   ),
-                ),
-                const SizedBox(
-                  height: 30,
-                ),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 8.0),
-                  child: Container(
-                    child: Text(
-                      "Log In",
-                      style: GoogleFonts.lato(fontSize: 50.0, color: Colors.blue),
+                  //Hello Again
+                  Text(
+                    'Hello Again! ',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 36),
+                  ),
+                  SizedBox(
+                    height: 10,
+                  ),
+                  Text(
+                    'Welcome back, you\'ve been missed! ',
+                    style: TextStyle(fontSize: 20),
+                  ),
+                  SizedBox(
+                    height: 50,
+                  ),
+                  //email textfield
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 25.0),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.grey[200],
+                        border: Border.all(color: Colors.white),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.only(left: 5.0),
+                        child: TextFormField( // Use TextFormField instead of TextField
+                          controller: email, // Provide the TextEditingController
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter your email';
+                            }
+                            return null;
+                          },
+                          decoration: InputDecoration(
+                              prefixIcon: Icon(Icons.email),
+                              hintText: 'Email',
+                              border: InputBorder.none),
+                        ),
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(
-                  height: 10,
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 5.0),
-                  child: TextFormField(
-                    controller: email,
-                    decoration: InputDecoration(
-                        suffixIcon: const Icon(CupertinoIcons.mail),
-                        hintText: "username@gmail.com",
-                        labelText: "Enter Email",
-                        border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10))),
-                    validator: (value) {
-                      if (value!.isEmpty) {
-                        return "Email Can Not Be Empty";
-                      }
-                      return null;
-                    },
+                  SizedBox(
+                    height: 25,
                   ),
-                ),
-                const SizedBox(
-                  height: 10,
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 5.0),
-                  child: TextFormField(
-                    obscureText: true,
-                    controller: password,
-                    decoration: InputDecoration(
-                        suffixIcon: const Icon(CupertinoIcons.lock),
-                        hintText: "Abcd@54#87",
-                        labelText: "Enter Password",
-                        border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10))),
-                    validator: (value) {
-                      if (value!.isEmpty) {
-                        return "Password Can Not Be Empty";
-                      }
-                      return null;
-                    },
+                  //password
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 25.0),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.grey[200],
+                        border: Border.all(color: Colors.white),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.only(left: 5.0),
+                        child: TextFormField( // Use TextFormField instead of TextField
+                          controller: password, // Provide the TextEditingController
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter your password';
+                            }
+                            return null;
+                          },
+                          obscureText: true,
+                          decoration: InputDecoration(
+                              prefixIcon: Icon(Icons.password),
+                              hintText: 'Password',
+                              border: InputBorder.none),
+                        ),
+                      ),
+                    ),
                   ),
-                ),
-                const SizedBox(
-                  height: 10.0,
-                ),
-                ElevatedButton(
-                  onPressed: () {
-                    moveToHome(context);
-                  },
-                  child: const Text(
-                    "Log In",
-                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                  SizedBox(
+                    height: 20,
                   ),
-                ),
-                TextButton(
-                  onPressed: () => Navigator.push(
-                      context, MaterialPageRoute(builder: (context) => const SignUpPage())),
-                  child: const Text("Create An Account"),
-                ),
-              ],
+
+                  //signin button
+                  //TODO: Replace with MaterialButton
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                        fixedSize: Size(300, 69),
+                        primary: Colors.lightBlueAccent,
+                        //padding: EdgeInsets.symmetric(horizontal: 50, vertical: 20),
+                        textStyle: const TextStyle(
+                            fontSize: 25, fontWeight: FontWeight.bold),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20))),
+                    onPressed: () {moveToHome(context);},
+                    child: Text('Sign In'),
+                  ),
+                  SizedBox(
+                    height: 25,
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: const [
+                      Text(
+                        'Not a member?',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        'Register Now',
+                        style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.blue),
+
+                      )
+                    ],
+                  )
+
+                  //not a member? register button
+                ],
+              ),
             ),
           ),
         ),

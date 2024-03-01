@@ -2,7 +2,6 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import '../../../model/detail_data_model.dart';
-import '../../shared/common_appbar.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
 
 
@@ -21,47 +20,44 @@ class Detail extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: Text("Product Details",
+          style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontFamily: 'SanFrancisco'
+          ),
+
+        ),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
-              padding: EdgeInsets.all(18),
+              padding: EdgeInsets.all(16),
+              margin: EdgeInsets.only(bottom: 16),
               decoration: BoxDecoration(
-                border: Border(bottom: BorderSide(color: Colors.grey.shade300)),
+                color: Colors.white60.withOpacity(0.4),
+                borderRadius: BorderRadius.circular(28),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black12.withOpacity(0.1),
+                    blurRadius: 3,
+                    offset: Offset(2, 2),
+                  ),
+                ],
               ),
-              child: CommonAppBar(
-                onTabCallback: () => Navigator.of(context).pop(),
-                darkAssetLocation: 'assets/icons/arrow.svg',
-                lightAssetLocation: 'assets/icons/light_arrow.svg',
-                title: 'Product Recall Details',
-                tooltip: 'Back to dashboard',
-              ),
-            ),
-            Container(
-              padding: EdgeInsets.all(18),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildSectionTitle('Product Description:'),
-                  _buildSectionContent(detailDataModel.product_description),
-                  _buildSectionDivider(),
-                  _buildSectionTitle('Reason for Recall:'),
-                  _buildSectionContent(detailDataModel.reason_for_recall),
-                  _buildSectionDivider(),
-                  _buildSectionTitle('Status:'),
-                  _buildSectionContent(detailDataModel.status),
-                  _buildSectionDivider(),
-                  _buildSectionTitle('Classification:'),
-                  _buildSectionContent(detailDataModel.classification),
-                  _buildSectionDivider(),
-                  _buildSectionTitle('Recalling Firm:'),
-                  _buildSectionContent(detailDataModel.recalling_firm),
-                  _buildSectionDivider(),
-                  _buildSectionTitle('Who Initiated Recall:'),
-                  _buildSectionContent(detailDataModel.voluntary_mandated),
-                  _buildSectionDivider(),
-                  _buildSectionTitle('Generated Information:'),
+                  _buildDetailRow('Product Recall:', detailDataModel.product_description),
+                  _buildDetailRow('Status:', detailDataModel.status),
+                  _buildDetailRow('Classification:', detailDataModel.classification),
+                  _buildDetailRow('Reason for Recall:', detailDataModel.reason_for_recall),
                   _buildGeneratedContent(context, detailDataModel.reason_for_recall),
                 ],
               ),
@@ -71,6 +67,35 @@ class Detail extends StatelessWidget {
       ),
     );
   }
+// Helper function
+  Widget _buildDetailRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+      child: Column( // No need for the extra container here
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+              fontFamily: 'SanFrancisco',
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 16,
+              fontFamily: 'SanFrancisco',
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
 
   Widget _buildSectionTitle(String title) {
     return Padding(
@@ -78,9 +103,9 @@ class Detail extends StatelessWidget {
       child: Text(
         title,
         style: TextStyle(
-          fontSize: 16.5,
-          fontWeight: FontWeight.bold,
-          color: Colors.black,
+          fontSize: 17, // Slightly larger
+          fontWeight: FontWeight.w600, // Slightly bolder
+          color: Colors.black87, // Slightly darker
           wordSpacing: 2,
           fontFamily: 'SanFrancisco',
         ),
@@ -88,18 +113,80 @@ class Detail extends StatelessWidget {
     );
   }
 
+
+
+  Widget _buildGeneratedContent(BuildContext context, String reason) {
+    return FutureBuilder<GenerateContentResponse>(
+      future: fetchAdditionalInfo(reason),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(
+            child: Column( // For better loading indication
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircularProgressIndicator(),
+                SizedBox(height: 10),
+                Text("Generating insights..."),
+              ],
+            ),
+          );
+        } else if (snapshot.hasError) {
+          return Center( // More robust error handling
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.error_outline, color: Colors.red),
+                SizedBox(height: 10),
+                Text("Couldn't generate insights. Please try again."),
+              ],
+            ),
+          );
+        } else {
+          final generatedText = snapshot.data?.text ?? '';
+          return Container( // Visual separation
+            padding: EdgeInsets.all(12),
+            margin: EdgeInsets.only(top: 16), // Spacing
+            decoration: BoxDecoration(
+              color: Colors.blueGrey.shade100,
+              border: Border.all(color: Colors.grey.shade300),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text("Generated AI Insights:", style: TextStyle(fontWeight: FontWeight.w500, fontFamily: 'SanFrancisco',)),
+                SizedBox(height: 8),
+                _buildRichTextWithLinks(context, generatedText),
+              ],
+            ),
+          );
+        }
+      },
+    );
+  }
+
+
+
   Widget _buildSectionContent(String content) {
-    return Text(
-      content,
-      style: TextStyle(
-        fontSize: 16.5,
-        fontWeight: FontWeight.w300,
-        color: Colors.black,
-        decoration: TextDecoration.none,
-        fontFamily: 'SanFrancisco',
+    return Container(
+      padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.only(bottom: 12), // Add margin
+      decoration: BoxDecoration(
+        color: Colors.grey.shade100,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Text(
+        content,
+        style: TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.w400, // Regular weight
+          fontFamily: 'SanFrancisco', // Example secondary font
+          // ...
+        ),
       ),
     );
   }
+
 
   Widget _buildSectionDivider() {
     return Padding(
@@ -108,22 +195,6 @@ class Detail extends StatelessWidget {
         color: Colors.grey.shade300,
         thickness: 1,
       ),
-    );
-  }
-
-  Widget _buildGeneratedContent(BuildContext context, String reason) {
-    return FutureBuilder<GenerateContentResponse>(
-      future: fetchAdditionalInfo(reason),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(child: CircularProgressIndicator());
-        } else if (snapshot.hasError) {
-          return Text('Error: ${snapshot.error}');
-        } else {
-          final generatedText = snapshot.data?.text ?? '';
-          return _buildRichTextWithLinks(context, generatedText);
-        }
-      },
     );
   }
 

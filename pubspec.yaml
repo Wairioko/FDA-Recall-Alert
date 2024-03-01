@@ -86,9 +86,9 @@ flutter_native_splash:
   ios: true
   web: true
   color: "#FFFFFF"
-  image: assets/image/launcher_icon/launcher_icon_4x.png
+  image: assets/image/launcher_icon/launcher_icon.png
   color_dark: "#2F2F2F"
-  image_dark: assets/image/launcher_icon/launcher_icon_4x.png
+  image_dark: assets/image/launcher_icon/launcher_icon.png
   android_gravity: center
   ios_content_mode: center
   web_imae_mode: center
@@ -101,6 +101,7 @@ flutter:
     - assets/image/launcher_icon/launcher_icon.png
     - assets/icons/
     - assets/loading.flr
+    - assets/image/login.png
 
   fonts:
     - family: Nunito
