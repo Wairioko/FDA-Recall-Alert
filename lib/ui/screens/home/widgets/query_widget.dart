@@ -5,6 +5,7 @@ import 'package:safe_scan/model/request_query.dart';
 import 'package:safe_scan/ui/shared/theme/theme_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../../utility/news_texts.dart';
 import '../cubit/home_cubit.dart';
 import 'package:share_plus/share_plus.dart';
@@ -392,16 +393,36 @@ class _QueryWidgetState extends State<QueryWidget> {
                         // Display as numbered list in a dialog
                         if (descriptions.isNotEmpty) {
                           String message = '';
-                          for (int i = 0; i < 10 && i < descriptions.length; i++) { // Ensure descriptions.length bounds
+                          for (int i = 0; i < 5 && i < descriptions.length; i++) { // Ensure descriptions.length bounds
                             message += '${i + 1}. ${descriptions[i]}\n';
                           }
+                          String title = '5 Most Recently Recalled Items in $state_value';
+                          String referral = 'Download our app to see more recalled items in your state, check your shopping against the recalled list nationwide, and access other features!';
+                          String referralLink = 'https://yourapp.com/download?ref=referrerID';
+
                           showDialog(
                             context: context,
                             builder: (BuildContext context) {
                               return AlertDialog(
-                                title: Text('10 Most Recently Recalled Items in $state_value'),
+                                title: Text(title),
                                 content: SingleChildScrollView(
-                                  child: Text(message),
+                                  child: Column(
+                                    children: [
+                                      Text(message),
+                                      SizedBox(height: 10),
+                                      InkWell(
+                                        onTap: () {
+                                          // Open the app store with referral link
+                                          // You can customize this based on the platform (iOS or Android)
+                                          launch(referralLink);
+                                        },
+                                        child: Text(
+                                          'Download the app now!',
+                                          style: TextStyle(color: Colors.blue, decoration: TextDecoration.underline),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                                 actions: <Widget>[
                                   TextButton(
@@ -413,7 +434,7 @@ class _QueryWidgetState extends State<QueryWidget> {
                                   TextButton(
                                     onPressed: () {
                                       // Share the message
-                                      Share.share(message); // This will share the message to other apps
+                                      Share.share('$title\n$message\n$referral\n$referralLink');// This will share the message to other apps
                                       Navigator.of(context).pop(); // Close the dialog
                                     },
                                     child: Text('Share'),
