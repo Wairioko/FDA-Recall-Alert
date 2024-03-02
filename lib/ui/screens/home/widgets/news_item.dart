@@ -2,73 +2,6 @@ import 'package:flutter/material.dart';
 import '../../../../model/new_item_model.dart';
 import '../../detail/detail.dart';
 
-
-// class Recall_Item extends StatelessWidget {
-//   final Recall_ItemModel newsItemModel;
-//
-//   const Recall_Item({Key? key, required this.newsItemModel}) : super(key: key);
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return InkWell(
-//       onTap: () {
-//         Navigator.of(context).pushNamed(
-//           Detail.path,
-//           arguments: newsItemModel.detailDataModel,
-//         );
-//       },
-//       child: Container(
-//         width: double.infinity,
-//         child: ListTile(
-//           title: Text(
-//             newsItemModel.product_description,
-//             overflow: TextOverflow.ellipsis,
-//             maxLines: 3,
-//             style: TextStyle(
-//               fontSize: 16,
-//               fontWeight: FontWeight.w500,
-//             ),
-//           ),
-//           subtitle: Column(
-//             crossAxisAlignment: CrossAxisAlignment.start,
-//             children: [
-//               SizedBox(height: 4),
-//               Text(
-//                 'Reason: ${newsItemModel.reason_for_recall}',
-//                 maxLines: 1,
-//                 overflow: TextOverflow.ellipsis,
-//                 style: TextStyle(
-//                   fontSize: 14,
-//                   fontWeight: FontWeight.w300,
-//                 ),
-//               ),
-//               SizedBox(height: 2),
-//               Text(
-//                 'Status: ${newsItemModel.status}',
-//                 maxLines: 1,
-//                 overflow: TextOverflow.ellipsis,
-//                 style: TextStyle(
-//                   fontSize: 14,
-//                   fontWeight: FontWeight.w300,
-//                 ),
-//               ),
-//               SizedBox(height: 2),
-//               Text(
-//                 'Classification: ${newsItemModel.classification}',
-//                 maxLines: 1,
-//                 overflow: TextOverflow.ellipsis,
-//                 style: TextStyle(
-//                   fontSize: 14,
-//                   fontWeight: FontWeight.w300,
-//                 ),
-//               ),
-//             ],
-//           ),
-//         ),
-//       ),
-//     );
-//   }
-// }
 class Recall_Item extends StatelessWidget {
   final Recall_ItemModel newsItemModel;
 
@@ -114,6 +47,7 @@ class Recall_Item extends StatelessWidget {
               style: TextStyle(
                 fontSize: 16.5, // Increased title size
                 fontWeight: FontWeight.w700,
+                fontFamily: 'SanFrancisco'
               ),
             ),
             SizedBox(height: 5), // More vertical space
@@ -123,7 +57,8 @@ class Recall_Item extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
                   fontSize: 15,
-                  fontWeight: FontWeight.w400
+                  fontWeight: FontWeight.w400,
+                  fontFamily: 'SanFrancisco'
 
               ),
 
@@ -136,6 +71,7 @@ class Recall_Item extends StatelessWidget {
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w200,
+                fontFamily: 'SanFrancisco',
                 color: _getColorForClassification(newsItemModel.classification),
               ),
             ),

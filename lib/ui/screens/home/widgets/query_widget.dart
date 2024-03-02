@@ -35,6 +35,7 @@ class _QueryWidgetState extends State<QueryWidget> {
   String itemHintText = "Recall Category";
 
   final TextEditingController _controller = TextEditingController();
+  bool shouldSearch = false;
   bool showClearButton = false;
   bool showSearchParameters = true;
 
@@ -86,7 +87,9 @@ class _QueryWidgetState extends State<QueryWidget> {
     widget.homeCubit.getTopHeadlines(requestQuery: requestQuery);
   }
 
+  // Method to handle submission event when "Done" or "Enter" key is pressed
   void _filterItems(String query) {
+    // Your existing logic for filtering items goes here
     setState(() {
       // Update the requestQuery's query field
       requestQuery.query = query;
@@ -98,34 +101,79 @@ class _QueryWidgetState extends State<QueryWidget> {
         clearItem();
       }
 
-      // Trigger data reload
-      reloadData();
+      // Show/hide search elements and reset search button based on query
+      if (query.isNotEmpty) {
+        // Hide search elements and show reset search button
+        showSearchParameters = false;
+        reloadData();
+      } else {
+        // Show search elements and hide reset search button
+        showSearchParameters = true;
+      }
     });
   }
+
+
+
+  void _onSearchTextChanged() {
+    if (shouldSearch) {
+      shouldSearch = false; // Reset the flag
+      _filterItems(_controller.text); // Call _filterItems when the search should be performed
+    }
+  }
+
+  void resetSearchParameters() {
+    setState(() {
+      // Clear the text field
+      _controller.clear();
+
+      // Reset all search parameters
+      clearState();
+      clearClassification();
+      clearItem();
+      requestQuery.query = ""; // Reset query
+    });
+
+    // Trigger data reload with empty query
+    reloadData();
+  }
+
+
+  @override
+  void initState() {
+    super.initState();
+    _controller.addListener(_onSearchTextChanged);
+  }
+
+
   Widget build(BuildContext context) {
     return BlocBuilder<ThemeCubit, ThemeState>(
       builder: (context, state) {
         return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 10),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               // Recall Category Widget
               if (showSearchParameters)
                 Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10.0),
-                    color: Colors.grey[200],
+                  decoration:
+                  BoxDecoration(
+                    borderRadius: BorderRadius.circular(30.0), // Softer border
+                    color: Colors.grey.shade200,
                   ),
-                  padding: const EdgeInsets.all(10.0),
+                  padding: const EdgeInsets.symmetric(vertical: 0.8, horizontal: 8.0),
                   child: DropdownButton<String>(
-                    dropdownColor: Colors.grey[300],
+                    dropdownColor: Colors.grey.shade200,
                     underline: const SizedBox(),
                     isExpanded: true,
                     hint: Text(
-                      itemHintText, // Assuming this should be a placeholder text
+                      itemHintText,
                       overflow: TextOverflow.ellipsis,
                       maxLines: 1,
+                      style: TextStyle(
+                          color: Colors.grey.shade600 // Placeholder text less bold
+                      ),
                     ),
                     items: InformationTexts.itemList().map((String value) {
                       return DropdownMenuItem<String>(
@@ -147,20 +195,30 @@ class _QueryWidgetState extends State<QueryWidget> {
               if (showSearchParameters)
                 Container(
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10.0),
+                    borderRadius: BorderRadius.circular(30.0),
                     color: Colors.grey[200],
                   ),
-                  child: TextField(
+                  padding: const EdgeInsets.symmetric(vertical: 1.0, horizontal: 8.0),
+                  child: // TextField widget
+                  // Modify the TextField widget to set the flag when the "Enter" key is pressed
+                  TextField(
                     controller: _controller,
-                    onChanged: _filterItems, // Call _filterItems when the text changes
+                    onSubmitted: (String value) {
+                      shouldSearch = true; // Set the flag to trigger search on submission
+                      _onSearchTextChanged(); // Call _onSearchTextChanged manually after submission
+                    },
+                    onChanged: (String value) {
+                      shouldSearch = false;
+                    },
                     decoration: const InputDecoration(
                       hintText: 'Enter Query',
-                      contentPadding: EdgeInsets.all(16.0),
+                      contentPadding: EdgeInsets.all(8.0),
                       border: InputBorder.none,
+                      prefixIcon: Icon(Icons.search),
                     ),
                   ),
                 ),
-              const SizedBox(height: 10.0), // Adding padding between elements
+              const SizedBox(height: 10.0, width: 10,), // Adding padding between elements
               // Dropdowns
               if (showSearchParameters)
                 Row(
@@ -168,10 +226,10 @@ class _QueryWidgetState extends State<QueryWidget> {
                     Flexible(
                       child: Container(
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(10.0),
+                          borderRadius: BorderRadius.circular(30.0),
                           color: Colors.grey[200],
                         ),
-                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                        padding: const EdgeInsets.symmetric(horizontal: 20.0),
                         child: DropdownButton<String>(
                           dropdownColor: Colors.grey[300],
                           underline: const SizedBox(),
@@ -197,11 +255,11 @@ class _QueryWidgetState extends State<QueryWidget> {
                         ),
                       ),
                     ),
-                    const SizedBox(width: 10.0),
+                    const SizedBox(height: 10, width: 10.0),
                     Flexible(
                       child: Container(
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(10.0),
+                          borderRadius: BorderRadius.circular(30.0),
                           color: Colors.grey[200],
                         ),
                         padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -222,7 +280,7 @@ class _QueryWidgetState extends State<QueryWidget> {
                           }).toList(),
                           onChanged: (String? newValue) {
                             setState(() {
-                              classificationHintText = newValue ?? 'Classification';
+                              classificationHintText = newValue ?? 'Class';
                               requestQuery.classification =
                                   newValue ?? InformationTexts.classificationList()[0];
                             });
@@ -230,9 +288,10 @@ class _QueryWidgetState extends State<QueryWidget> {
                         ),
                       ),
                     ),
+
                   ],
+
                 ),
-              // Buttons
               if (showSearchParameters)
                 Padding(
                   padding: EdgeInsets.all(8), // Adjust the padding values as needed
@@ -243,19 +302,23 @@ class _QueryWidgetState extends State<QueryWidget> {
                         showSearchParameters = false;
                       });
                     },
-                    color: CupertinoColors.activeGreen, // Customize the color as needed
-                    borderRadius: BorderRadius.circular(10), // Adjust the border radius
+                    color: CupertinoColors.activeBlue, // Standard Apple color
+                    padding: const EdgeInsets.all(10.0), // More padding within the button
+                    borderRadius: BorderRadius.circular(30), // Adjust the border radius
                     child: Text(
                       InformationTexts.get()['search']!,
                       style: const TextStyle(
-                        color: CupertinoColors.white, // Text color should contrast with the button color
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-
+                          color: CupertinoColors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          fontFamily: 'SanFrancisco'
                       ),
                     ),
                   ),
                 ),
+              // Buttons
+
+              // Inside your build method, where you want to place the reset button
 
               if (!showSearchParameters)
                 Row(
@@ -268,15 +331,16 @@ class _QueryWidgetState extends State<QueryWidget> {
                           showSearchParameters = true;
                         });
                       },
-                      style: ButtonStyle(
-                        backgroundColor: MaterialStateProperty.all<Color>(Colors.red),
-                        textStyle: MaterialStateProperty.all<TextStyle>(
-                          TextStyle(color: Colors.white),
-                        ),
+                      style: ElevatedButton.styleFrom(
+                        primary: Colors.orange, // Use primary instead of backgroundColor
+                        padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 12.0),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
+                        onPrimary: Colors.white.withOpacity(0.8),
+                        shadowColor: Colors.grey,
+                        elevation: 3,
                       ),
-                      child: Text('Clear All Parameters'),
+                      child: Text('Clear Filters'),
                     ),
-
 
                     ElevatedButton(
                       onPressed: () {
@@ -284,96 +348,105 @@ class _QueryWidgetState extends State<QueryWidget> {
                           showSearchParameters = true;
                         });
                       },
+                      style: ElevatedButton.styleFrom(
+                        primary: Colors.blue, // Use primary instead of backgroundColor
+                        padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 12.0),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
+                        onPrimary: Colors.white.withOpacity(0.8),
+                        shadowColor: Colors.grey,
+                        elevation: 3,
+                      ),
                       child: Text('Search Again'),
+                    ),
+
+
+                  ],
+                ),
+
+                SizedBox(height: 10),
+              if (!showSearchParameters)// Add some spacing between the buttons and the share button
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center, // Align the share button to the center
+                  children: [
+                    ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        primary: Colors.greenAccent,
+                        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 15), // Adjust padding
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10), // Add border radius
+                        ),
+                      ),
+                      icon: Icon(Icons.share_outlined),
+                      label: Text("Share data with Loved Ones"), // Adjust button label
+                      onPressed: () {
+                        var data = ApiData.responseJson;
+                        // Extract product descriptions
+                        List<String> descriptions = [];
+                        for (var item in data!) {
+                          String? description = item['product_description'];
+                          if (description != null && description.isNotEmpty) {
+                            descriptions.add(description);
+                          }
+                        }
+
+                        // Display as numbered list in a dialog
+                        if (descriptions.isNotEmpty) {
+                          String message = '';
+                          for (int i = 0; i < 10 && i < descriptions.length; i++) { // Ensure descriptions.length bounds
+                            message += '${i + 1}. ${descriptions[i]}\n';
+                          }
+                          showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return AlertDialog(
+                                title: Text('10 Most Recently Recalled Items in $state_value'),
+                                content: SingleChildScrollView(
+                                  child: Text(message),
+                                ),
+                                actions: <Widget>[
+                                  TextButton(
+                                    onPressed: () {
+                                      Navigator.of(context).pop(); // Close the dialog
+                                    },
+                                    child: Text('Close'),
+                                  ),
+                                  TextButton(
+                                    onPressed: () {
+                                      // Share the message
+                                      Share.share(message); // This will share the message to other apps
+                                      Navigator.of(context).pop(); // Close the dialog
+                                    },
+                                    child: Text('Share'),
+                                  ),
+                                ],
+                              );
+                            },
+                          );
+                        } else {
+                          // Show a message if there are no descriptions
+                          showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return AlertDialog(
+                                title: Text('No Descriptions Found'),
+                                content: Text('There are no product descriptions to share.'),
+                                actions: <Widget>[
+                                  TextButton(
+                                    onPressed: () {
+                                      Navigator.of(context).pop(); // Close the dialog
+                                    },
+                                    child: Text('OK'),
+                                  ),
+                                ],
+                              );
+                            },
+                          );
+                        }
+                      },
                     ),
                   ],
                 ),
 
-              SizedBox(height: 10),
-              if (!showSearchParameters)// Add some spacing between the buttons and the share button
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center, // Align the share button to the center
-                children: [
-
-                  IconButton(
-                    icon: Icon(Icons.ios_share_outlined),
-                    color: Colors.greenAccent,
-                    tooltip: "Share data for With Loved Ones",
-                    hoverColor: Colors.green,
-                    iconSize: 25, // Adjust the size of the icon
-                    padding: EdgeInsets.all(15), // Add padding to make the touch area larger
-                    splashRadius: 25,
-                    onPressed: () {
-                      var data = ApiData.responseJson;
-                      // Extract product descriptions
-                      List<String> descriptions = [];
-                      for (var item in data!) {
-                        String? description = item['product_description'];
-                        if (description != null && description.isNotEmpty) {
-                          descriptions.add(description);
-                        }
-                      }
-
-                      // Display as numbered list in a dialog
-                      if (descriptions.isNotEmpty) {
-                        String message = '';
-                        for (int i = 0; i < 10; i++) {
-                          message += '${i + 1}. ${descriptions[i]}\n';
-                        }
-                        showDialog(
-                          context: context,
-                          builder: (BuildContext context) {
-                            return AlertDialog(
-                              title: Text('10 Recalled Items For $state_value'),
-                              content: SingleChildScrollView(
-                                child: Text(message),
-                              ),
-                              actions: <Widget>[
-                                TextButton(
-                                  onPressed: () {
-                                    Navigator.of(context).pop(); // Close the dialog
-                                  },
-                                  child: Text('Close'),
-                                ),
-                                TextButton(
-                                  onPressed: () {
-                                    // Share the message
-
-                                    Share.share(message); // This will share the message to other apps
-                                    // Navigator.of(context).pop(); // Close the dialog
-                                    Navigator.of(context).pop(); // Close the dialog
-                                  },
-                                  child: Text('Share'),
-                                ),
-                              ],
-                            );
-                          },
-                        );
-                      } else {
-                        // Show a message if there are no descriptions
-                        showDialog(
-                          context: context,
-                          builder: (BuildContext context) {
-                            return AlertDialog(
-                              title: Text('No Descriptions Found'),
-                              content: Text('There are no product descriptions to share.'),
-                              actions: <Widget>[
-                                TextButton(
-                                  onPressed: () {
-                                    Navigator.of(context).pop(); // Close the dialog
-                                  },
-                                  child: Text('OK'),
-                                ),
-                              ],
-                            );
-                          },
-                        );
-                      }
-                    },
-
-                  ),
-                ],
-              ),
             ],
           ),
 
