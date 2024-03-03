@@ -12,6 +12,7 @@ import '../../user_auth/signup.dart';
 import '../../user_auth/loggedin.dart';
 import '../../receipts/view_receipts.dart';
 import '../../watchlist/watchlist_home.dart';
+import '../../watchlist/watchlist_items.dart';
 
 
 User? user = FirebaseAuth.instance.currentUser;
@@ -63,15 +64,72 @@ class MenuWidget extends StatelessWidget {
                     text: 'Logged In',
                   ),
                 // if (user != null)
-                  _buildMenuItem(
-                    onTap: () {
-                      Navigator.of(context).pushNamed(MainScreen.path);
-                    },
-                    icon: Utility.isLightTheme(state.themeType)
-                        ? 'assets/icons/camera1.svg'
-                        : 'assets/icons/camera1.svg',
-                    text: 'Scan Receipt/Item',
-                  ),
+                Container(
+                    margin: EdgeInsets.only(left: 10),
+                    child: DropdownButton<String>(
+                      value: 'My Watchlist',
+                      onChanged: (String? newValue) {
+                        // Handle dropdown item selection here
+                        if (newValue == 'My Watchlist') {
+                          Navigator.of(context).pushNamed(WatchlistScreen.path);
+                        } else {
+                          // Navigate to other screens based on dropdown selection
+                          Navigator.of(context).pushNamed(
+                            WatchlistCategoryItemsScreen.path,
+                            arguments: newValue,
+                          );
+                        }
+                      },
+                      items: <String>[
+                        'My Watchlist',
+                        'FOOD',
+                        'DRUG',
+                        'DEVICE'
+                        // Add more items as needed
+                      ].map<DropdownMenuItem<String>>((String value) {
+                        // You can customize the icon based on the value
+                        IconData iconData;
+                        switch (value) {
+                          case 'My Watchlist':
+                            iconData = Icons.watch_later; // Change to your watchlist icon
+                            break;
+                          case 'FOOD':
+                            iconData = Icons.fastfood;
+                            break;
+                          case 'DRUG':
+                            iconData = Icons.local_pharmacy;
+                            break;
+                          case 'DEVICE':
+                            iconData = Icons.devices;
+                            break;
+                          default:
+                            iconData = Icons.error_outline; // Default icon
+                        }
+                        return DropdownMenuItem<String>(
+                          value: value,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.start, // Adjust alignment as needed
+                            children: [
+                              Icon(iconData), // Icon
+                              SizedBox(width: 15), // Adjust spacing between icon and text
+                              Text(value), // Text
+                            ],
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                ),
+
+                // if (user != null)
+                _buildMenuItem(
+                  onTap: () {
+                    Navigator.of(context).pushNamed(MainScreen.path);
+                  },
+                  icon: Utility.isLightTheme(state.themeType)
+                      ? 'assets/icons/camera1.svg'
+                      : 'assets/icons/camera1.svg',
+                  text: 'Scan Receipt',
+                ),
                 if (user != null)
                   _buildMenuItem(
                     onTap: () {
@@ -82,27 +140,8 @@ class MenuWidget extends StatelessWidget {
                         : 'assets/icons/shopping-cart.svg',
                     text: 'My Receipts',
                   ),
-                // if (user != null)
-                  _buildMenuItem(
-                    onTap: () {
-                      Navigator.of(context).pushNamed(WatchlistScreen.path);
-                    },
-                    icon: Utility.isLightTheme(state.themeType)
-                        ? 'assets/icons/watchlist.svg'
-                        : 'assets/icons/watchlist.svg',
-                    text: 'My Watchlist',
-                  ),
 
-                if (user != null)
-                _buildMenuItem(
-                  onTap: () {
-                    Navigator.of(context).pushNamed(ReceiptListScreen.path);
-                  },
-                  icon: Utility.isLightTheme(state.themeType)
-                      ? 'assets/icons/notifications.svg'
-                      : 'assets/icons/notifications.svg',
-                  text: 'Notifications',
-                ),
+
                 _buildMenuItem(
                   onTap: () {
                     context.read<ThemeCubit>().toggleTheme();
@@ -110,7 +149,9 @@ class MenuWidget extends StatelessWidget {
                   icon: Utility.isLightTheme(state.themeType)
                       ? 'assets/icons/theme.svg'
                       : 'assets/icons/light_theme.svg',
-                  text: Utility.isLightTheme(state.themeType) ? 'Dark' : 'Light',
+                  text: Utility.isLightTheme(state.themeType)
+                      ? 'Dark'
+                      : 'Light',
                 ),
                 _buildMenuItem(
                   onTap: () {
@@ -145,23 +186,20 @@ class MenuWidget extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               SizedBox(
-                height: 15,
-                width: 15,
+                height: 24, // Adjust the height according to your requirement
+                width: 24, // Adjust the width according to your requirement
                 child: SvgPicture.asset(
                   icon,
                   fit: BoxFit.contain,
                   alignment: Alignment.center,
                 ),
               ),
-              Container(
-                margin: const EdgeInsets.only(left: 15),
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  text,
-                  style: const TextStyle(
-                    height: 1.5,
-                    fontSize: 15,
-                  ),
+              SizedBox(width: 15), // Adjust spacing between icon and text
+              Text(
+                text,
+                style: const TextStyle(
+                  height: 1.5,
+                  fontSize: 15,
                 ),
               ),
             ],
@@ -170,4 +208,5 @@ class MenuWidget extends StatelessWidget {
       ),
     );
   }
+
 }

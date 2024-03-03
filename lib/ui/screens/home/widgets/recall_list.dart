@@ -4,13 +4,13 @@ import 'package:flutter/material.dart';
 
 import '../../../../domain/entities/top_headlines.dart';
 import '../../../../model/new_item_model.dart';
-import 'news_item.dart';
+import 'recall_item.dart';
 
 
-class NewsList extends StatelessWidget {
+class RecallList extends StatelessWidget {
   final List<Recall_Event> articles;
 
-  const NewsList({Key? key, required this.articles}) : super(key: key);
+  const RecallList({Key? key, required this.articles}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

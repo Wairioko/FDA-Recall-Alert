@@ -1,10 +1,9 @@
 import 'package:safe_scan/domain/entities/top_headlines.dart';
-import 'package:safe_scan/ui/screens/home/widgets/news_list.dart';
+import 'package:safe_scan/ui/screens/home/widgets/recall_list.dart';
 import 'package:safe_scan/ui/screens/home/widgets/query_widget.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_zoom_drawer/flutter_zoom_drawer.dart';
 import 'package:flutter/material.dart';
-
 import '../../../../data/storage/news_hive_storage.dart';
 import '../../../shared/common_appbar.dart';
 import '../cubit/home_cubit.dart';
@@ -54,7 +53,7 @@ class _DashBoardWidgetState extends State<DashBoardWidget> {
                 darkAssetLocation: 'assets/icons/menu.svg',
                 lightAssetLocation: 'assets/icons/light_menu.svg',
                 onTabCallback: () => widget.zoomDrawerController.toggle!(),
-                title: 'Recall Safe',
+                title: 'Safe Recall',
               ),
             ),
             QueryWidget(homeCubit: _homeCubit),
@@ -65,7 +64,7 @@ class _DashBoardWidgetState extends State<DashBoardWidget> {
                   return state.when(
                     homeInitialState: () => Container(),
                     dataAvailableState: (Recalls topHeadlines) =>
-                        NewsList(
+                        RecallList(
                           articles: topHeadlines.articles,
                         ),
                     dataUnavailableState: (String reason) =>
