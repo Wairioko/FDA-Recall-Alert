@@ -53,16 +53,6 @@ class MenuWidget extends StatelessWidget {
                         : 'assets/icons/register.svg',
                     text: 'Sign Up',
                   ),
-                if (user != null)
-                  _buildMenuItem(
-                    onTap: () {
-                      Navigator.of(context).pushNamed(LoggedInPage.path);
-                    },
-                    icon: Utility.isLightTheme(state.themeType)
-                        ? 'assets/icons/logged_in_icon.svg'
-                        : 'assets/icons/light_logged_in_icon.svg',
-                    text: 'Logged In',
-                  ),
                 // if (user != null)
                 Container(
                     margin: EdgeInsets.only(left: 10),
@@ -130,6 +120,8 @@ class MenuWidget extends StatelessWidget {
                       : 'assets/icons/camera1.svg',
                   text: 'Scan Receipt',
                 ),
+
+
                 if (user != null)
                   _buildMenuItem(
                     onTap: () {
@@ -162,6 +154,42 @@ class MenuWidget extends StatelessWidget {
                       : 'assets/icons/light_about.svg',
                   text: 'About',
                 ),
+
+                SizedBox(height: 16),
+                user != null ? Container(
+                  margin: EdgeInsets.only(left: 50),
+                  child: FractionallySizedBox(
+                    widthFactor: 0.70,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        FirebaseAuth.instance.signOut();
+                        context.read<UserProvider>().setUser(null);
+                        Navigator.pushNamed(context, '/home');
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.redAccent,
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        textStyle: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 16,
+                          fontFamily: 'SF Pro Text',
+                        ),
+                        shape: const StadiumBorder(),
+                      ),
+                      child: const Text(
+                        "Log Out",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 16,
+                          fontFamily: 'SF Pro Text',
+                        ),
+                      ),
+                    ),
+                  ),
+                ) : SizedBox(), // Render an empty SizedBox if the user is not signed in
+
               ],
             ),
           ),
