@@ -333,10 +333,9 @@ class _QueryWidgetState extends State<QueryWidget> {
                         });
                       },
                       style: ElevatedButton.styleFrom(
-                        primary: Colors.orange, // Use primary instead of backgroundColor
+                        foregroundColor: Colors.white.withOpacity(0.8), backgroundColor: Colors.orange, // Use primary instead of backgroundColor
                         padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 12.0),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
-                        onPrimary: Colors.white.withOpacity(0.8),
                         shadowColor: Colors.grey,
                         elevation: 3,
                       ),
@@ -350,10 +349,9 @@ class _QueryWidgetState extends State<QueryWidget> {
                         });
                       },
                       style: ElevatedButton.styleFrom(
-                        primary: Colors.blue, // Use primary instead of backgroundColor
+                        foregroundColor: Colors.white.withOpacity(0.8), backgroundColor: Colors.blue, // Use primary instead of backgroundColor
                         padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 12.0),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
-                        onPrimary: Colors.white.withOpacity(0.8),
                         shadowColor: Colors.grey,
                         elevation: 3,
                       ),
@@ -371,7 +369,7 @@ class _QueryWidgetState extends State<QueryWidget> {
                   children: [
                     ElevatedButton.icon(
                       style: ElevatedButton.styleFrom(
-                        primary: Colors.greenAccent,
+                        backgroundColor: Colors.greenAccent,
                         padding: EdgeInsets.symmetric(horizontal: 20, vertical: 15), // Adjust padding
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10), // Add border radius

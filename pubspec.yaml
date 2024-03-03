@@ -45,6 +45,9 @@ dependencies:
   share_plus: ^7.2.2
   google_generative_ai: ^0.2.1
   url_launcher: ^6.2.5
+  sign_in_button: ^3.0.0
+  
+
 #  firebase_core_platform_interface: .0
 #  firebase_database: ^10.6.0
 
@@ -102,6 +105,8 @@ flutter:
     - assets/icons/
     - assets/loading.flr
     - assets/image/login.png
+    - assets/image/background.png
+    - assets/image/google_icon.png
 
   fonts:
     - family: Nunito
