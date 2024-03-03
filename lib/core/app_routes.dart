@@ -9,7 +9,6 @@ import '../ui/screens/home/home.dart';
 import '../ui/screens/scan/camera.dart';
 import '../ui/screens/user_auth/login.dart';
 import '../ui/screens/user_auth/signup.dart';
-import '../ui/screens/user_auth/loggedin.dart';
 import 'package:safe_scan/ui/screens/receipts/view_receipts.dart';
 
 class AppRoutes {
@@ -20,7 +19,6 @@ class AppRoutes {
       MainScreen.path: (context) => const MainScreen(),
       SignUpPage.path: (context) => const SignUpPage(),
       LogInPage.path: (context) => const LogInPage(),
-      LoggedInPage.path: (context) => const LoggedInPage(),
       ReceiptListScreen.path: (context) => const ReceiptListScreen(),
       WatchlistScreen.path: (context) =>  WatchlistScreen(),
 
