@@ -46,7 +46,7 @@ dependencies:
   google_generative_ai: ^0.2.1
   url_launcher: ^6.2.5
   sign_in_button: ^3.0.0
-  
+  purchases_flutter: ^6.22.0
 
 #  firebase_core_platform_interface: .0
 #  firebase_database: ^10.6.0

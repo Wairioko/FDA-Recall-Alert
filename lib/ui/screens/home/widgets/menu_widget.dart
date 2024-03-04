@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:safe_scan/ui/screens/user_account/user-account.dart';
 import '../../../../utility/utility.dart';
 import '../../../shared/theme/theme_cubit.dart';
 import '../../about/about_screen.dart';
@@ -32,6 +33,16 @@ class MenuWidget extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                if (user == null)
+                  _buildMenuItem(
+                    onTap: () {
+                      Navigator.of(context).pushNamed(UserAccountPage.path);
+                    },
+                    icon: Utility.isLightTheme(state.themeType)
+                        ? 'assets/icons/login.svg'
+                        : 'assets/icons/login.svg',
+                    text: 'User Account',
+                  ),
                 if (user == null)
                   _buildMenuItem(
                     onTap: () {

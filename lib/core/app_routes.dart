@@ -1,4 +1,5 @@
 import 'package:safe_scan/ui/screens/about/about_screen.dart';
+import 'package:safe_scan/ui/screens/user_account/user-account.dart';
 import 'package:safe_scan/ui/screens/watchlist/watchlist_home.dart';
 import 'package:safe_scan/ui/screens/watchlist/watchlist_items.dart';
 import 'package:flutter/material.dart';
@@ -21,6 +22,7 @@ class AppRoutes {
       LogInPage.path: (context) => const LogInPage(),
       ReceiptListScreen.path: (context) => const ReceiptListScreen(),
       WatchlistScreen.path: (context) =>  WatchlistScreen(),
+      UserAccountPage.path: (context) => UserAccountPage(),
 
       WatchlistCategoryItemsScreen.path: (context) {
         final String category = ModalRoute.of(context)?.settings.arguments as String;
