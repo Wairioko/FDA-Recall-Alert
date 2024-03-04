@@ -1,4 +1,7 @@
+import 'dart:js';
+
 import 'package:safe_scan/ui/screens/about/about_screen.dart';
+import 'package:safe_scan/ui/screens/user_account/subscriptions.dart';
 import 'package:safe_scan/ui/screens/user_account/user-account.dart';
 import 'package:safe_scan/ui/screens/watchlist/watchlist_home.dart';
 import 'package:safe_scan/ui/screens/watchlist/watchlist_items.dart';
@@ -23,6 +26,7 @@ class AppRoutes {
       ReceiptListScreen.path: (context) => const ReceiptListScreen(),
       WatchlistScreen.path: (context) =>  WatchlistScreen(),
       UserAccountPage.path: (context) => UserAccountPage(),
+      SubscriptionPage.path: (context) => SubscriptionPage(),
 
       WatchlistCategoryItemsScreen.path: (context) {
         final String category = ModalRoute.of(context)?.settings.arguments as String;
