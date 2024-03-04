@@ -1,9 +1,11 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:safe_scan/ui/screens/user_account/subscriptions.dart';
 
 User? user = FirebaseAuth.instance.currentUser;
 
 class UserAccountPage extends StatelessWidget {
+
   static const String path = '/user-account';
   @override
   Widget build(BuildContext context) {
@@ -27,7 +29,7 @@ class UserAccountPage extends StatelessWidget {
 
               // Billing and Subscriptions
               _buildSectionHeader('Billing and Subscriptions'),
-              _buildBillingSubscriptions(),
+              _buildBillingSubscriptions(context),
 
 
               // Help and Support
@@ -93,9 +95,12 @@ class UserAccountPage extends StatelessWidget {
     );
   }
 
-  Widget _buildBillingSubscriptions() {
+  Widget _buildBillingSubscriptions(BuildContext context) {
     return Card(
       child: ListTile(
+        onTap: () {
+          Navigator.of(context).pushNamed(SubscriptionPage.path);
+        },
         leading: Icon(Icons.credit_card),
         title: Text('Subscription'),
         subtitle: Text('Active'),
@@ -108,6 +113,7 @@ class UserAccountPage extends StatelessWidget {
       ),
     );
   }
+
 
   Widget _buildHelpAndSupport() {
     return Card(
