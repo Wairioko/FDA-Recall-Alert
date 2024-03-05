@@ -1,10 +1,10 @@
 import 'package:safe_scan/ui/screens/about/about_screen.dart';
+import 'package:safe_scan/ui/screens/user_account/feedback.dart';
 import 'package:safe_scan/ui/screens/user_account/subscriptions.dart';
 import 'package:safe_scan/ui/screens/user_account/user-account.dart';
 import 'package:safe_scan/ui/screens/watchlist/watchlist_home.dart';
 import 'package:safe_scan/ui/screens/watchlist/watchlist_items.dart';
 import 'package:flutter/material.dart';
-
 import '../model/detail_data_model.dart';
 import '../ui/screens/detail/detail.dart';
 import '../ui/screens/home/home.dart';
@@ -25,6 +25,7 @@ class AppRoutes {
       WatchlistScreen.path: (context) =>  WatchlistScreen(),
       UserAccountPage.path: (context) => UserAccountPage(),
       SubscriptionPage.path: (context) => SubscriptionPage(),
+      FeedbackForm.path: (context) => FeedbackForm(),
 
       WatchlistCategoryItemsScreen.path: (context) {
         final String category = ModalRoute.of(context)?.settings.arguments as String;
@@ -37,3 +38,4 @@ class AppRoutes {
     };
   }
 }
+

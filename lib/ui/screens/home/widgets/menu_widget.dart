@@ -33,7 +33,7 @@ class MenuWidget extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (user == null)
+                // if (user != null)
                   _buildMenuItem(
                     onTap: () {
                       Navigator.of(context).pushNamed(UserAccountPage.path);

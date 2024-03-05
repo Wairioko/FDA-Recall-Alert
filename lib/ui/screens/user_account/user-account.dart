@@ -1,8 +1,10 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:safe_scan/ui/screens/user_account/feedback.dart';
 import 'package:safe_scan/ui/screens/user_account/subscriptions.dart';
 
 User? user = FirebaseAuth.instance.currentUser;
+var email = user?.email;
 
 class UserAccountPage extends StatelessWidget {
 
@@ -38,15 +40,12 @@ class UserAccountPage extends StatelessWidget {
 
               // Feedback and Suggestions
               _buildSectionHeader('Feedback and Suggestions'),
-              _buildFeedbackSuggestions(),
+              _buildFeedbackSuggestions(context),
 
               // Legal and Compliance
               _buildSectionHeader('Legal and Compliance'),
               _buildLegalCompliance(),
 
-              // Data Management
-              _buildSectionHeader('Data Management'),
-              _buildDataManagement(),
             ],
           ),
         ),
@@ -72,8 +71,15 @@ class UserAccountPage extends StatelessWidget {
     return Card(
       child: ListTile(
         leading: Icon(Icons.person),
-        title: Text('Display Name'),
-        subtitle: Text('Logged in as $user'),
+        title: Text('Display Name' ,style: TextStyle(
+          fontFamily: 'SF Pro Text',
+          ),
+        ),
+        subtitle: Text('Logged in as $email', style: TextStyle(
+          color: Colors.green,
+          fontFamily: 'SF Pro Text',
+        ),
+        ),
         ),
       );
   }
@@ -131,12 +137,15 @@ class UserAccountPage extends StatelessWidget {
     );
   }
 
-  Widget _buildFeedbackSuggestions() {
+  Widget _buildFeedbackSuggestions(BuildContext context) {
     return Card(
       child: ListTile(
         leading: Icon(Icons.feedback),
         title: Text('Feedback and Suggestions'),
         subtitle: Text('Submit feedback, suggestions'),
+        onTap: () {
+          Navigator.of(context).pushNamed(FeedbackForm.path);
+        },
         trailing: IconButton(
           icon: Icon(Icons.send),
           onPressed: () {
@@ -163,19 +172,4 @@ class UserAccountPage extends StatelessWidget {
     );
   }
 
-  Widget _buildDataManagement() {
-    return Card(
-      child: ListTile(
-        leading: Icon(Icons.data_usage),
-        title: Text('Data Management'),
-        subtitle: Text('Export options, data deletion request'),
-        trailing: IconButton(
-          icon: Icon(Icons.storage),
-          onPressed: () {
-            // Implement data management actions
-          },
-        ),
-      ),
-    );
-  }
 }
