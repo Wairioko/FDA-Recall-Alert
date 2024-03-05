@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:safe_scan/ui/screens/user_account/account_security.dart';
 import 'package:safe_scan/ui/screens/user_account/feedback.dart';
 import 'package:safe_scan/ui/screens/user_account/subscriptions.dart';
+import 'package:safe_scan/ui/screens/user_account/terms_of_service.dart';
 
 User? user = FirebaseAuth.instance.currentUser;
 var email = user?.email;
@@ -26,26 +27,21 @@ class UserAccountPage extends StatelessWidget {
               _buildSectionHeader('Profile Information'),
               _buildProfileInfo(),
 
-              // Security and Privacy
-              _buildSectionHeader('Security and Privacy'),
-              _buildSecurityPrivacy(context),
-
               // Billing and Subscriptions
               _buildSectionHeader('Billing and Subscriptions'),
               _buildBillingSubscriptions(context),
 
-
-              // Help and Support
-              _buildSectionHeader('Help and Support'),
-              _buildHelpAndSupport(),
+              // Security and Privacy
+              _buildSectionHeader('Security and Privacy'),
+              _buildSecurityPrivacy(context),
 
               // Feedback and Suggestions
-              _buildSectionHeader('Feedback and Suggestions'),
-              _buildFeedbackSuggestions(context),
+              _buildSectionHeader('Feedback and Support'),
+              _buildFeedbackSupport(context),
 
               // Legal and Compliance
               _buildSectionHeader('Legal and Compliance'),
-              _buildLegalCompliance(),
+              _buildLegalCompliance(context),
 
             ],
           ),
@@ -125,33 +121,17 @@ class UserAccountPage extends StatelessWidget {
   }
 
 
-  Widget _buildHelpAndSupport() {
-    return Card(
-      child: ListTile(
-        leading: Icon(Icons.help),
-        title: Text('Help and Support'),
-        subtitle: Text('FAQs, contact support'),
-        trailing: IconButton(
-          icon: Icon(Icons.chat),
-          onPressed: () {
-            // Implement help and support actions
-          },
-        ),
-      ),
-    );
-  }
-
-  Widget _buildFeedbackSuggestions(BuildContext context) {
+  Widget _buildFeedbackSupport(BuildContext context) {
     return Card(
       child: ListTile(
         leading: Icon(Icons.feedback),
-        title: Text('Feedback and Suggestions'),
+        title: Text('Feedback and Support'),
         subtitle: Text('Submit feedback, suggestions'),
         onTap: () {
           Navigator.of(context).pushNamed(FeedbackForm.path);
         },
         trailing: IconButton(
-          icon: Icon(Icons.send),
+          icon: Icon(Icons.chat),
           onPressed: () {
             // Implement feedback and suggestions actions
           },
@@ -160,9 +140,12 @@ class UserAccountPage extends StatelessWidget {
     );
   }
 
-  Widget _buildLegalCompliance() {
+  Widget _buildLegalCompliance(BuildContext context) {
     return Card(
       child: ListTile(
+        onTap: () {
+          Navigator.of(context).pushNamed(TermsOfServicePage.path);
+        },
         leading: Icon(Icons.gavel),
         title: Text('Legal and Compliance'),
         subtitle: Text('Terms of Service, Privacy Policy'),

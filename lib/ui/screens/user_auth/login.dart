@@ -1,4 +1,6 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:safe_scan/ui/screens/home/home.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
@@ -9,6 +11,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:safe_scan/ui/screens/user_auth/signup.dart';
 import 'package:safe_scan/provider/user_provider.dart';
 import 'package:sign_in_button/sign_in_button.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 
 
@@ -27,6 +30,63 @@ class _LogInPageState extends State<LogInPage> {
   // Define a boolean variable to track whether the password is obscured or not
   bool _obscurePassword = true;
 
+  void signInWithGoogle() async {
+    try {
+      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+      if (googleUser != null) {
+        final GoogleSignInAuthentication googleAuth =
+        await googleUser.authentication;
+        final credential = GoogleAuthProvider.credential(
+          accessToken: googleAuth.accessToken,
+          idToken: googleAuth.idToken,
+        );
+        await FirebaseAuth.instance.signInWithCredential(credential);
+        context
+            .read<UserProvider>()
+            .setUser(FirebaseAuth.instance.currentUser);
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const Home()),
+        );
+      }
+    } catch (e) {
+      // Handle errors
+      print(e.toString());
+    }
+  }
+
+  void signInWithApple(BuildContext context) async {
+    try {
+      final credential = await SignInWithApple.getAppleIDCredential(
+        scopes: [
+          AppleIDAuthorizationScopes.email,
+          AppleIDAuthorizationScopes.fullName,
+        ],
+      );
+
+      // Convert Apple ID credential to Firebase credential
+      final OAuthProvider oAuthProvider = OAuthProvider("apple.com");
+      final AuthCredential authCredential = oAuthProvider.credential(
+        idToken: credential.identityToken,
+        accessToken: credential.authorizationCode,
+      );
+
+      // Sign in with Firebase credential
+      await FirebaseAuth.instance.signInWithCredential(authCredential);
+
+      // Update user state
+      context.read<UserProvider>().setUser(FirebaseAuth.instance.currentUser);
+
+      // Navigate to home page
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const Home()),
+      );
+    } catch (e) {
+      // Handle errors
+      print(e.toString());
+    }
+  }
   void moveToHome(BuildContext context) async {
     if (formkey.currentState!.validate()) {
       try {
@@ -216,7 +276,42 @@ class _LogInPageState extends State<LogInPage> {
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.white,
                                 ),
-                                onPressed: () {},
+                                onPressed: () async {
+                                  // Sign in with Google
+                                  final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+
+                                  if (googleUser != null) {
+                                    // Obtain authentication details from the Google account
+                                    final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+
+                                    // Create a new credential for Firebase
+                                    final OAuthCredential credential = GoogleAuthProvider.credential(
+                                      accessToken: googleAuth.accessToken,
+                                      idToken: googleAuth.idToken,
+                                    );
+
+                                    // Sign in to Firebase with the Google credential
+                                    final UserCredential userCredential = await FirebaseAuth.instance.signInWithCredential(credential);
+                                    final User? user = userCredential.user;
+
+                                    // Check if the user exists in Firestore
+                                    final DocumentSnapshot<Map<String, dynamic>> userSnapshot = await FirebaseFirestore.instance
+                                        .collection('user-registration-data')
+                                        .doc(user!.email)
+                                        .get();
+
+                                    if (userSnapshot.exists) {
+                                      // User exists in the database
+                                      print('User exists!');
+                                    } else {
+                                      // User doesn't exist in the database
+                                      print('User does not exist!');
+                                    }
+                                  } else {
+                                    // Google sign-in was canceled
+                                    print('Google sign-in was canceled.');
+                                  }
+                                },
                                 icon: FaIcon(FontAwesomeIcons.google),
                                 label: Text(
                                   'Sign in Google',
@@ -237,7 +332,14 @@ class _LogInPageState extends State<LogInPage> {
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.black,
                                 ),
-                                onPressed: () {},
+                                onPressed: () {
+                                  SignInWithApple.getAppleIDCredential(
+                                  scopes: [
+                                    AppleIDAuthorizationScopes.email,
+                                    AppleIDAuthorizationScopes.fullName,
+                                  ],
+                                    );
+                                  },
                                 icon: FaIcon(
                                   FontAwesomeIcons.apple,
                                   color: Colors.white,
