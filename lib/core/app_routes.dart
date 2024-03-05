@@ -1,4 +1,5 @@
 import 'package:safe_scan/ui/screens/about/about_screen.dart';
+import 'package:safe_scan/ui/screens/user_account/account_security.dart';
 import 'package:safe_scan/ui/screens/user_account/feedback.dart';
 import 'package:safe_scan/ui/screens/user_account/subscriptions.dart';
 import 'package:safe_scan/ui/screens/user_account/user-account.dart';
@@ -26,6 +27,7 @@ class AppRoutes {
       UserAccountPage.path: (context) => UserAccountPage(),
       SubscriptionPage.path: (context) => SubscriptionPage(),
       FeedbackForm.path: (context) => FeedbackForm(),
+      AccountSettingsWidget.path: (context) => AccountSettingsWidget(),
 
       WatchlistCategoryItemsScreen.path: (context) {
         final String category = ModalRoute.of(context)?.settings.arguments as String;
