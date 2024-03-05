@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:safe_scan/ui/screens/user_account/account_security.dart';
 import 'package:safe_scan/ui/screens/user_account/feedback.dart';
 import 'package:safe_scan/ui/screens/user_account/subscriptions.dart';
 
@@ -27,7 +28,7 @@ class UserAccountPage extends StatelessWidget {
 
               // Security and Privacy
               _buildSectionHeader('Security and Privacy'),
-              _buildSecurityPrivacy(),
+              _buildSecurityPrivacy(context),
 
               // Billing and Subscriptions
               _buildSectionHeader('Billing and Subscriptions'),
@@ -85,9 +86,12 @@ class UserAccountPage extends StatelessWidget {
   }
 
 
-  Widget _buildSecurityPrivacy() {
+  Widget _buildSecurityPrivacy(BuildContext context) {
     return Card(
       child: ListTile(
+        onTap: () {
+          Navigator.of(context).pushNamed(AccountSettingsWidget.path);
+        },
         leading: Icon(Icons.security),
         title: Text('Account Security'),
         subtitle: Text('Password strength: Strong'),
