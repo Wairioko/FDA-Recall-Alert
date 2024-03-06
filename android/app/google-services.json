@@ -1,21 +1,21 @@
 {
   "project_info": {
-    "project_number": "333650406997",
-    "project_id": "dnmm-ce8f5",
-    "storage_bucket": "dnmm-ce8f5.appspot.com"
+    "project_number": "529836025778",
+    "project_id": "saferecall",
+    "storage_bucket": "saferecall.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:333650406997:android:bcb248286454ed0e7caedc",
+        "mobilesdk_app_id": "1:529836025778:android:555c3ccf188bf01794a6ab",
         "android_client_info": {
-          "package_name": "com.dailynews.daily_news"
+          "package_name": "com.saferecall.com"
         }
       },
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyAEwkY9bb8VoEPO43ZlmDYxhUdseuxYJGI"
+          "current_key": "AIzaSyBpl9Bti-DNxFG4qbNf3n-YIlGpF7BPdUE"
         }
       ],
       "services": {

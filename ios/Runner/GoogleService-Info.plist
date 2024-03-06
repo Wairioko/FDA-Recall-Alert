@@ -2,22 +2,18 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>CLIENT_ID</key>
-	<string>333650406997-gdups8shqg4gdkovkn11pgvabrsa8afn.apps.googleusercontent.com</string>
-	<key>REVERSED_CLIENT_ID</key>
-	<string>com.googleusercontent.apps.333650406997-gdups8shqg4gdkovkn11pgvabrsa8afn</string>
 	<key>API_KEY</key>
-	<string>AIzaSyAaASx4GFvzAQDIJox3bvozj-pPitbqp30</string>
+	<string>AIzaSyAQY2orv4K6yXufPXKYxEPxZJpqxs8sHyw</string>
 	<key>GCM_SENDER_ID</key>
-	<string>333650406997</string>
+	<string>529836025778</string>
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
-	<string>com.safescan2.com</string>
+	<string>com.saferecall.com</string>
 	<key>PROJECT_ID</key>
-	<string>dnmm-ce8f5</string>
+	<string>saferecall</string>
 	<key>STORAGE_BUCKET</key>
-	<string>dnmm-ce8f5.appspot.com</string>
+	<string>saferecall.appspot.com</string>
 	<key>IS_ADS_ENABLED</key>
 	<false></false>
 	<key>IS_ANALYTICS_ENABLED</key>
@@ -29,8 +25,6 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:333650406997:ios:5d4585127cdce0247caedc</string>
-	<key>DATABASE_URL</key>
-	<string>https://dnmm-ce8f5-default-rtdb.firebaseio.com</string>
+	<string>1:529836025778:ios:50d697033ef6f43094a6ab</string>
 </dict>
 </plist>
