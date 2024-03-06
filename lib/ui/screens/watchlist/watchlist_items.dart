@@ -20,7 +20,7 @@ class WatchlistCategoryItemsScreen extends StatelessWidget {
         if (user != null) {
           String userId = user.uid;
           return _firestore
-              .collection('watchlists')
+              .collection('watchlist')
               .doc(userId)
               .collection(category) // Use the category name here
               .snapshots()
@@ -42,7 +42,7 @@ class WatchlistCategoryItemsScreen extends StatelessWidget {
         if (user != null) {
           String userId = user.uid;
           await _firestore
-              .collection('watchlists')
+              .collection('watchlist')
               .doc(userId)
               .collection(category) // Use the category name here
               .add({'name': itemName});
@@ -60,7 +60,7 @@ class WatchlistCategoryItemsScreen extends StatelessWidget {
         if (user != null) {
           String userId = user.uid;
           await _firestore
-              .collection('watchlists')
+              .collection('watchlist')
               .doc(userId)
               .collection(category) // Use the category name here
               .doc(itemId)

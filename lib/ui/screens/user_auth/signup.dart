@@ -49,7 +49,7 @@ class _SignUpPageState extends State<SignUpPage> {
           email: email.text,
           password: password.text.trim(),
         ).then((value) async {
-          await FirebaseFirestore.instance.collection('user-registration-data').doc(value.user?.uid).set({
+          await FirebaseFirestore.instance.collection('users').doc(value.user?.uid).set({
             'email': email.text,
             'defaultState': defaultStateController.text,
             'shoppingFrequency': shoppingFrequency,
