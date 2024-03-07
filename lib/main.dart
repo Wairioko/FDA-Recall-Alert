@@ -19,7 +19,17 @@ void main() async {
   ));
 
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
+  await Firebase.initializeApp(
+    options: const FirebaseOptions(
+      apiKey:
+      "AIzaSyBpl9Bti-DNxFG4qbNf3n-YIlGpF7BPdUE", // paste your api key here
+      appId:
+      "1:529836025778:android:555c3ccf188bf01794a6ab", //paste your app id here
+      messagingSenderId: "529836025778", //paste your messagingSenderId here
+      projectId: "saferecall", //paste your project id here
+    ),
+  );
+
   // Initialize NotificationService
   final NotificationService notificationService = NotificationService();
   await notificationService.init();

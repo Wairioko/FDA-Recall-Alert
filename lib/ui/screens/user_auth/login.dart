@@ -281,20 +281,15 @@ class _LogInPageState extends State<LogInPage> {
                                   final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
 
                                   if (googleUser != null) {
-                                    // Obtain authentication details from the Google account
                                     final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
-
-                                    // Create a new credential for Firebase
                                     final OAuthCredential credential = GoogleAuthProvider.credential(
                                       accessToken: googleAuth.accessToken,
                                       idToken: googleAuth.idToken,
                                     );
 
-                                    // Sign in to Firebase with the Google credential
                                     final UserCredential userCredential = await FirebaseAuth.instance.signInWithCredential(credential);
                                     final User? user = userCredential.user;
 
-                                    // Check if the user exists in Firestore
                                     final DocumentSnapshot<Map<String, dynamic>> userSnapshot = await FirebaseFirestore.instance
                                         .collection('user-registration-data')
                                         .doc(user!.email)
@@ -303,9 +298,21 @@ class _LogInPageState extends State<LogInPage> {
                                     if (userSnapshot.exists) {
                                       // User exists in the database
                                       print('User exists!');
+                                      // Navigate to home or wherever you want
                                     } else {
                                       // User doesn't exist in the database
-                                      print('User does not exist!');
+                                      // Display a SnackBar to inform the user
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          content: Text('You are not registered. Redirecting to sign up...'),
+                                          duration: Duration(seconds: 2),
+                                        ),
+                                      );
+                                      // Delay the redirection for better user experience
+                                      Future.delayed(Duration(seconds: 2), () {
+                                        // Redirect to sign-up page
+                                        Navigator.pushReplacementNamed(context, '/signup'); // Replace '/signup' with your sign-up page route
+                                      });
                                     }
                                   } else {
                                     // Google sign-in was canceled
