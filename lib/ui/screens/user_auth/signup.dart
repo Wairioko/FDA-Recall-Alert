@@ -6,6 +6,10 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+
+import '../home/home.dart';
 
 class UserModel {
   String defaultState;
@@ -40,7 +44,149 @@ class _SignUpPageState extends State<SignUpPage> {
   TextEditingController email = TextEditingController();
   TextEditingController password = TextEditingController();
   TextEditingController defaultStateController = TextEditingController();
-  String shoppingFrequency = '';
+  String shoppingFrequency = '1-3 times per month';
+
+
+  void _handleGoogleSignUp() async {
+    try {
+      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+      if (googleUser != null) {
+        final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+        final AuthCredential google_credential = GoogleAuthProvider.credential(
+          accessToken: googleAuth.accessToken,
+          idToken: googleAuth.idToken,
+        );
+        await FirebaseAuth.instance.signInWithCredential(google_credential);
+        _collectAdditionalInformation();
+      } else {
+        // Handle Google sign-in cancellation
+      }
+    } catch (e) {
+      // Handle Google sign-in errors
+      print("Google sign-in error: $e");
+    }
+  }
+
+  void _handleAppleSignUp() async {
+    try {
+      final credential = await SignInWithApple.getAppleIDCredential(
+        scopes: [
+          AppleIDAuthorizationScopes.email,
+          AppleIDAuthorizationScopes.fullName,
+        ],
+        webAuthenticationOptions: WebAuthenticationOptions(
+          clientId: 'your_client_id',
+          redirectUri: Uri.parse('https://your-redirect-url.com'),
+        ),
+      );
+      final OAuthProvider oAuthProvider = OAuthProvider('apple.com');
+      final AuthCredential apple_credential = oAuthProvider.credential(
+        idToken: credential.identityToken,
+        accessToken: credential.authorizationCode,
+      );
+      await FirebaseAuth.instance.signInWithCredential(apple_credential);
+      _collectAdditionalInformation();
+    } catch (e) {
+      // Handle Apple sign-in errors
+      print("Apple sign-in error: $e");
+    }
+  }
+
+  void _collectAdditionalInformation() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Additional Information'),
+          content: Form(
+            key: formkey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextFormField(
+                  controller: defaultStateController,
+                  decoration: InputDecoration(
+                    hintText: "Your Default State",
+                    labelText: "Enter Default State",
+                  ),
+                  validator: (value) {
+                    if (value!.isEmpty) {
+                      return "State cannot be empty";
+                    }
+                    return null;
+                  },
+                ),
+                SizedBox(height: 16),
+                DropdownButtonFormField<String>(
+                  value: shoppingFrequency,
+                  onChanged: (String? newValue) {
+                    setState(() {
+                      shoppingFrequency = newValue!;
+                    });
+                  },
+                  items: [
+                    DropdownMenuItem(
+                      child: Text('1-3 times per month'),
+                      value: '1-3 times per month',
+                    ),
+                    DropdownMenuItem(
+                      child: Text('4-6 times per month'),
+                      value: '4-6 times per month',
+                    ),
+                    DropdownMenuItem(
+                      child: Text('7+ times per month'),
+                      value: '7+ times per month',
+                    ),
+                  ],
+                  decoration: InputDecoration(
+                    labelText: 'Shopping Frequency',
+                    hintText: 'Select Shopping Frequency',
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please select shopping frequency';
+                    }
+                    return null;
+                  },
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                if (formkey.currentState!.validate()) {
+                  // Save the additional information to Firebase or any other storage
+                  // For example:
+                  final user = FirebaseAuth.instance.currentUser;
+                  FirebaseFirestore.instance.collection('users').doc(user!.uid).set({
+                    'email':user.email,
+                    'defaultState': defaultStateController.text,
+                    'shoppingFrequency': shoppingFrequency,
+                  });
+                  // Close the dialog
+                  Navigator.of(context).pop();
+                  // Proceed with other actions
+                  // For example, navigate to another screen
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => Home()));
+                }
+              },
+              child: Text('Save'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+
+
 
   MoveToLog() async {
     if (formkey.currentState!.validate()) {
@@ -236,7 +382,7 @@ class _SignUpPageState extends State<SignUpPage> {
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.white,
                               ),
-                              onPressed: () {},
+                              onPressed: _handleGoogleSignUp,
                               icon: FaIcon(FontAwesomeIcons.google),
                               label: Text(
                                 'Sign up Google',
@@ -257,7 +403,7 @@ class _SignUpPageState extends State<SignUpPage> {
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.black,
                               ),
-                              onPressed: () {},
+                              onPressed: _handleAppleSignUp,
                               icon: FaIcon(
                                 FontAwesomeIcons.apple,
                                 color: Colors.white,

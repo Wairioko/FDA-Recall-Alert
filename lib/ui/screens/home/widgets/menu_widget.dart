@@ -16,6 +16,7 @@ import '../../watchlist/watchlist_items.dart';
 
 
 User? user = FirebaseAuth.instance.currentUser;
+
 class MenuWidget extends StatelessWidget {
   const MenuWidget({super.key});
 
@@ -23,9 +24,6 @@ class MenuWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<ThemeCubit, ThemeState>(
       builder: (context, state) {
-        final userProvider = context.watch<UserProvider>();
-        final User? user = userProvider.user;
-
         return Scaffold(
           backgroundColor: state.themeData.colorScheme.background,
           body: SafeArea(
@@ -120,7 +118,7 @@ class MenuWidget extends StatelessWidget {
                     ),
                 ),
 
-                // if (user != null)
+                if (user != null)
                 _buildMenuItem(
                   onTap: () {
                     Navigator.of(context).pushNamed(MainScreen.path);
@@ -155,6 +153,7 @@ class MenuWidget extends StatelessWidget {
                       ? 'Dark'
                       : 'Light',
                 ),
+
                 _buildMenuItem(
                   onTap: () {
                     Navigator.of(context).pushNamed(AboutScreen.path);
