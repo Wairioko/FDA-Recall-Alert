@@ -23,26 +23,35 @@ class SelectionScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text('Select Match'),
       ),
-      body: ListView.builder(
+      body: ListView.separated( // Using separated for visual dividers
         itemCount: matches.length,
+        separatorBuilder: (context, index) => const Divider(height: 1), // Divider
         itemBuilder: (context, index) {
-          return ListTile(
-            title: Text(matches[index].product_description),
-            subtitle: Text(matches[index].reason_for_recall),
-            onTap: () {
-              // Navigate to detail screen for the selected match
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => Detail(detailDataModel: matches[index]),
-                ),
-              );
-            },
+          return Padding(  // Added padding
+            padding: const EdgeInsets.all(16.0),
+            child: ListTile(
+              title: Text(
+                matches[index].product_description,
+                style: TextStyle(fontWeight: FontWeight.w500), // Slightly bolder title
+              ),
+              subtitle: Text(matches[index].classification),
+              onTap: () {
+                // Navigate to detail screen for the selected match
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => Detail(detailDataModel: matches[index]),
+                  ),
+                );
+              },
+            ),
           );
         },
       ),
     );
   }
+
+
 }
 
 
@@ -188,25 +197,6 @@ class _ResultScreenState extends State<ResultScreen> {
     _keyboardListenerFocusNode.dispose();
   }
 
-  void _editLine(int index) {
-    setState(() {
-      _isEditing = true;
-      _editingLineIndex = index;
-    });
-    _textEditingController.text = unfilteredLines[index];
-    FocusScope.of(context).requestFocus(_focusNode);
-  }
-
-  void _enableTextEditing() {
-    setState(() {
-      _isEditing = !_isEditing;
-      _textEdited = false;
-
-      if (_isEditing) {
-        FocusScope.of(context).requestFocus(_focusNode); // Request focus
-      }
-    });
-  }
 
   Future<void> _checkItems() async {
     setState(() {

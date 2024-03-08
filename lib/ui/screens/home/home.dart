@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_zoom_drawer/flutter_zoom_drawer.dart';
-
 import '../../../core/news_provider.dart';
 import '../../shared/loading/loading_widget.dart';
 import '../../shared/theme/theme_cubit.dart';

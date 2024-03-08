@@ -19,7 +19,7 @@ class RecallList extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.all(24),
           child: Text(
-            'No articles available',
+            'No recall Items available',
             textAlign: TextAlign.center,
             style: TextStyle(
               color: Colors.red,

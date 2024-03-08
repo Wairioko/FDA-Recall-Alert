@@ -15,6 +15,13 @@ class ApiData {
   static List<dynamic>? getResponseJson() => responseJson;
 }
 
+class StateApiData{
+  static List<dynamic>? stateresponseJson;
+  // Option 1: Make responseJson public
+  static List<dynamic>? getstateResponseJson() => stateresponseJson;
+
+}
+
 
 class RecallApi extends BaseApi<TopHeadlinesQueryParams,
     RecallsResponse, ErrorResponse> {
@@ -41,24 +48,25 @@ class RecallApi extends BaseApi<TopHeadlinesQueryParams,
   @override
   BaseModel mapSuccessResponse(Map<String, dynamic>? responseJson) {
     // Filter items based on the 'status' field
-    print(CategoryData.category);
     List<dynamic> ongoingItems = responseJson?['results']
         .where((item) => item['status'] == "Ongoing")
         .toList();
 
+
     ApiData.responseJson = ongoingItems;
-    // var data = ApiData.responseJson;
+
+    // Filter items based on the 'status' field
+    List<dynamic> stateFilteredItems = ongoingItems;
 
     if (requestQuery.query.trim().isNotEmpty) {
-      ongoingItems = ongoingItems.where((item) {
+      stateFilteredItems = stateFilteredItems.where((item) {
         // Check if the "product_description" contains the search query
         return item['product_description'].toLowerCase().contains(requestQuery.query.toLowerCase());
       }).toList();
     }
 
     if (requestQuery.state.trim().isNotEmpty || requestQuery.classification.trim().isNotEmpty) {
-
-      ongoingItems = ongoingItems.where((item) {
+      stateFilteredItems = stateFilteredItems.where((item) {
         bool stateMatch = true; // Default to true
         bool classificationMatch = true; // Default to true
 
@@ -84,12 +92,13 @@ class RecallApi extends BaseApi<TopHeadlinesQueryParams,
         // Return true only if both conditions (state and category) are met
         return stateCondition && (classificationMatch || !requestQuery.classification.trim().isNotEmpty);
       }).toList();
-
     }
 
+    // Store filtered data according to the state in StateApiData.stateresponseJson
+    StateApiData.stateresponseJson = stateFilteredItems;
 
     // Sort the ongoingItems list by 'report_date' in descending order
-    ongoingItems.sort((a, b) {
+    stateFilteredItems.sort((a, b) {
       DateTime dateA = DateTime.parse(a['report_date']);
       DateTime dateB = DateTime.parse(b['report_date']);
       return dateB.compareTo(dateA);
@@ -98,7 +107,7 @@ class RecallApi extends BaseApi<TopHeadlinesQueryParams,
     // Create a new response JSON with only filtered items
     Map<String, dynamic> filteredResponseJson = {
       ...responseJson!,
-      'results': ongoingItems,
+      'results': stateFilteredItems,
     };
 
     print("Success Response: $filteredResponseJson");
@@ -106,7 +115,7 @@ class RecallApi extends BaseApi<TopHeadlinesQueryParams,
   }
 
   String getStateInitials(String state) {
-//     // Map full state names to their respective initials
+    // Map full state names to their respective initials
     Map<String, String> stateMappings = {
       'alabama': 'AL',
       'alaska': 'AK',
