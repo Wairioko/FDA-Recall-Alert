@@ -1,13 +1,13 @@
 import 'detail_data_model.dart';
 
-class Recall_ItemModel {
+class RecallItemModel {
   final String product_description;
   final String reason_for_recall;
   final String status;
   final String classification;
   final DetailDataModel detailDataModel;
 
-  Recall_ItemModel({
+  RecallItemModel({
     required this.product_description,
     required this.reason_for_recall,
     required this.status,

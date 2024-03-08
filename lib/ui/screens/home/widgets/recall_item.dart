@@ -2,22 +2,23 @@ import 'package:flutter/material.dart';
 import '../../../../model/new_item_model.dart';
 import '../../detail/detail.dart';
 
-class Recall_Item extends StatelessWidget {
-  final Recall_ItemModel newsItemModel;
+class RecallItem extends StatelessWidget {
+  final RecallItemModel newsItemModel;
+
+  const RecallItem({Key? key, required this.newsItemModel}) : super(key: key);
 
   Color _getColorForClassification(String classification) {
-    switch (classification) {
+    switch (classification.toUpperCase()) { // Normalize for comparison
       case 'CLASS I':
-        return Colors.red; // Most serious
+        return Colors.redAccent;
       case 'CLASS II':
-        return Colors.orange; // Moderate danger
+        return Colors.orangeAccent;
       case 'CLASS III':
-        return Colors.yellow; // Least serious
+        return Colors.yellowAccent;
       default:
-        return Colors.black; // Default color
+        return Colors.grey; // Neutral color for unknown classification
     }
   }
-  const Recall_Item({Key? key, required this.newsItemModel}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -29,59 +30,57 @@ class Recall_Item extends StatelessWidget {
         );
       },
       child: Container(
-        padding: EdgeInsets.all(5.0), // Content padding
-        decoration: BoxDecoration( // Subtle decoration
+        padding: const EdgeInsets.all(12.0), // Increased padding
+        decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(8.0),
+          borderRadius: BorderRadius.circular(12.0), // Softer border-radius
           boxShadow: [
-            BoxShadow(color: Colors.grey.withOpacity(0.4), blurRadius: 5.0)
+            BoxShadow(color: Colors.grey.withOpacity(0.2), blurRadius: 5.0)
           ],
         ),
-        child: Column( // Adjusted spacing within the column
+        child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               newsItemModel.product_description,
               overflow: TextOverflow.ellipsis,
               maxLines: 2,
-              style: TextStyle(
-                fontSize: 16.5, // Increased title size
-                fontWeight: FontWeight.w700,
-                fontFamily: 'SanFrancisco'
+              style: const TextStyle(
+                fontSize: 17.0,
+                fontWeight: FontWeight.w600, // Medium weight for readability
+                fontFamily: 'San Francisco',
               ),
             ),
-            SizedBox(height: 5), // More vertical space
+            const SizedBox(height: 8),
             Text(
               'Reason: ${newsItemModel.reason_for_recall}',
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w400,
-                  fontFamily: 'SanFrancisco'
-
+              style: const TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w400,
+                fontFamily: 'San Francisco',
               ),
-
             ),
-            SizedBox(height: 5),
+            const SizedBox(height: 8),
             Text(
               'Classification: ${newsItemModel.classification}',
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w200,
-                fontFamily: 'SanFrancisco',
+                fontSize: 15.0, // Slightly larger for emphasis
+                fontWeight: FontWeight.w500, // Slightly bolder for emphasis
+                fontFamily: 'San Francisco',
                 color: _getColorForClassification(newsItemModel.classification),
               ),
             ),
-
           ],
         ),
       ),
     );
   }
 }
+
 
 
 

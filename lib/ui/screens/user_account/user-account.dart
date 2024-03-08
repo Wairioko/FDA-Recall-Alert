@@ -5,12 +5,10 @@ import 'package:safe_scan/ui/screens/user_account/feedback.dart';
 import 'package:safe_scan/ui/screens/user_account/subscriptions.dart';
 import 'package:safe_scan/ui/screens/user_account/terms_of_service.dart';
 
-User? user = FirebaseAuth.instance.currentUser;
-var email = user?.email;
 
 class UserAccountPage extends StatelessWidget {
-
   static const String path = '/user-account';
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -29,27 +27,29 @@ class UserAccountPage extends StatelessWidget {
 
               // Billing and Subscriptions
               _buildSectionHeader('Billing and Subscriptions'),
+              // Implement billing and subscription widgets here
               _buildBillingSubscriptions(context),
 
               // Security and Privacy
               _buildSectionHeader('Security and Privacy'),
+              // Implement security and privacy widgets here
               _buildSecurityPrivacy(context),
 
               // Feedback and Suggestions
               _buildSectionHeader('Feedback and Support'),
+              // Implement feedback and support widgets here
               _buildFeedbackSupport(context),
 
               // Legal and Compliance
               _buildSectionHeader('Legal and Compliance'),
+              // Implement legal and compliance widgets here
               _buildLegalCompliance(context),
-
             ],
           ),
         ),
       ),
     );
   }
-
 
   Widget _buildSectionHeader(String title) {
     return Padding(
@@ -65,20 +65,61 @@ class UserAccountPage extends StatelessWidget {
   }
 
   Widget _buildProfileInfo() {
-    return Card(
-      child: ListTile(
-        leading: Icon(Icons.person),
-        title: Text('Display Name' ,style: TextStyle(
-          fontFamily: 'SF Pro Text',
-          ),
-        ),
-        subtitle: Text('Logged in as $email', style: TextStyle(
-          color: Colors.green,
-          fontFamily: 'SF Pro Text',
-        ),
-        ),
-        ),
-      );
+    return StreamBuilder<User?>(
+        stream: FirebaseAuth.instance.authStateChanges(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            // Display a loading indicator while waiting for the user data
+            return CircularProgressIndicator();
+          }
+
+          // Check if the user is logged in
+          if (snapshot.hasData) {
+            // User is logged in, display user information
+            User? user = snapshot.data;
+            String? email = user?.email;
+
+            return Card(
+              child: ListTile(
+                leading: Icon(Icons.person),
+                title: Text(
+                  'Display Name',
+                  style: TextStyle(
+                    fontFamily: 'SF Pro Text',
+                  ),
+                ),
+                subtitle: Text(
+                  'Logged in as ${email ?? 'Unknown'}',
+                  style: TextStyle(
+                    color: Colors.green,
+                    fontFamily: 'SF Pro Text',
+                  ),
+                ),
+              ),
+            );
+          } else {
+            // User is not logged in
+            return Card(
+              child: ListTile(
+                leading: Icon(Icons.person),
+                title: Text(
+                  'Display Name',
+                  style: TextStyle(
+                    fontFamily: 'SF Pro Text',
+                  ),
+                ),
+                subtitle: Text(
+                  'Not logged in',
+                  style: TextStyle(
+                    color: Colors.red,
+                    fontFamily: 'SF Pro Text',
+                  ),
+                ),
+              ),
+            );
+          }
+        }
+    );
   }
 
 

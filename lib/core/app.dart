@@ -13,6 +13,7 @@ import 'news_provider.dart';
 
 class NewsApp extends StatelessWidget {
   final RecallEventApplication _application;
+
   final User? _user;
 
   const NewsApp(this._application, this._user, {super.key});

@@ -1,4 +1,4 @@
-import 'package:safe_scan/provider/user_provider.dart';
+import 'package:safe_scan/ui/screens/user_auth/login.dart';
 import 'package:safe_scan/ui/shared/theme/theme_cubit.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -47,13 +47,16 @@ void startAppComponent(var application, User? user) {
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => UserProvider()),
+        ChangeNotifierProvider(create: (_) => UserProviderLogin()),
+
 
       ],
       child: BlocProvider(
         create: (context) => ThemeCubit(),
         child: NewsApp(application, user),
+
       ),
+
     ),
   );
 }

@@ -48,8 +48,8 @@ class RecallList extends StatelessWidget {
                 ),
               ],
             ),
-            child: Recall_Item(
-              newsItemModel: Recall_ItemModel(
+            child: RecallItem(
+              newsItemModel: RecallItemModel(
                 product_description: articles[index].product_description ?? "",
                 reason_for_recall: articles[index].reason_for_recall ?? "",
                 status: articles[index].status ?? "",
