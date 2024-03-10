@@ -186,6 +186,7 @@ class _QueryWidgetState extends State<QueryWidget> {
                         itemHintText = newValue ?? 'Recall Category';
                         requestQuery.item = newValue ?? InformationTexts.itemList()[0];
                         CategoryData.category = newValue;
+                        reloadData();
                       });
                     },
                   ),
