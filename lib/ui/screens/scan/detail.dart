@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
 import 'package:safe_scan/ui/screens/home/widgets/query_widget.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -180,10 +181,15 @@ class _ResultScreenState extends State<ResultScreen> {
           // Reference to the "receipts" subcollection under the user's document
           CollectionReference receiptsCollection =
           userDoc.collection('cleared_items');
+          DateTime now = DateTime.now();
+          // Format the date
+          String formattedDate = DateFormat('yyyy-MM-dd HH:mm:ss').format(now);
+
           // Call the user's CollectionReference to add a new receipt
           await receiptsCollection.add({
             'items_category': CategoryData.category,
             'cleared_items': itemsToUpload.join('\n'), // Join the items into a single string
+            'date': formattedDate,
           });
           // Show successful upload pop-up
           _showUploadSuccessDialog();
