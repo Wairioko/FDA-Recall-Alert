@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:safe_scan/data/network/current_weather_api.dart';
 import 'package:safe_scan/model/request_query.dart';
-import 'package:safe_scan/ui/screens/scan/detail.dart';
+import 'package:safe_scan/ui/screens/scan/scan_detail.dart';
 import 'package:safe_scan/ui/shared/theme/theme_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';

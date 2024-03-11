@@ -53,6 +53,10 @@ dependencies:
 #  google_ml_kit: ^0.16.3
   image_picker: ^1.0.7
   in_app_purchase: ^3.1.13
+#  in_app_purchase: ^4.0.3 # Or the latest version
+  in_app_purchase_android: ^0.3.1 # Or the latest version
+  in_app_purchase_storekit: ^0.3.13+1 # Or the latest version
+
 
 #  firebase_core_platform_interface: .0
 #  firebase_database: ^10.6.0

@@ -1,116 +1,82 @@
 import 'package:flutter/material.dart';
-import 'dart:async';
-import 'dart:io';
-import 'package:in_app_purchase/in_app_purchase.dart';
-import 'package:in_app_purchase_android/billing_client_wrappers.dart';
-import 'package:in_app_purchase_android/in_app_purchase_android.dart';
-import 'package:in_app_purchase_storekit/in_app_purchase_storekit.dart';
-import 'package:in_app_purchase_storekit/store_kit_wrappers.dart';
+import 'package:purchases_flutter/purchases_flutter.dart';
 
-class SubscriptionPackage {
-  final String name;
-  final String price;
+// add the Apple API key for your app from the RevenueCat dashboard
+final _configuration = PurchasesConfiguration("your_apple_api_key");
 
-  SubscriptionPackage({required this.name, required this.price});
-}
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Purchases.configure(_configuration);
 
-class SubscriptionPackages extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Subscription Packages',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: SubscriptionPage(),
-    );
-  }
+  runApp(const SubscriptionPage());
 }
 
 class SubscriptionPage extends StatefulWidget {
-  static const String path = '/subscription_page';
+  static const String path = '/subscription';
+  const SubscriptionPage({super.key});
 
   @override
-  _SubscriptionPageState createState() => _SubscriptionPageState();
+  State<SubscriptionPage> createState() => _SubscriptionPageState();
 }
 
 class _SubscriptionPageState extends State<SubscriptionPage> {
-  final InAppPurchase _inAppPurchase = InAppPurchase.instance;
-  late StreamSubscription<List<PurchaseDetails>> _subscription;
-
-  @override
-  void initState() {
-    super.initState();
-    _initializePurchase();
-  }
-
-  @override
-  void dispose() {
-    _subscription.cancel();
-    super.dispose();
-  }
-
-  void _initializePurchase() {
-    final Stream<List<PurchaseDetails>> purchaseUpdated =
-        _inAppPurchase.purchaseStream;
-    _subscription = purchaseUpdated.listen((List<PurchaseDetails> purchaseDetailsList) {
-      _listenToPurchaseUpdated(purchaseDetailsList);
-    }, onDone: () {
-      _subscription.cancel();
-    }, onError: (Object error) {
-      // handle error here.
-    });
-
-    _initStoreInfo();
-  }
-
-  Future<void> _initStoreInfo() async {
-    final bool isAvailable = await _inAppPurchase.isAvailable();
-    if (!isAvailable) {
-      // Handle case when in-app purchases are not available
-      return;
-    }
-
-    // Initialize store information
-    // Implement your logic here to get product details, consumables, etc.
-  }
-
-  void _listenToPurchaseUpdated(List<PurchaseDetails> purchaseDetailsList) {
-    // Listen to purchase updates
-    // Implement your logic to handle purchase updates here
-  }
+  bool _isLoading = false;
 
   @override
   Widget build(BuildContext context) {
-    // Implement your subscription page UI here
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Subscription Packages'),
-      ),
-      body: Center(
-        child: Text('Subscription Page'),
+    return MaterialApp(
+      home: Scaffold(
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              _isLoading
+                  ? CircularProgressIndicator()
+                  : Container(
+                child: FlutterLogo(
+                  size: 80,
+                ),
+              ),
+              SizedBox(height: 50),
+              ElevatedButton(
+                onPressed: _isLoading
+                    ? null
+                    : () async {
+                  // changing state only to show loading indicator
+                  setState(() {
+                    _isLoading = true;
+                  });
+
+                  // add your in-app purchases product id from App Store Connect
+                  List<StoreProduct> productList =
+                  await Purchases.getProducts(["your_product_id"]);
+
+                  print(productList);
+                  print(productList.length);
+                  print(productList.first.price);
+
+                  try {
+                    var customerInfo =
+                    await Purchases.purchaseStoreProduct(
+                        productList.first);
+
+                    print(customerInfo);
+                    setState(() {
+                      _isLoading = false;
+                    });
+                  } catch (e) {
+                    print("Failed to purchase product: $e");
+                    setState(() {
+                      _isLoading = false;
+                    });
+                  }
+                },
+                child: Text('Buy'),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
-
-  Future<void> _purchaseSubscriptionApple() async {
-    // Implement Apple Pay subscription logic
-  }
-
-  Future<void> _purchaseSubscriptionGoogle() async {
-    // Implement Google Pay subscription logic
-  }
-
-  Future<void> _subscribe() async {
-    if (Platform.isIOS) {
-      await _purchaseSubscriptionApple();
-    } else if (Platform.isAndroid) {
-      await _purchaseSubscriptionGoogle();
-    }
-  }
 }
-
-// void main() {
-//   runApp(SubscriptionPackages());
-// }
-
