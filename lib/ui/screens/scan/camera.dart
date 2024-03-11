@@ -2,8 +2,10 @@ import 'dart:io';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 import '../../screens/scan/detail.dart';
+
 
 
 class MainScreen extends StatefulWidget {
@@ -16,18 +18,14 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   bool _isPermissionGranted = false;
-
-  late final Future<void> _future;
   CameraController? _cameraController;
-
-  final textRecognizer = TextRecognizer();
+  final TextRecognizer textRecognizer = TextRecognizer();
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-
-    _future = _requestCameraPermission();
+    _requestCameraPermission();
   }
 
   @override
@@ -40,10 +38,10 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
+    // Manage camera lifecycle as before
     if (_cameraController == null || !_cameraController!.value.isInitialized) {
       return;
     }
-
     if (state == AppLifecycleState.inactive) {
       _stopCamera();
     } else if (state == AppLifecycleState.resumed &&
@@ -53,69 +51,55 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     }
   }
 
-
-
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
-      future: _future,
-      builder: (context, snapshot) {
-        return Stack(
-          children: [
-            if (_isPermissionGranted)
-              FutureBuilder<List<CameraDescription>>(
-                future: availableCameras(),
-                builder: (context, snapshot) {
-                  if (snapshot.hasData) {
-                    _initCameraController(snapshot.data!);
-
-                    return Center(child: CameraPreview(_cameraController!));
-                  } else {
-                    return const LinearProgressIndicator();
-                  }
-                },
-              ),
-            Scaffold(
-              appBar: AppBar(
-                title: const Text('Scan Receipts'),
-              ),
-              backgroundColor: _isPermissionGranted ? Colors.transparent : null,
-              body: _isPermissionGranted
-                  ? Column(
-                children: [
-                  Expanded(
-                    child: Container(),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.only(bottom: 30.0),
-                    child: Center(
-                      child: ElevatedButton(
-                        onPressed: _scanImage,
-                        child: const Text('Scan Receipt'),
-                      ),
-                    ),
-                  ),
-                ],
-              )
-                  : Center(
-                child: Container(
-                  padding: const EdgeInsets.only(left: 24.0, right: 24.0),
-                  child: const Text(
-                    'Camera permission denied',
-                    textAlign: TextAlign.center,
-                  ),
+    return Scaffold(
+      appBar: AppBar(title: const Text('Scan Receipts')),
+      backgroundColor: _isPermissionGranted ? Colors.transparent : null,
+      body: _isPermissionGranted
+          ? Column(
+        children: [
+          if (_cameraController != null &&
+              _cameraController!.value.isInitialized)
+            Expanded(child: CameraPreview(_cameraController!)),
+          Container(
+            padding: const EdgeInsets.only(bottom: 30.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                ElevatedButton(
+                  onPressed: _scanImage,
+                  child: const Text('Scan Receipt'),
                 ),
-              ),
+                ElevatedButton(
+                  onPressed: _getImageFromGallery,
+                  child: const Text('Upload Photo'),
+                ),
+              ],
             ),
-          ],
-        );
-      },
+          ),
+        ],
+      )
+          : Center(
+        child: Container(
+          padding: const EdgeInsets.only(left: 24.0, right: 24.0),
+          child: const Text(
+            'Camera permission denied',
+            textAlign: TextAlign.center,
+          ),
+        ),
+      ),
     );
   }
 
+  // --- Camera Functions (same as before) ---
   Future<void> _requestCameraPermission() async {
     final status = await Permission.camera.request();
-    _isPermissionGranted = status == PermissionStatus.granted;
+    setState(() => _isPermissionGranted = status == PermissionStatus.granted);
+    if (_isPermissionGranted) {
+      final cameras = await availableCameras();
+      _initCameraController(cameras);
+    }
   }
 
   void _startCamera() {
@@ -189,6 +173,24 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('An error occurred when scanning text'),
+        ),
+      );
+    }
+  }
+
+  Future<void> _getImageFromGallery() async {
+    final ImagePicker picker = ImagePicker();
+    final XFile? imageFile = await picker.pickImage(source: ImageSource.gallery);
+
+    if (imageFile != null) {
+      final file = File(imageFile.path);
+      final inputImage = InputImage.fromFile(file);
+      final recognizedText = await textRecognizer.processImage(inputImage);
+      // Assuming you have a ResultScreen widget
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ResultScreen(text: recognizedText.text),
         ),
       );
     }
