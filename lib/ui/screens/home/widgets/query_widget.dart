@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:safe_scan/data/network/current_weather_api.dart';
 import 'package:safe_scan/model/request_query.dart';
+import 'package:safe_scan/ui/screens/scan/detail.dart';
 import 'package:safe_scan/ui/shared/theme/theme_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -33,6 +34,7 @@ class _QueryWidgetState extends State<QueryWidget> {
   String classificationHintText = "Classification";
   String stateHintText = "State";
   String itemHintText = "Recall Category";
+  final  uid = loggedInUser?.uid;
 
   final TextEditingController _controller = TextEditingController();
   bool shouldSearch = false;
@@ -146,6 +148,7 @@ class _QueryWidgetState extends State<QueryWidget> {
   }
 
 
+  @override
   Widget build(BuildContext context) {
     return BlocBuilder<ThemeCubit, ThemeState>(
       builder: (context, state) {
@@ -389,7 +392,6 @@ class _QueryWidgetState extends State<QueryWidget> {
                             descriptions.add(description);
                           }
                         }
-
                         // Display as numbered list in a dialog
                         if (descriptions.isNotEmpty) {
                           String message = '';
@@ -398,7 +400,7 @@ class _QueryWidgetState extends State<QueryWidget> {
                           }
                           String title = '5 Most Recently Recalled Items in $state_value';
                           String referral = 'Download our app to see more recalled items in your state, check your shopping against the recalled list nationwide, and access other features!';
-                          String referralLink = 'https://yourapp.com/download?ref=referrerID';
+                          String referralLink = 'https://yourapp.com/download?ref=$uid';
 
                           showDialog(
                             context: context,
