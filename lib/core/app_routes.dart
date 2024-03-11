@@ -25,11 +25,11 @@ class AppRoutes {
       LogInPage.path: (context) => const LogInPage(),
       ReceiptListScreen.path: (context) => const ReceiptListScreen(),
       WatchlistScreen.path: (context) =>  WatchlistScreen(),
-      UserAccountPage.path: (context) => UserAccountPage(),
+      UserAccountPage.path: (context) => const UserAccountPage(),
       SubscriptionPage.path: (context) => SubscriptionPage(),
       FeedbackForm.path: (context) => FeedbackForm(),
       AccountSettingsWidget.path: (context) => AccountSettingsWidget(),
-      TermsOfServicePage.path: (context) => TermsOfServicePage(),
+      TermsOfServicePage.path: (context) => const TermsOfServicePage(),
 
       WatchlistCategoryItemsScreen.path: (context) {
         final String category = ModalRoute.of(context)?.settings.arguments as String;

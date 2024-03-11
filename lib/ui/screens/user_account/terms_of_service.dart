@@ -2,13 +2,15 @@ import 'package:flutter/material.dart';
 
 class TermsOfServicePage extends StatelessWidget {
   static const String path = '/terms';
+
+  const TermsOfServicePage({super.key});
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Terms of Service'),
+        title: const Text('Terms of Service'),
       ),
-      body: SingleChildScrollView(
+      body: const SingleChildScrollView(
         child: Padding(
           padding: EdgeInsets.all(20.0),
           child: Column(
@@ -85,7 +87,7 @@ class TermsOfServicePage extends StatelessWidget {
 }
 
 void main() {
-  runApp(MaterialApp(
+  runApp(const MaterialApp(
     home: TermsOfServicePage(),
   ));
 }

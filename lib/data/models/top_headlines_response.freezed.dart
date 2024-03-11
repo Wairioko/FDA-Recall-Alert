@@ -33,7 +33,7 @@ mixin _$RecallResponseModel {
   @HiveField(6)
   String? get distribution_pattern => throw _privateConstructorUsedError;
   @HiveField(7)
-  dynamic? get event_id => throw _privateConstructorUsedError;
+  dynamic get event_id => throw _privateConstructorUsedError;
 }
 /// @nodoc
 @JsonSerializable(createToJson: false)

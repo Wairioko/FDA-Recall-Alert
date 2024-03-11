@@ -25,7 +25,7 @@ class _WatchlistScreenState extends State<WatchlistScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Watchlist'),
+        title: const Text('Watchlist'),
       ),
       body: Column(
         children: _categories
@@ -38,8 +38,8 @@ class _WatchlistScreenState extends State<WatchlistScreen> {
                     arguments: category);
               },
               child: Container(
-                padding: EdgeInsets.all(10),
-                margin: EdgeInsets.symmetric(vertical: 5),
+                padding: const EdgeInsets.all(10),
+                margin: const EdgeInsets.symmetric(vertical: 5),
                 decoration: BoxDecoration(
                   color: _selectedCategory == category ? Colors.blue : Colors
                       .grey,
@@ -50,9 +50,9 @@ class _WatchlistScreenState extends State<WatchlistScreen> {
                   children: [
                     Text(
                       category,
-                      style: TextStyle(color: Colors.white),
+                      style: const TextStyle(color: Colors.white),
                     ),
-                    Icon(
+                    const Icon(
                       Icons.arrow_forward_ios,
                       color: Colors.white,
                     ),

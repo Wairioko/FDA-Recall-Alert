@@ -3,7 +3,6 @@ import '../../core/service_locator.dart';
 import '../../domain/entities/top_headlines.dart';
 import '../../domain/repositories/top_headlines_repository.dart';
 import '../models/error_response.dart';
-import '../models/top_headlines_query_params.dart';
 import '../models/top_headlines_response.dart';
 import 'data_sources/top_headlines_local_data_source.dart';
 import 'data_sources/top_headlines_remote_data_source.dart';

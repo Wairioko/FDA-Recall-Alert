@@ -23,7 +23,7 @@ class _AccountSettingsWidgetState extends State<AccountSettingsWidget> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
+            const Text(
               'Change Password',
               style: TextStyle(
                 fontSize: 20,

@@ -5,7 +5,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
@@ -398,17 +397,17 @@ class _SignUpPageState extends State<SignUpPage> {
                         SizedBox(width: 10), // Add space between buttons
                         Flexible(
                           child: Padding(
-                            padding: EdgeInsets.all(10.0),
+                            padding: const EdgeInsets.all(10.0),
                             child: ElevatedButton.icon(
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.black,
                               ),
                               onPressed: _handleAppleSignUp,
-                              icon: FaIcon(
+                              icon: const FaIcon(
                                 FontAwesomeIcons.apple,
                                 color: Colors.white,
                               ),
-                              label: Text(
+                              label: const Text(
                                 'Sign up Apple',
                                 style: TextStyle(
                                   color: Colors.white,

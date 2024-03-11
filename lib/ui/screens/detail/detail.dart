@@ -21,7 +21,7 @@ class Detail extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Product Details",
+        title: const Text("Product Details",
           style: TextStyle(
               fontWeight: FontWeight.bold,
               fontFamily: 'SanFrancisco'
@@ -29,7 +29,7 @@ class Detail extends StatelessWidget {
 
         ),
         leading: IconButton(
-          icon: Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -38,7 +38,7 @@ class Detail extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
-              padding: EdgeInsets.all(16),
+              padding: const EdgeInsets.all(16),
               margin: EdgeInsets.only(bottom: 16),
               decoration: BoxDecoration(
                 color: Colors.white60.withOpacity(0.4),

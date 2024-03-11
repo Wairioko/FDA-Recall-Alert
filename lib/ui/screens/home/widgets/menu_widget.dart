@@ -61,7 +61,7 @@ class MenuWidget extends StatelessWidget {
                         text: 'Sign Up',
                       ),
                     Container(
-                      margin: EdgeInsets.only(left: 10),
+                      margin: const EdgeInsets.only(left: 10),
                       child: DropdownButton<String>(
                         value: 'My Watchlist',
                         onChanged: (String? newValue) {

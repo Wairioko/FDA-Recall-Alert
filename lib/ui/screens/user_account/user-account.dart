@@ -9,15 +9,17 @@ import 'package:safe_scan/ui/screens/user_account/terms_of_service.dart';
 class UserAccountPage extends StatelessWidget {
   static const String path = '/user-account';
 
+  const UserAccountPage({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('User Account'),
+        title: const Text('User Account'),
       ),
       body: SingleChildScrollView(
         child: Padding(
-          padding: EdgeInsets.all(16.0),
+          padding: const EdgeInsets.all(16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [

@@ -1,6 +1,5 @@
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
-import '../../../model/request_query.dart';
 import '../../api_provider/base_api_provider.dart';
 import '../../models/base_model/base_model.dart';
 
@@ -38,7 +37,7 @@ abstract class BaseApi<TQuery extends BaseModel, TRes extends BaseModel, TErr ex
       );
       // Assuming that both TRes and TErr extend BaseModel, the following should work
       return Left(mapSuccessResponse(response.data) as TRes);
-    } on DioError catch (err) {
+    } on DioException catch (err) {
       if (err.response != null && err.response!.data != null) {
         return Right(mapErrorResponse(err.response!.data) as TErr);
       }

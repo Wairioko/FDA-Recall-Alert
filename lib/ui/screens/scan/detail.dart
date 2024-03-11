@@ -1,13 +1,11 @@
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:intl/intl.dart';
 import 'package:safe_scan/ui/screens/home/widgets/query_widget.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:safe_scan/data/network/current_weather_api.dart';
 import 'package:flutter/services.dart';
 import '../../../model/detail_data_model.dart';
-import '../../../model/new_item_model.dart';
 import '../detail/detail.dart';
 
 
@@ -98,7 +96,6 @@ class _ResultScreenState extends State<ResultScreen> {
   bool _isEditing = false;
   bool _isUploading = false;
   late List<dynamic> _searchResults = [];
-  bool _allItemsChecked = false;
   bool _isSearching = false;
   bool _textEdited = false; // Flag to track text edits
   List<String> unfilteredLines = []; // List to store lines of text
@@ -181,15 +178,15 @@ class _ResultScreenState extends State<ResultScreen> {
           // Reference to the "receipts" subcollection under the user's document
           CollectionReference receiptsCollection =
           userDoc.collection('cleared_items');
-          DateTime now = DateTime.now();
-          // Format the date
-          String formattedDate = DateFormat('yyyy-MM-dd HH:mm:ss').format(now);
+          // DateTime now = DateTime.now();
+          // // Format the date
+          // String formattedDate = DateFormat('yyyy-MM-dd HH:mm:ss').format(now);
 
           // Call the user's CollectionReference to add a new receipt
           await receiptsCollection.add({
             'items_category': CategoryData.category,
             'cleared_items': itemsToUpload.join('\n'), // Join the items into a single string
-            'date': formattedDate,
+            // 'date': formattedDate,
           });
           // Show successful upload pop-up
           _showUploadSuccessDialog();
@@ -273,13 +270,12 @@ class _ResultScreenState extends State<ResultScreen> {
       _isSearching = true;
     });
 
-    // Clear previous search results and lineMatchesMap
     _searchResults.clear();
     lineMatchesMap.clear();
 
-    List<String> updatedLines = List<String>.from(unfilteredLines); // Create a copy
+    List<String> updatedLines = List<String>.from(unfilteredLines);
 
-    for (int i = 0; i < updatedLines.length - 1; i++) {
+    for (int i = 0; i < updatedLines.length; i++) {
       String line = updatedLines[i];
       if (line.trim().isEmpty) {
         continue;
@@ -287,7 +283,6 @@ class _ResultScreenState extends State<ResultScreen> {
 
       List<DetailDataModel> matches = [];
 
-      // Loop through each entry in responseJson to check for matches
       for (dynamic item in responseJson ?? []) {
         if (item['product_description'] != null &&
             item['product_description']
@@ -307,39 +302,26 @@ class _ResultScreenState extends State<ResultScreen> {
         }
       }
 
-      // Update lineMatchesMap with matches
       lineMatchesMap[i] = matches;
 
-      // Update line item labels and color
       if (matches.isNotEmpty) {
         updatedLines[i] = "$line - Potential Matches Found (${matches.length}), Click to see Details";
       } else {
         updatedLines[i] = "$line - Item Cleared";
-        clearedIndices.add(i);
       }
     }
 
-    // Update unfilteredLines with the modified lines
     setState(() {
       unfilteredLines = updatedLines;
+      _isSearching = false;
     });
 
     // Convert lineMatchesMap to _searchResults
     _searchResults = lineMatchesMap.entries
         .map((entry) => {unfilteredLines[entry.key]: entry.value})
         .toList();
-
-    setState(() {
-      _isSearching = false;
-    });
-
-    // Synchronize lineMatchesMap indices with unfilteredLines indices
-    for (int key in lineMatchesMap.keys.toList()) {
-      if (key >= updatedLines.length) {
-        lineMatchesMap.remove(key);
-      }
-    }
   }
+
 
 
   Widget _buildNotebookList() {

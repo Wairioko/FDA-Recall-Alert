@@ -32,7 +32,7 @@ class WatchlistCategoryItemsScreen extends StatelessWidget {
         }
       } catch (e) {
         print('Error fetching user watchlist: $e');
-        return Stream.empty();
+        return const Stream.empty();
       }
     }
 
@@ -89,18 +89,18 @@ class WatchlistCategoryItemsScreen extends StatelessWidget {
                 return ListTile(
                   title: Text(item['name']),
                   trailing: IconButton(
-                    icon: Icon(Icons.delete),
+                    icon: const Icon(Icons.delete),
                     onPressed: () => deleteItem(category, item['id']),
                   ),
                 );
               },
             );
           } else if (snapshot.hasError) {
-            return Center(
-              child: Text('Error fetching data'),
+            return const Center(
+              child: const Text('Error fetching data'),
             );
           }
-          return Center(
+          return const Center(
             child: CircularProgressIndicator(),
           );
         },
@@ -112,22 +112,22 @@ class WatchlistCategoryItemsScreen extends StatelessWidget {
             builder: (BuildContext context) {
               String itemName = '';
               return AlertDialog(
-                title: Text('Add Item'),
+                title: const Text('Add Item'),
                 content: TextField(
                   onChanged: (value) {
                     itemName = value;
                   },
-                  decoration: InputDecoration(hintText: "Enter item name"),
+                  decoration: const InputDecoration(hintText: "Enter item name"),
                 ),
                 actions: <Widget>[
                   TextButton(
-                    child: Text('Cancel'),
+                    child: const Text('Cancel'),
                     onPressed: () {
                       Navigator.of(context).pop();
                     },
                   ),
                   TextButton(
-                    child: Text('Add'),
+                    child: const Text('Add'),
                     onPressed: () {
                       addItem(category, itemName);
                       Navigator.of(context).pop();
@@ -138,7 +138,7 @@ class WatchlistCategoryItemsScreen extends StatelessWidget {
             },
           );
         },
-        child: Icon(Icons.add),
+        child: const Icon(Icons.add),
       ),
     );
   }

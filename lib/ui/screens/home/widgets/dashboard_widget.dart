@@ -96,7 +96,7 @@ class MenuScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text('Menu'),
       ),
-      body: Center(
+      body: const Center(
         child: Text('Menu Content'),
       ),
     );

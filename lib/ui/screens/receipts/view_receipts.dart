@@ -28,7 +28,7 @@ class _ReceiptListScreenState extends State<ReceiptListScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Receipts List'),
+        title: const Text('Receipts List'),
       ),
       body: StreamBuilder<QuerySnapshot>(
         stream: receiptsStream,
