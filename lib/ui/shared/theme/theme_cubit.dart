@@ -46,8 +46,8 @@ class ThemeCubit extends Cubit<ThemeState> {
         fontFamily: 'Nunito',
         colorScheme: ColorScheme.dark(
           primary: Colors.green,
-          onPrimary: Colors.white, // Text color on the primary color for dark theme
-          secondary: Colors.grey.shade900, // Example secondary color for dark theme
+          onPrimary: Colors.black, // Text color on the primary color for dark theme
+          secondary: Colors.white, // Example secondary color for dark theme
           onSecondary: Colors.white, // Text color on the secondary color for dark theme
           error: Colors.red, // Error color for dark theme
           onError: Colors.white, // Text color on the error color for dark theme
