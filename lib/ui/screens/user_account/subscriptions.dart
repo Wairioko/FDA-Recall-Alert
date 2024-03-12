@@ -3,14 +3,12 @@ import 'package:in_app_purchase/in_app_purchase.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 
 
-
-
 class SubscriptionPackage {
   final String name;
   final String price;
 
-
   SubscriptionPackage({required this.name, required this.price});
+
 }
 
 class SubscriptionPackages extends StatelessWidget {
@@ -48,76 +46,76 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
   void initState() {
     super.initState();
     // Initialize Purchases SDK
-    PurchasesConfiguration("REVENUE CAT_API_KEY");
+    PurchasesConfiguration("goog_ZfrdtkQtiwLcpHvPjOUfvqxPqCq");
   }
 
-  // Future<void> _subscribe() async {
-  //   try {
-  //     bool available = await InAppPurchase.instance.isAvailable();
-  //     if (available) {
-  //       if (Theme.of(context).platform == TargetPlatform.iOS) {
-  //
-  //         // Implement iOS subscription logic
-  //         final CustomerInfo customerInfo = await Purchases.purchasePackage();
-  //         // Handle purchase result
-  //         if (customerInfo != null) {
-  //           // Success
-  //           // Do something with the customerInfo if needed
-  //         } else {
-  //           // Purchase failed
-  //         }
-  //       } else if (Theme.of(context).platform == TargetPlatform.android) {
-  //         // Implement Android subscription logic
-  //         final CustomerInfo customerInfo = await Purchases.purchasePackage();
-  //         // Handle purchase result
-  //         if (customerInfo != null) {
-  //           // Success
-  //           // Do something with the customerInfo if needed
-  //         } else {
-  //           // Purchase failed
-  //         }
-  //       }
-  //     } else {
-  //       // In-app purchase not available
-  //       showDialog(
-  //         context: context,
-  //         builder: (BuildContext context) {
-  //           return AlertDialog(
-  //             title: Text("Error"),
-  //             content: Text("In-app purchases not available on this device."),
-  //             actions: <Widget>[
-  //               TextButton(
-  //                 onPressed: () {
-  //                   Navigator.of(context).pop();
-  //                 },
-  //                 child: Text("OK"),
-  //               ),
-  //             ],
-  //           );
-  //         },
-  //       );
-  //     }
-  //   } catch (error) {
-  //     // Handle error
-  //     showDialog(
-  //       context: context,
-  //       builder: (BuildContext context) {
-  //         return AlertDialog(
-  //           title: Text("Error"),
-  //           content: Text(error.toString()),
-  //           actions: <Widget>[
-  //             TextButton(
-  //               onPressed: () {
-  //                 Navigator.of(context).pop();
-  //               },
-  //               child: Text("OK"),
-  //             ),
-  //           ],
-  //         );
-  //       },
-  //     );
-  //   }
-  // }
+  Future<void> _subscribe() async {
+    try {
+      bool available = await InAppPurchase.instance.isAvailable();
+      if (available) {
+        if (Theme.of(context).platform == TargetPlatform.iOS) {
+
+          // Implement iOS subscription logic
+          final CustomerInfo customerInfo = await Purchases.purchasePackage();
+          // Handle purchase result
+          if (customerInfo != null) {
+            // Success
+            // Do something with the customerInfo if needed
+          } else {
+            // Purchase failed
+          }
+        } else if (Theme.of(context).platform == TargetPlatform.android) {
+          // Implement Android subscription logic
+          final CustomerInfo customerInfo = await Purchases.purchasePackage();
+          // Handle purchase result
+          if (customerInfo != null) {
+            // Success
+            // Do something with the customerInfo if needed
+          } else {
+            // Purchase failed
+          }
+        }
+      } else {
+        // In-app purchase not available
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text("Error"),
+              content: Text("In-app purchases not available on this device."),
+              actions: <Widget>[
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: Text("OK"),
+                ),
+              ],
+            );
+          },
+        );
+      }
+    } catch (error) {
+      // Handle error
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text("Error"),
+            content: Text(error.toString()),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text("OK"),
+              ),
+            ],
+          );
+        },
+      );
+    }
+  }
 
 
   @override
@@ -257,7 +255,6 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
             ),
           ),
         ),
-
       ),
     );
   }

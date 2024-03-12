@@ -26,7 +26,7 @@ class AppRoutes {
       ReceiptListScreen.path: (context) => const ReceiptListScreen(),
       WatchlistScreen.path: (context) =>  WatchlistScreen(),
       UserAccountPage.path: (context) => const UserAccountPage(),
-      SubscriptionPage.path: (context) => const SubscriptionPage(),
+      SubscriptionPage.path: (context) => SubscriptionPage(),
       FeedbackForm.path: (context) => FeedbackForm(),
       AccountSettingsWidget.path: (context) => AccountSettingsWidget(),
       TermsOfServicePage.path: (context) => const TermsOfServicePage(),
@@ -35,6 +35,7 @@ class AppRoutes {
         final String category = ModalRoute.of(context)?.settings.arguments as String;
         return WatchlistCategoryItemsScreen(category: category);
       },
+
       Detail.path: (context) {
         DetailDataModel detailDataModel = ModalRoute.of(context)?.settings.arguments as DetailDataModel;
         return Detail(detailDataModel: detailDataModel);
