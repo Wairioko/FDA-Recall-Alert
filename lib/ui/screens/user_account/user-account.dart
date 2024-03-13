@@ -148,7 +148,7 @@ class UserAccountPage extends StatelessWidget {
     return Card(
       child: ListTile(
         onTap: () {
-          Navigator.of(context).pushNamed(SubscriptionPage.path);
+          // Navigator.of(context).pushNamed(SubscriptionPage.path);
         },
         leading: Icon(Icons.credit_card),
         title: Text('Subscription'),
