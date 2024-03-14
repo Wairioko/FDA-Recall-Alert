@@ -6,6 +6,7 @@ class NotificationService {
   Future<void> init() async {
     // Subscribe to a topic to receive messages for all users
     await _firebaseMessaging.subscribeToTopic('recall_match');
+    await _firebaseMessaging.subscribeToTopic('new_data');
 
     // Listen for incoming messages when the app is in the foreground
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {

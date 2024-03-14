@@ -1,3 +1,4 @@
+import 'package:safe_scan/ui/screens/notifications/notifications_widget.dart';
 import 'package:safe_scan/ui/screens/scan/camera.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -67,7 +68,6 @@ class MenuWidget extends StatelessWidget {
                         onChanged: (String? newValue) {
                           // Handle dropdown item selection here
                           if (newValue == 'My Watchlist') {
-                            print("from watchlist : ${user?.email}");
                             Navigator.of(context).pushNamed(WatchlistScreen.path);
                           } else {
                             // Navigate to other screens based on dropdown selection
@@ -135,6 +135,16 @@ class MenuWidget extends StatelessWidget {
                             ? 'assets/icons/shopping-cart.svg'
                             : 'assets/icons/shopping-cart.svg',
                         text: 'My Receipts',
+                      ),
+                    if (user != null)
+                      _buildMenuItem(
+                        onTap: () {
+                          Navigator.of(context).pushNamed(NotificationsPage.path);
+                        },
+                        icon: Utility.isLightTheme(state.themeType)
+                            ? 'assets/icons/notifications.svg'
+                            : 'assets/icons/notifications.svg',
+                        text: 'Notifications',
                       ),
                     _buildMenuItem(
                       onTap: () {

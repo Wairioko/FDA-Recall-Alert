@@ -1,4 +1,5 @@
 import 'package:safe_scan/ui/screens/about/about_screen.dart';
+import 'package:safe_scan/ui/screens/notifications/notifications_widget.dart';
 import 'package:safe_scan/ui/screens/user_account/account_security.dart';
 import 'package:safe_scan/ui/screens/user_account/feedback.dart';
 import 'package:safe_scan/ui/screens/user_account/subscriptions.dart';
@@ -26,10 +27,11 @@ class AppRoutes {
       ReceiptListScreen.path: (context) => const ReceiptListScreen(),
       WatchlistScreen.path: (context) =>  WatchlistScreen(),
       UserAccountPage.path: (context) => const UserAccountPage(),
-      SubscriptionPage.path: (context) => SubscriptionPage(),
+      // SubscriptionPage.path: (context) => SubscriptionPage(),
       FeedbackForm.path: (context) => FeedbackForm(),
       AccountSettingsWidget.path: (context) => AccountSettingsWidget(),
       TermsOfServicePage.path: (context) => const TermsOfServicePage(),
+      NotificationsPage.path: (context) => NotificationsPage(),
 
       WatchlistCategoryItemsScreen.path: (context) {
         final String category = ModalRoute.of(context)?.settings.arguments as String;
