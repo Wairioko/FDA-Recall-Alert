@@ -8,8 +8,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-
 import '../home/home.dart';
+
 
 class UserModel {
   String defaultState;
@@ -38,6 +38,8 @@ class SignUpPage extends StatefulWidget {
   @override
   _SignUpPageState createState() => _SignUpPageState();
 }
+// Define a variable to track the authentication method
+enum AuthMethod { EmailPassword, Google, Apple }
 
 class _SignUpPageState extends State<SignUpPage> {
   final formkey = GlobalKey<FormState>();
@@ -46,10 +48,12 @@ class _SignUpPageState extends State<SignUpPage> {
   TextEditingController defaultStateController = TextEditingController();
   String shoppingFrequency = '1-3 times per month';
 
+  // Initialize it with the default method
+  AuthMethod authMethod = AuthMethod.EmailPassword;
+
   Future<String?> _getFCMToken() async {
     String? token = await FirebaseMessaging.instance.getToken();
     return token;
-    // Send token to your server
   }
 
 
@@ -57,13 +61,15 @@ class _SignUpPageState extends State<SignUpPage> {
     try {
       final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
       if (googleUser != null) {
+        authMethod = AuthMethod.Google;
         final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
         final AuthCredential google_credential = GoogleAuthProvider.credential(
           accessToken: googleAuth.accessToken,
           idToken: googleAuth.idToken,
         );
         await FirebaseAuth.instance.signInWithCredential(google_credential);
-        _collectAdditionalInformation();
+        // Call the method to collect additional information
+        _collectAdditionalInformation(); // Added this line
       } else {
         // Handle Google sign-in cancellation
       }
@@ -85,13 +91,15 @@ class _SignUpPageState extends State<SignUpPage> {
           redirectUri: Uri.parse('https://your-redirect-url.com'),
         ),
       );
+      authMethod = AuthMethod.Apple;
       final OAuthProvider oAuthProvider = OAuthProvider('apple.com');
       final AuthCredential apple_credential = oAuthProvider.credential(
         idToken: credential.identityToken,
         accessToken: credential.authorizationCode,
       );
       await FirebaseAuth.instance.signInWithCredential(apple_credential);
-      _collectAdditionalInformation();
+      // Call the method to collect additional information
+      _collectAdditionalInformation(); // Added this line
     } catch (e) {
       // Handle Apple sign-in errors
       print("Apple sign-in error: $e");
@@ -109,9 +117,10 @@ class _SignUpPageState extends State<SignUpPage> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
+                // Add other form fields here
                 TextFormField(
                   controller: defaultStateController,
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     hintText: "Your Default State",
                     labelText: "Enter Default State",
                   ),
@@ -122,7 +131,7 @@ class _SignUpPageState extends State<SignUpPage> {
                     return null;
                   },
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
                 DropdownButtonFormField<String>(
                   value: shoppingFrequency,
                   onChanged: (String? newValue) {
@@ -130,21 +139,22 @@ class _SignUpPageState extends State<SignUpPage> {
                       shoppingFrequency = newValue!;
                     });
                   },
-                  items: [
+                  items: const [
+                    // Dropdown menu items
                     DropdownMenuItem(
-                      child: Text('1-3 times per month'),
                       value: '1-3 times per month',
+                      child: Text('1-3 times per month'),
                     ),
                     DropdownMenuItem(
-                      child: Text('4-6 times per month'),
                       value: '4-6 times per month',
+                      child: Text('4-6 times per month'),
                     ),
                     DropdownMenuItem(
-                      child: Text('7+ times per month'),
                       value: '7+ times per month',
+                      child: Text('7+ times per month'),
                     ),
                   ],
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     labelText: 'Shopping Frequency',
                     hintText: 'Select Shopping Frequency',
                   ),
@@ -163,7 +173,7 @@ class _SignUpPageState extends State<SignUpPage> {
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text('Cancel'),
+              child: const Text('Cancel'),
             ),
             ElevatedButton(
               onPressed: () {
@@ -182,10 +192,13 @@ class _SignUpPageState extends State<SignUpPage> {
                   Navigator.of(context).pop();
                   // Proceed with other actions
                   // For example, navigate to another screen
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => Home()));
+                  Navigator.push(context, MaterialPageRoute(builder: (context) =>
+                  const Home()
+                  )
+                  );
                 }
               },
-              child: Text('Save'),
+              child: const Text('Save'),
             ),
           ],
         );
@@ -198,24 +211,37 @@ class _SignUpPageState extends State<SignUpPage> {
 
   MoveToLog() async {
     if (formkey.currentState!.validate()) {
-      try {
-        await FirebaseAuth.instance.createUserWithEmailAndPassword(
-          email: email.text,
-          password: password.text.trim(),
-        ).then((value) async {
-          await FirebaseFirestore.instance.collection('users').doc(value.user?.uid).set({
-            'email': email.text,
-            'defaultState': defaultStateController.text,
-            'shoppingFrequency': shoppingFrequency,
-          });
+      if (authMethod == AuthMethod.EmailPassword && (email.text.isEmpty || password.text.isEmpty)) {
+        // Email and password fields are required for traditional sign-up method
+        return;
+      }
 
-          Navigator.push(context, MaterialPageRoute(builder: (context) => const LogInPage()));
+      try {
+        if (authMethod == AuthMethod.EmailPassword) {
+          // Perform email/password sign-up
+          await FirebaseAuth.instance.createUserWithEmailAndPassword(
+            email: email.text,
+            password: password.text.trim(),
+          );
+        }
+
+        // Save additional information to Firebase or any other storage
+        final user = FirebaseAuth.instance.currentUser;
+        await FirebaseFirestore.instance.collection('users').doc(user!.uid).set({
+          'email': user.email,
+          'defaultState': defaultStateController.text,
+          'shoppingFrequency': shoppingFrequency,
         });
-      } on FirebaseAuthException catch (e) {
+
+        // Navigate to the login page
+        Navigator.push(context, MaterialPageRoute(builder: (context) => const LogInPage()));
+      } catch (e) {
         // Handle authentication exceptions
+        print(e.toString());
       }
     }
   }
+
 
 
 
@@ -228,6 +254,9 @@ class _SignUpPageState extends State<SignUpPage> {
       '4-6 times per month',
       '7+ times per month'
     ];
+
+    // Boolean variables to track if email and password fields should be visible
+    bool showEmailAndPassword = true;
 
     return Scaffold(
       body: Container(
@@ -252,6 +281,8 @@ class _SignUpPageState extends State<SignUpPage> {
                       ),
                     ),
                     const SizedBox(height: 10),
+                    // Conditional rendering of email and password fields
+                    if (showEmailAndPassword)
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 5.0),
                       child: TextFormField(
@@ -264,12 +295,6 @@ class _SignUpPageState extends State<SignUpPage> {
                             borderRadius: BorderRadius.circular(30),
                           ),
                         ),
-                        validator: (value) {
-                          if (value!.isEmpty) {
-                            return "Email Can Not Be Empty";
-                          }
-                          return null;
-                        },
                       ),
                     ),
                     const SizedBox(height: 10),
@@ -286,14 +311,6 @@ class _SignUpPageState extends State<SignUpPage> {
                             borderRadius: BorderRadius.circular(30),
                           ),
                         ),
-                        validator: (value) {
-                          if (value!.isEmpty) {
-                            return "Password Can Not Be Empty";
-                          } else if (value.length < 6) {
-                            return "Password Should Be Greater Than 6 Digits";
-                          }
-                          return null;
-                        },
                       ),
                     ),
                     const SizedBox(height: 10),
