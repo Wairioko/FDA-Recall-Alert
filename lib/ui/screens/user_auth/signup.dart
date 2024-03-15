@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 import '../home/home.dart';
 
@@ -44,6 +45,12 @@ class _SignUpPageState extends State<SignUpPage> {
   TextEditingController password = TextEditingController();
   TextEditingController defaultStateController = TextEditingController();
   String shoppingFrequency = '1-3 times per month';
+
+  Future<String?> _getFCMToken() async {
+    String? token = await FirebaseMessaging.instance.getToken();
+    return token;
+    // Send token to your server
+  }
 
 
   void _handleGoogleSignUp() async {
@@ -164,10 +171,12 @@ class _SignUpPageState extends State<SignUpPage> {
                   // Save the additional information to Firebase or any other storage
                   // For example:
                   final user = FirebaseAuth.instance.currentUser;
+
                   FirebaseFirestore.instance.collection('users').doc(user!.uid).set({
                     'email':user.email,
                     'defaultState': defaultStateController.text,
                     'shoppingFrequency': shoppingFrequency,
+                    'token': _getFCMToken,
                   });
                   // Close the dialog
                   Navigator.of(context).pop();
