@@ -339,6 +339,36 @@ class _ResultScreenState extends State<ResultScreen> {
     _keyboardListenerFocusNode.dispose();
   }
 
+  // void _handleDismiss(int index) {
+  //   setState(() {
+  //     final filteredLines = unfilteredLines.where((line) {
+  //       final trimmedLine = line.trim();
+  //       final startsWithNonAlphanumeric = RegExp(r'^\W').hasMatch(trimmedLine); // Check if line starts with a non-alphanumeric character
+  //       final containsNonProductPattern = nonProductPatterns.any((pattern) => pattern.hasMatch(trimmedLine));
+  //       return !startsWithNonAlphanumeric && !containsNonProductPattern;
+  //     }).toList();
+  //     if (index >= 0 && index < filteredLines.length) {
+  //       filteredLines.removeAt(index); // Remove the item from the filtered list
+  //       unfilteredLines.removeAt(index); // Also remove the item from the unfiltered list
+  //     }
+  //   });
+  // }
+  void _handleDismiss(int index) {
+    setState(() {
+      final filteredLines = unfilteredLines.where((line) {
+        final trimmedLine = line.trim();
+        final startsWithNonAlphanumeric = RegExp(r'^\W').hasMatch(trimmedLine); // Check if line starts with a non-alphanumeric character
+        final containsNonProductPattern = nonProductPatterns.any((pattern) => pattern.hasMatch(trimmedLine));
+        return !startsWithNonAlphanumeric && !containsNonProductPattern;
+      }).toList();
+      if (index >= 0 && index < filteredLines.length) {
+        final removedLine = filteredLines.removeAt(index); // Remove the item from the filtered list
+        unfilteredLines.remove(removedLine); // Also remove the item from the unfiltered list
+      }
+    });
+  }
+
+
 
 
   Widget _buildNotebookList() {
@@ -355,7 +385,7 @@ class _ResultScreenState extends State<ResultScreen> {
         focusNode: _keyboardListenerFocusNode,
         onKey: (event) {
           if (event is KeyDownEvent && event.logicalKey == LogicalKeyboardKey.enter) {
-            for (int index = 1; index < filteredLines.length; index++) {
+            for (int index = 0; index < filteredLines.length; index++) {
               if (_isEditing && index == _editingLineIndex && _focusNode.hasFocus) {
                 setState(() {
                   final originalIndex = filteredLines.indexOf(filteredLines[index]);
@@ -396,14 +426,12 @@ class _ResultScreenState extends State<ResultScreen> {
                     ),
                   )
                       : Dismissible(
-                    key: Key(filteredLines[index]),
+                    key: Key(filteredLines[index]), // Ensure the key uniquely identifies the item
                     onDismissed: (direction) {
-                      setState(() {
-                        final originalIndex = filteredLines.indexOf(filteredLines[index]);
-                        filteredLines.removeAt(originalIndex);
-                        lineMatchesMap.remove(filteredLines[index]);
-                        validIndices.remove(originalIndex);
-                      });
+                      // setState(() {
+                      //   filteredLines.removeAt(index); // Remove the item from the list
+                      // });
+                      _handleDismiss(index);
                     },
                     background: Container(color: Colors.red),
                     child: Material(
