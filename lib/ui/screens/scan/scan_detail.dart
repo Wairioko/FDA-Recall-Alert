@@ -73,13 +73,10 @@ class SelectionScreen extends StatelessWidget {
 }
 
 
+
 class ResultScreen extends StatefulWidget {
   final String text;
   const ResultScreen({Key? key, required this.text}) : super(key: key);
-  String cleanText(String inputText) {
-    return inputText.replaceAll('\n', ' ').trim();
-  }
-
 
   @override
   _ResultScreenState createState() => _ResultScreenState();
@@ -89,66 +86,185 @@ class _ResultScreenState extends State<ResultScreen> {
   late TextEditingController _textEditingController;
   late FocusNode _keyboardListenerFocusNode;
   late String _editedText;
-  // Define validIndices list
   List<int> validIndices = [];
   late FocusNode _focusNode;
-  int _editingLineIndex = -1;
+  int _editingLineIndex = 1;
   bool _isEditing = false;
   bool _isUploading = false;
   late List<dynamic> _searchResults = [];
   bool _isSearching = false;
-  bool _textEdited = false; // Flag to track text edits
-  List<String> unfilteredLines = []; // List to store lines of text
+  bool _textEdited = false;
+  List<String> unfilteredLines = [];
   List<dynamic>? responseJson;
-  // New property to keep track of selected lines
-  Set<int> _selectedLines = Set<int>();
+  final Set<int> _selectedLines = <int>{};
   List<int> clearedIndices = [];
+  // Replace lineMatchesMap with this dictionary
+  late Map<String, List<DetailDataModel>> lineMatchesMap = {};
+  // Move filteredLines here as a class-level variable
+  late List<String> filteredLines = [];
 
-
-  // Define a list of patterns and keywords indicating non-product lines
   final nonProductPatterns = [
-    RegExp(r'^\d+\.$'), // Matches lines containing a number followed by a period
-    RegExp(r'^[a-zA-Z]$', caseSensitive: false), // Matches lines containing only a single letter
-    RegExp(r'^\d+$'),//filter for numbers only
-    RegExp(r'\b\d{2,12}\b'), // Barcode numbers (at least 12 digits)
-    RegExp(r'\b\d+\.\d+\b'), // Amounts (decimal numbers)
-    RegExp(r'\b\d+\s*(PCS|pack|pieces|amount|kgs|gms)\b', caseSensitive: false), // Quantities like "1.00PCS"
-    // Add more patterns as needed
+    RegExp(r'^\d+\.$'),
+    RegExp(r'^[a-zA-Z]$', caseSensitive: false),
+    RegExp(r'^\d+$'),
+    RegExp(r'\b\d{2,12}\b'),
+    RegExp(r'\b\d+\.\d+\b'),
+    RegExp(r'\b\d+\s*(PCS|pack|pieces|amount|kgs|gms)\b', caseSensitive: false),
   ];
-
 
   @override
   void initState() {
     super.initState();
     _textEditingController = TextEditingController(text: widget.text);
     _editedText = widget.text;
-    unfilteredLines = _editedText.split('\n'); // Split the text into lines
+    unfilteredLines = _editedText.split('\n');
     _focusNode = FocusNode();
     validIndices = List<int>.generate(unfilteredLines.length, (index) => index);
     _keyboardListenerFocusNode = FocusNode();
+    responseJson = ApiData.responseJson;
+    lineMatchesMap = {};
 
-    // Add focus listener
-    _focusNode.addListener(() {
-      if (!_focusNode.hasFocus) {
-        // Hide keyboard and show search button
-        setState(() {
-          _isEditing = false;
-        });
+  }
+
+  Completer<void> _uploadCompleter = Completer<void>();
+
+  void _printLineMatchesMap() {
+    lineMatchesMap.forEach((line, matches) {
+      print('Line: $line');
+      print('Matches:');
+      for (var match in matches) {
+        print('\tProduct Description: ${match.product_description}');
+        print('\tReason for Recall: ${match.reason_for_recall}');
+        print('\tStatus: ${match.status}');
+        print('\tClassification: ${match.classification}');
+        print('\tRecalling Firm: ${match.recalling_firm}');
+        print('\tVoluntary Mandated: ${match.voluntary_mandated}');
+        print('\n');
       }
     });
+  }
 
-    // Load responseJson as a list of dynamic objects
-    responseJson = ApiData.responseJson;
+  // Update _handleLineTap method to correctly handle line taps and navigation
+  void _handleLineTap(int index) {
+    final filteredLines = unfilteredLines.where((line) {
+      final trimmedLine = line.trim();
+      final startsWithNonAlphanumeric = RegExp(r'^\W').hasMatch(trimmedLine); // Check if line starts with a non-alphanumeric character
+      final containsNonProductPattern = nonProductPatterns.any((pattern) => pattern.hasMatch(trimmedLine));
+      return !startsWithNonAlphanumeric && !containsNonProductPattern;
+    }).toList();
+    if (!_isEditing && index >= 0 && index < filteredLines.length) {
+      final line = filteredLines[index].trim(); // Get the line item text and trim any whitespace
+      print("the line $line");
+      final matches = _getMatchesForLine(index); // Retrieve matches based on the line item text
+      print("the matches for line $matches");
+      if (matches == null || clearedIndices.contains(index)) {
+        print('Item cleared. No matches found.');
+      } else if (matches.isNotEmpty) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => SelectionScreen(matches: matches),
+          ),
+        );
+      }
+    } else if (_isEditing && index >= 0 && index < filteredLines.length) {
+      setState(() {
+        _editingLineIndex = index;
+        _isEditing = false;
+        _textEditingController.text = filteredLines[index];
+        FocusScope.of(context).requestFocus(_focusNode);
+      });
+    }
   }
 
 
-  // Declare a Completer
-  Completer<void> _uploadCompleter = Completer<void>();
+
+  List<DetailDataModel>? _getMatchesForLine(int index) {
+    final filteredLines = unfilteredLines.where((line) {
+      final trimmedLine = line.trim();
+      final startsWithNonAlphanumeric = RegExp(r'^\W').hasMatch(trimmedLine); // Check if line starts with a non-alphanumeric character
+      final containsNonProductPattern = nonProductPatterns.any((pattern) => pattern.hasMatch(trimmedLine));
+      return !startsWithNonAlphanumeric && !containsNonProductPattern;
+    }).toList();
+
+    final line = filteredLines[index];
+    return lineMatchesMap[line];
+  }
+
+  Future<void> _checkItems() async {
+    var filteredLines = unfilteredLines.where((line) {
+      final trimmedLine = line.trim();
+      final startsWithNonAlphanumeric = RegExp(r'^\W').hasMatch(trimmedLine); // Check if line starts with a non-alphanumeric character
+      final containsNonProductPattern = nonProductPatterns.any((pattern) => pattern.hasMatch(trimmedLine));
+      return !startsWithNonAlphanumeric && !containsNonProductPattern;
+    }).toList();
+
+    setState(() {
+      _isSearching = true;
+    });
+
+    lineMatchesMap.clear();
+    List<String> updatedLines = List<String>.from(filteredLines);
+    print("the updated lines $updatedLines");
+
+    for (int i = 0; i < updatedLines.length; i++) {
+      String line = updatedLines[i];
+      if (line.trim().isEmpty) {
+        continue;
+      }
+
+      List<DetailDataModel> matches = [];
+
+      for (dynamic item in responseJson ?? []) {
+        if (item['product_description'] != null &&
+            item['product_description']
+                .toString()
+                .toLowerCase()
+                .contains(line.toLowerCase())) {
+          matches.add(
+            DetailDataModel(
+              product_description: item['product_description'],
+              reason_for_recall: item['reason_for_recall'],
+              status: item['status'],
+              classification: item['classification'],
+              recalling_firm: item['recalling_firm'],
+              voluntary_mandated: item['voluntary_mandated'],
+            ),
+          );
+        }
+      }
+
+      lineMatchesMap[line] = matches;
+      print("these are the matches $matches");
+
+      if (matches.isNotEmpty) {
+        updatedLines[i] = "$line - Potential Matches Found (${matches.length}), Click to see Details";
+      } else {
+        updatedLines[i] = "$line - Item Cleared";
+      }
+    }
+
+    setState(() {
+      filteredLines = updatedLines;
+      _isSearching = false;
+    });
+
+    _searchResults = lineMatchesMap.entries
+        .map((entry) => {entry.key: entry.value})
+        .toList();
+    // Print the line matches map
+    _printLineMatchesMap();
+  }
 
 
   Future<void> _upLoad(User? loggedInUser) async {
+    final filteredLines = unfilteredLines.where((line) {
+      final trimmedLine = line.trim();
+      final startsWithNonAlphanumeric = RegExp(r'^\W').hasMatch(trimmedLine); // Check if line starts with a non-alphanumeric character
+      final containsNonProductPattern = nonProductPatterns.any((pattern) => pattern.hasMatch(trimmedLine));
+      return !startsWithNonAlphanumeric && !containsNonProductPattern;
+    }).toList();
     if (_isUploading) {
-      // Upload only if editing, text has been edited, and not already uploading
       return;
     }
 
@@ -158,37 +274,25 @@ class _ResultScreenState extends State<ResultScreen> {
 
     if (loggedInUser != null) {
       try {
-        // Filter out items marked as "Item cleared" and without "Potential Matches Found", and upload the rest
         List<String> itemsToUpload = [];
-        for (int i = 0; i < unfilteredLines.length; i++) {
-          String item = unfilteredLines[i];
+        for (int i = 0; i < filteredLines.length; i++) {
+          String item = filteredLines[i];
           if (!clearedIndices.contains(i) && !item.contains('Potential Matches Found')) {
-            // Remove " - Item Cleared" substring
             item = item.replaceAll(' - Item Cleared', '');
             itemsToUpload.add(item);
           }
         }
-        print(itemsToUpload);
 
         if (itemsToUpload.isNotEmpty) {
-          // Reference to the user's document in "user-registration-data" collection
           DocumentReference userDoc = FirebaseFirestore.instance
               .collection('receipts-data')
               .doc(loggedInUser.uid);
-          // Reference to the "receipts" subcollection under the user's document
           CollectionReference receiptsCollection =
           userDoc.collection('cleared_items');
-          // DateTime now = DateTime.now();
-          // // Format the date
-          // String formattedDate = DateFormat('yyyy-MM-dd HH:mm:ss').format(now);
-
-          // Call the user's CollectionReference to add a new receipt
           await receiptsCollection.add({
             'items_category': CategoryData.category,
-            'cleared_items': itemsToUpload.join('\n'), // Join the items into a single string
-            // 'date': formattedDate,
+            'cleared_items': itemsToUpload.join('\n'),
           });
-          // Show successful upload pop-up
           _showUploadSuccessDialog();
           print("Receipt Added");
         } else {
@@ -199,12 +303,13 @@ class _ResultScreenState extends State<ResultScreen> {
       } finally {
         setState(() {
           _isUploading = false;
-          _textEdited = false; // Reset text edited flag after upload
-          _isSearching = false; // Stop searching
+          _textEdited = false;
+          _isSearching = false;
         });
       }
     }
   }
+
 
 
   void _showUploadSuccessDialog() {
@@ -235,99 +340,15 @@ class _ResultScreenState extends State<ResultScreen> {
   }
 
 
-  // Update _handleLineTap method to correctly handle line taps and navigation
-  void _handleLineTap(int index) {
-    if (!_isEditing) {
-      if (index < _searchResults.length) {
-        List<DetailDataModel> matches = _searchResults[index].values.first;
-        if (matches == null || clearedIndices.contains(index)) {
-          print('Item cleared. No matches found.');
-        } else if (matches.isNotEmpty) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => SelectionScreen(matches: matches),
-            ),
-          );
-        }
-      }
-    } else {
-      setState(() {
-        _editingLineIndex = index;
-        _isEditing = false;
-        _textEditingController.text = unfilteredLines[index];
-        FocusScope.of(context).requestFocus(_focusNode);
-      });
-    }
-  }
-
-
-  // Define a map to store line index and its matches
-  Map<int, List<DetailDataModel>> lineMatchesMap = {};
-
-  Future<void> _checkItems() async {
-    setState(() {
-      _isSearching = true;
-    });
-
-    _searchResults.clear();
-    lineMatchesMap.clear();
-
-    List<String> updatedLines = List<String>.from(unfilteredLines);
-
-    for (int i = 0; i < updatedLines.length; i++) {
-      String line = updatedLines[i];
-      if (line.trim().isEmpty) {
-        continue;
-      }
-
-      List<DetailDataModel> matches = [];
-
-      for (dynamic item in responseJson ?? []) {
-        if (item['product_description'] != null &&
-            item['product_description']
-                .toString()
-                .toLowerCase()
-                .contains(line.toLowerCase())) {
-          matches.add(
-            DetailDataModel(
-              product_description: item['product_description'],
-              reason_for_recall: item['reason_for_recall'],
-              status: item['status'],
-              classification: item['classification'],
-              recalling_firm: item['recalling_firm'],
-              voluntary_mandated: item['voluntary_mandated'],
-            ),
-          );
-        }
-      }
-
-      lineMatchesMap[i] = matches;
-
-      if (matches.isNotEmpty) {
-        updatedLines[i] = "$line - Potential Matches Found (${matches.length}), Click to see Details";
-      } else {
-        updatedLines[i] = "$line - Item Cleared";
-      }
-    }
-
-    setState(() {
-      unfilteredLines = updatedLines;
-      _isSearching = false;
-    });
-
-    // Convert lineMatchesMap to _searchResults
-    _searchResults = lineMatchesMap.entries
-        .map((entry) => {unfilteredLines[entry.key]: entry.value})
-        .toList();
-  }
-
-
 
   Widget _buildNotebookList() {
     final filteredLines = unfilteredLines.where((line) {
-      return !nonProductPatterns.any((pattern) => pattern.hasMatch(line.trim()));
+      final trimmedLine = line.trim();
+      final startsWithNonAlphanumeric = RegExp(r'^\W').hasMatch(trimmedLine); // Check if line starts with a non-alphanumeric character
+      final containsNonProductPattern = nonProductPatterns.any((pattern) => pattern.hasMatch(trimmedLine));
+      return !startsWithNonAlphanumeric && !containsNonProductPattern;
     }).toList();
+    print("my filtered lines $filteredLines");
 
     return Material(
       child: RawKeyboardListener(
@@ -337,11 +358,10 @@ class _ResultScreenState extends State<ResultScreen> {
             for (int index = 1; index < filteredLines.length; index++) {
               if (_isEditing && index == _editingLineIndex && _focusNode.hasFocus) {
                 setState(() {
-                  // Calculate the original index based on the current state of the list
-                  final originalIndex = unfilteredLines.indexOf(filteredLines[index]);
+                  final originalIndex = filteredLines.indexOf(filteredLines[index]);
                   final insertionIndex = originalIndex + 1;
-                  unfilteredLines.insert(insertionIndex, ''); // Insert into original data
-                  filteredLines.insert(index + 1, ''); // Insert into filtered data
+                  filteredLines.insert(insertionIndex, '');
+                  filteredLines.insert(index + 1, '');
                   _editingLineIndex = originalIndex + 1;
                   _focusNode.requestFocus();
                 });
@@ -353,11 +373,11 @@ class _ResultScreenState extends State<ResultScreen> {
         child: Container(
           color: Colors.black,
           child: SizedBox(
-            height: 400, // Set a finite height here
+            height: 400,
             child: ListView.builder(
               itemCount: filteredLines.length,
               itemBuilder: (context, index) {
-                final isSelected = lineMatchesMap.containsKey(index);
+                final isSelected = lineMatchesMap.containsKey(filteredLines[index]);
                 if (!nonProductPatterns.any((pattern) => pattern.hasMatch(filteredLines[index]))) {
                   return _isEditing && index == _editingLineIndex
                       ? Material(
@@ -365,30 +385,24 @@ class _ResultScreenState extends State<ResultScreen> {
                     child: TextFormField(
                       controller: _textEditingController,
                       focusNode: _focusNode,
-                      style: TextStyle(color: Colors.white), // Set text color to white
+                      style: TextStyle(color: Colors.white),
                       onEditingComplete: () {
                         setState(() {
-                          // Calculate the original index based on the current state of the list
-                          final originalIndex = unfilteredLines.indexOf(filteredLines[index]);
-                          unfilteredLines[originalIndex] = _textEditingController.text;
+                          final originalIndex = filteredLines.indexOf(filteredLines[index]);
+                          filteredLines[originalIndex] = _textEditingController.text;
                           _isEditing = false;
                         });
                       },
                     ),
                   )
                       : Dismissible(
-                    key: Key(filteredLines[index]), // Unique key for each item
+                    key: Key(filteredLines[index]),
                     onDismissed: (direction) {
                       setState(() {
-                        // Calculate the original index based on the current state of the list
-                        final originalIndex = unfilteredLines.indexOf(filteredLines[index]);
-                        unfilteredLines.removeAt(originalIndex);
-                        // If the item is dismissed, clear any selection
-                        lineMatchesMap.remove(originalIndex);
-
-                        // Update valid indices for navigation
+                        final originalIndex = filteredLines.indexOf(filteredLines[index]);
+                        filteredLines.removeAt(originalIndex);
+                        lineMatchesMap.remove(filteredLines[index]);
                         validIndices.remove(originalIndex);
-
                       });
                     },
                     background: Container(color: Colors.red),
@@ -414,7 +428,7 @@ class _ResultScreenState extends State<ResultScreen> {
                           ),
                           onTap: () {
                             if (!_isEditing) {
-                              _handleLineTap(validIndices[index]); // Use valid indices for navigation
+                              _handleLineTap(validIndices[index]);
                             }
                           },
                         ),
@@ -432,21 +446,16 @@ class _ResultScreenState extends State<ResultScreen> {
     );
   }
 
-
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Result'),
         actions: [
-
           if (!_isUploading)
             IconButton(
               onPressed: () async {
-                // Call _updateText function passing the current user and await its completion
                 await _upLoad(FirebaseAuth.instance.currentUser);
-                // Complete the _uploadCompleter only if it hasn't been completed already
                 if (!_uploadCompleter.isCompleted) {
                   _uploadCompleter.complete();
                 }
@@ -462,7 +471,6 @@ class _ResultScreenState extends State<ResultScreen> {
           Expanded(
             child: _buildNotebookList(),
           ),
-
         ],
       ),
       bottomNavigationBar: BottomAppBar(
@@ -471,8 +479,6 @@ class _ResultScreenState extends State<ResultScreen> {
           children: [
             ElevatedButton(
               onPressed: () async {
-                // _updateText(FirebaseAuth.instance.currentUser);
-                // Call _checkItems directly when the search button is pressed
                 await _checkItems();
               },
               child: const Text('Search All Items'),
@@ -484,3 +490,57 @@ class _ResultScreenState extends State<ResultScreen> {
   }
 }
 
+//
+//
+// // Update _handleLineTap method to correctly handle line taps and navigation
+// void _handleLineTap(int index) {
+//   if (!_isEditing) {
+//     if (index < _searchResults.length) {
+//       List<DetailDataModel> matches = _searchResults[index].values.first;
+//       if (matches == null || clearedIndices.contains(index)) {
+//         print('Item cleared. No matches found.');
+//       } else if (matches.isNotEmpty) {
+//         Navigator.push(
+//           context,
+//           MaterialPageRoute(
+//             builder: (context) => SelectionScreen(matches: matches),
+//           ),
+//         );
+//       }
+//     }
+//   } else {
+//     setState(() {
+//       _editingLineIndex = index;
+//       _isEditing = false;
+//       _textEditingController.text = unfilteredLines[index];
+//       FocusScope.of(context).requestFocus(_focusNode);
+//     });
+//   }
+// }
+//
+// // Update _handleLineTap method to correctly handle line taps and navigation
+// void _handleLineTap(int index) {
+//   if (!_isEditing) {
+//     // Only enable editing if not searching
+//     setState(() {
+//       _editingLineIndex = index;
+//       _isEditing = true; // Set _isEditing to true to enable editing
+//       _textEditingController.text = unfilteredLines[index];
+//       FocusScope.of(context).requestFocus(_focusNode);
+//     });
+//   } else {
+//     if (index < _searchResults.length) {
+//       List<DetailDataModel> matches = _searchResults[index].values.first;
+//       if (matches == null || clearedIndices.contains(index)) {
+//         print('Item cleared. No matches found.');
+//       } else if (matches.isNotEmpty) {
+//         Navigator.push(
+//           context,
+//           MaterialPageRoute(
+//             builder: (context) => SelectionScreen(matches: matches),
+//           ),
+//         );
+//       }
+//     }
+//   }
+// }
