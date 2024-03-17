@@ -191,72 +191,6 @@ class _ResultScreenState extends State<ResultScreen> {
     return lineMatchesMap[line];
   }
 
-  Future<void> _checkItems() async {
-    var filteredLines = unfilteredLines.where((line) {
-      final trimmedLine = line.trim();
-      final startsWithNonAlphanumeric = RegExp(r'^\W').hasMatch(trimmedLine); // Check if line starts with a non-alphanumeric character
-      final containsNonProductPattern = nonProductPatterns.any((pattern) => pattern.hasMatch(trimmedLine));
-      return !startsWithNonAlphanumeric && !containsNonProductPattern;
-    }).toList();
-
-    setState(() {
-      _isSearching = true;
-    });
-
-    lineMatchesMap.clear();
-    List<String> updatedLines = List<String>.from(filteredLines);
-    print("the updated lines $updatedLines");
-
-    for (int i = 0; i < updatedLines.length; i++) {
-      String line = updatedLines[i];
-      if (line.trim().isEmpty) {
-        continue;
-      }
-
-      List<DetailDataModel> matches = [];
-
-      for (dynamic item in responseJson ?? []) {
-        if (item['product_description'] != null &&
-            item['product_description']
-                .toString()
-                .toLowerCase()
-                .contains(line.toLowerCase())) {
-          matches.add(
-            DetailDataModel(
-              product_description: item['product_description'],
-              reason_for_recall: item['reason_for_recall'],
-              status: item['status'],
-              classification: item['classification'],
-              recalling_firm: item['recalling_firm'],
-              voluntary_mandated: item['voluntary_mandated'],
-            ),
-          );
-        }
-      }
-
-      lineMatchesMap[line] = matches;
-      print("these are the matches $matches");
-
-      if (matches.isNotEmpty) {
-        updatedLines[i] = "$line - Potential Matches Found (${matches.length}), Click to see Details";
-      } else {
-        updatedLines[i] = "$line - Item Cleared";
-      }
-    }
-
-    setState(() {
-      filteredLines = updatedLines;
-      _isSearching = false;
-    });
-
-    _searchResults = lineMatchesMap.entries
-        .map((entry) => {entry.key: entry.value})
-        .toList();
-    // Print the line matches map
-    _printLineMatchesMap();
-  }
-
-
   Future<void> _upLoad(User? loggedInUser) async {
     final filteredLines = unfilteredLines.where((line) {
       final trimmedLine = line.trim();
@@ -339,20 +273,6 @@ class _ResultScreenState extends State<ResultScreen> {
     _keyboardListenerFocusNode.dispose();
   }
 
-  // void _handleDismiss(int index) {
-  //   setState(() {
-  //     final filteredLines = unfilteredLines.where((line) {
-  //       final trimmedLine = line.trim();
-  //       final startsWithNonAlphanumeric = RegExp(r'^\W').hasMatch(trimmedLine); // Check if line starts with a non-alphanumeric character
-  //       final containsNonProductPattern = nonProductPatterns.any((pattern) => pattern.hasMatch(trimmedLine));
-  //       return !startsWithNonAlphanumeric && !containsNonProductPattern;
-  //     }).toList();
-  //     if (index >= 0 && index < filteredLines.length) {
-  //       filteredLines.removeAt(index); // Remove the item from the filtered list
-  //       unfilteredLines.removeAt(index); // Also remove the item from the unfiltered list
-  //     }
-  //   });
-  // }
   void _handleDismiss(int index) {
     setState(() {
       final filteredLines = unfilteredLines.where((line) {
@@ -369,6 +289,70 @@ class _ResultScreenState extends State<ResultScreen> {
   }
 
 
+  Future<void> _checkItems() async {
+    var filteredLines = unfilteredLines.where((line) {
+      final trimmedLine = line.trim();
+      final startsWithNonAlphanumeric = RegExp(r'^\W').hasMatch(trimmedLine); // Check if line starts with a non-alphanumeric character
+      final containsNonProductPattern = nonProductPatterns.any((pattern) => pattern.hasMatch(trimmedLine));
+      return !startsWithNonAlphanumeric && !containsNonProductPattern;
+    }).toList();
+
+    setState(() {
+      _isSearching = true;
+    });
+
+    lineMatchesMap.clear();
+    List<String> updatedLines = List<String>.from(filteredLines);
+    print("the updated lines $updatedLines");
+
+    for (int i = 0; i < updatedLines.length; i++) {
+      String line = updatedLines[i];
+      if (line.trim().isEmpty) {
+        continue;
+      }
+
+      List<DetailDataModel> matches = [];
+
+      for (dynamic item in responseJson ?? []) {
+        if (item['product_description'] != null &&
+            item['product_description']
+                .toString()
+                .toLowerCase()
+                .contains(line.toLowerCase())) {
+          matches.add(
+            DetailDataModel(
+              product_description: item['product_description'],
+              reason_for_recall: item['reason_for_recall'],
+              status: item['status'],
+              classification: item['classification'],
+              recalling_firm: item['recalling_firm'],
+              voluntary_mandated: item['voluntary_mandated'],
+            ),
+          );
+        }
+      }
+
+      lineMatchesMap[line] = matches;
+      print("these are the matches $matches");
+
+      if (matches.isNotEmpty) {
+        updatedLines[i] = "$line - Potential Matches Found (${matches.length}), Click to see Details";
+      } else {
+        updatedLines[i] = "$line - Item Cleared";
+      }
+    }
+
+    setState(() {
+      filteredLines = updatedLines;
+      _isSearching = false;
+    });
+
+    _searchResults = lineMatchesMap.entries
+        .map((entry) => {entry.key: entry.value})
+        .toList();
+    // Print the line matches map
+    _printLineMatchesMap();
+  }
 
 
   Widget _buildNotebookList() {
@@ -378,7 +362,6 @@ class _ResultScreenState extends State<ResultScreen> {
       final containsNonProductPattern = nonProductPatterns.any((pattern) => pattern.hasMatch(trimmedLine));
       return !startsWithNonAlphanumeric && !containsNonProductPattern;
     }).toList();
-    print("my filtered lines $filteredLines");
 
     return Material(
       child: RawKeyboardListener(
@@ -428,16 +411,13 @@ class _ResultScreenState extends State<ResultScreen> {
                       : Dismissible(
                     key: Key(filteredLines[index]), // Ensure the key uniquely identifies the item
                     onDismissed: (direction) {
-                      // setState(() {
-                      //   filteredLines.removeAt(index); // Remove the item from the list
-                      // });
                       _handleDismiss(index);
                     },
                     background: Container(color: Colors.red),
                     child: Material(
                       child: Container(
                         decoration: BoxDecoration(
-                          color: isSelected ? Colors.blue.withOpacity(0.5) : Colors.black,
+                          color: Colors.black,
                           border: Border(
                             top: BorderSide(color: Colors.amber),
                             bottom: BorderSide(color: Colors.amber),
