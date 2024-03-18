@@ -34,13 +34,13 @@ class _ReceiptListScreenState extends State<ReceiptListScreen> {
         stream: receiptsStream,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(
+            return const Center(
               child: CircularProgressIndicator(),
             );
           }
 
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-            return Center(
+            return const Center(
               child: Text('No receipts available.'),
             );
           }
@@ -48,7 +48,7 @@ class _ReceiptListScreenState extends State<ReceiptListScreen> {
           return Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: GridView.builder(
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2,
                 crossAxisSpacing: 16.0,
                 mainAxisSpacing: 16.0,
@@ -87,22 +87,22 @@ class _ReceiptListScreenState extends State<ReceiptListScreen> {
                             _truncateText(receiptData['cleared_items'], 30),// Adjust the number of characters for preview
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontSize: 16.0,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          SizedBox(height: 8.0),
+                          const SizedBox(height: 8.0),
                           Text(
                             // Add additional receipt information here if needed
                             'Date: ${receiptData['date']}',
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontSize: 14.0,
                               color: Colors.grey,
                             ),
                           ),
                           IconButton(
-                            icon: Icon(Icons.delete),
+                            icon: const Icon(Icons.delete),
                             onPressed: () {
                               _showDeleteConfirmationDialog(snapshot.data!.docs[index].id);
                             },
@@ -129,9 +129,6 @@ class _ReceiptListScreenState extends State<ReceiptListScreen> {
   }
 
 
-
-
-
   void _navigateToEditScreen(String receiptId, String receiptText) {
     Navigator.push(
       context,
@@ -150,14 +147,14 @@ class _ReceiptListScreenState extends State<ReceiptListScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text("Delete Receipt"),
-          content: Text("Are you sure you want to delete this receipt?"),
+          title: const Text("Delete Receipt"),
+          content: const Text("Are you sure you want to delete this receipt?"),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.pop(context);
               },
-              child: Text("Cancel"),
+              child: const Text("Cancel"),
             ),
             TextButton(
               onPressed: () {
@@ -180,9 +177,8 @@ class _ReceiptListScreenState extends State<ReceiptListScreen> {
         .doc(receiptId)
         .delete()
         .then((_) {
-      print("Receipt deleted successfully");
     }).catchError((error) {
-      print("Error deleting receipt: $error");
+
     });
   }
 }
@@ -216,7 +212,7 @@ class _ReceiptEditScreenState extends State<ReceiptEditScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Edit Receipt'),
+        title: const Text('Edit Receipt'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -231,12 +227,12 @@ class _ReceiptEditScreenState extends State<ReceiptEditScreen> {
                 },
               ),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             ElevatedButton(
               onPressed: () {
                 _updateReceipt(_textEditingController.text);
               },
-              child: Text('Save Changes'),
+              child: const Text('Save Changes'),
             ),
           ],
         ),
@@ -255,7 +251,6 @@ class _ReceiptEditScreenState extends State<ReceiptEditScreen> {
       print("Receipt updated successfully");
       Navigator.pop(context); // Pop back to the receipts list screen
     }).catchError((error) {
-      print("Error updating receipt: $error");
     });
   }
 }
