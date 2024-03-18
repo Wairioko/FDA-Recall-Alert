@@ -131,6 +131,7 @@ class Detail extends StatelessWidget {
             ),
           );
         } else if (snapshot.hasError) {
+          print(snapshot.error);
           return Center( // More robust error handling
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -138,6 +139,7 @@ class Detail extends StatelessWidget {
                 Icon(Icons.error_outline, color: Colors.red),
                 SizedBox(height: 10),
                 Text("Couldn't generate insights. Please try again."),
+
               ],
             ),
           );
@@ -281,7 +283,7 @@ class Detail extends StatelessWidget {
   }
 
 
-  static const apiKey = 'AIzaSyAM-TzFrKzmQ_roOrqG_UwPqp27QigCzfw';
+  static const apiKey = 'AIzaSyDWmLWTEAujx3vLdfH-VTifvE2Jti6bR5U';
   Future<GenerateContentResponse> fetchAdditionalInfo(
       String reasonForRecall) async {
     final model = await GenerativeModel(model: 'gemini-pro', apiKey: apiKey);
@@ -290,6 +292,7 @@ class Detail extends StatelessWidget {
         'and next steps if you have consumed such a product';
     final content = [Content.text(prompt)];
     final response = await model.generateContent(content);
+    print(response);
     return response;
   }
 }
