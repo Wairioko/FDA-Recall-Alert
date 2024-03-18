@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
 import 'package:safe_scan/ui/screens/home/widgets/query_widget.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -191,11 +192,10 @@ class _ResultScreenState extends State<ResultScreen> {
     return matches;
   }
 
-
   Future<void> _upLoad(User? loggedInUser) async {
     if (_isUploading) {
       return;
-  }
+    }
 
     setState(() {
       _isUploading = true;
@@ -206,13 +206,29 @@ class _ResultScreenState extends State<ResultScreen> {
         List<String> itemsToUpload = [];
         for (int i = 0; i < filteredLines.length; i++) {
           String item = filteredLines[i];
-          if (!clearedIndices.contains(i) && !item.contains('Potential Matches Found')) {
-            item = item.replaceAll(' - Item Cleared', '');
+          if (!clearedIndices.contains(i) &&
+              !item.contains('Potential Matches Found') &&
+              !_matchesNonProductPatterns(item)) {
+            // Check if item contains 'Item Cleared' and remove it if present
+            if (item.contains(' - Item Cleared')) {
+              item = item.replaceAll(' - Item Cleared', '');
+            }
             itemsToUpload.add(item);
           }
         }
 
         if (itemsToUpload.isNotEmpty) {
+          // Add timestamp to the data
+          DateTime currentDate = DateTime.now();
+          // Get today's date
+          final timestamp = Timestamp.fromDate(DateTime.utc(currentDate.year, currentDate.month, currentDate.day));
+// Convert the Timestamp to a DateTime
+          final dateTime = timestamp.toDate();
+// Format the DateTime as a string
+          final dateString = DateFormat('yyyy-MM-dd').format(dateTime);
+
+          print(dateString); // Output: "2024-03-18"
+
           DocumentReference userDoc = FirebaseFirestore.instance
               .collection('receipts-data')
               .doc(loggedInUser.uid);
@@ -221,11 +237,12 @@ class _ResultScreenState extends State<ResultScreen> {
           await receiptsCollection.add({
             'items_category': CategoryData.category,
             'cleared_items': itemsToUpload.join('\n'),
+            'date': dateString,
           });
           _showUploadSuccessDialog();
-          print("Receipt Added");
         } else {
-          print("No items to upload. All items marked as 'Item cleared' or contain 'Potential Matches Found'.");
+          print(
+              "No items to upload. All items marked as 'Item cleared', contain 'Potential Matches Found', or match non-product patterns.");
         }
       } catch (error) {
         print("Failed to add receipt: $error");
@@ -238,6 +255,11 @@ class _ResultScreenState extends State<ResultScreen> {
       }
     }
   }
+
+  bool _matchesNonProductPatterns(String item) {
+    return nonProductPatterns.any((pattern) => pattern.hasMatch(item));
+  }
+
 
 
 
