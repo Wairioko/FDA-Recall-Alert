@@ -9,7 +9,6 @@ import 'package:flutter/services.dart';
 import 'package:safe_scan/ui/screens/receipts/view_receipts.dart';
 import '../../../model/detail_data_model.dart';
 import '../detail/detail.dart';
-import '../home/home.dart';
 
 
 User? loggedInUser = FirebaseAuth.instance.currentUser;
@@ -106,7 +105,7 @@ class _ResultScreenState extends State<ResultScreen> {
   // Move filteredLines here as a class-level variable
   late List<String> checkedLines = [];
   late List<String> filteredLines = [];
-
+  bool _searched = false; // Flag to keep track of whether search has been performed
   final nonProductPatterns = [
     RegExp(r'^\d+\.$'),
     RegExp(r'^[a-zA-Z]$', caseSensitive: false),
@@ -128,6 +127,7 @@ class _ResultScreenState extends State<ResultScreen> {
     responseJson = ApiData.responseJson;
     lineMatchesMap = {};
     filteredLines = _filterLines(unfilteredLines);
+
 
   }
 
@@ -169,7 +169,26 @@ class _ResultScreenState extends State<ResultScreen> {
     }
   }
 
-
+  // Method to show dialog with message
+  void _showAlreadySearchedDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Search Already Conducted"),
+          content: Text("You have already conducted the search."),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text("OK"),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   List<DetailDataModel>? _getMatchesForLine(int index) {
     final line = filteredLines[index].trim();
@@ -184,13 +203,10 @@ class _ResultScreenState extends State<ResultScreen> {
       lineContent = line.replaceAll(RegExp(r'\s*-\s*Item Cleared$'), '');
       tag = 'Item Cleared';
     }
-
     // Retrieve matches based on the cleaned line content
     final matches = lineMatchesMap[lineContent];
-
     // Optionally, you can handle the tag here as well
     // For example, you might want to use the tag to customize the UI display
-
     return matches;
   }
 
@@ -224,9 +240,9 @@ class _ResultScreenState extends State<ResultScreen> {
           DateTime currentDate = DateTime.now();
           // Get today's date
           final timestamp = Timestamp.fromDate(DateTime.utc(currentDate.year, currentDate.month, currentDate.day));
-// Convert the Timestamp to a DateTime
+          // Convert the Timestamp to a DateTime
           final dateTime = timestamp.toDate();
-// Format the DateTime as a string
+          // Format the DateTime as a string
           final dateString = DateFormat('yyyy-MM-dd').format(dateTime);
 
           print(dateString); // Output: "2024-03-18"
@@ -493,7 +509,15 @@ class _ResultScreenState extends State<ResultScreen> {
           children: [
             ElevatedButton(
               onPressed: () async {
-                await _checkItems();
+                // Check if search has already been performed
+                if (!_searched) {
+                  await _checkItems();
+                  setState(() {
+                    _searched = true; // Mark search as performed
+                  });
+                } else {
+                  _showAlreadySearchedDialog(); // Show dialog if search already conducted
+                }
               },
               child: const Text('Search All Items'),
             ),
