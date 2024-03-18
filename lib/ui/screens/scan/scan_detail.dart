@@ -101,6 +101,7 @@ class _ResultScreenState extends State<ResultScreen> {
   // Replace lineMatchesMap with this dictionary
   late Map<String, List<DetailDataModel>> lineMatchesMap = {};
   // Move filteredLines here as a class-level variable
+  late List<String> checkedLines = [];
   late List<String> filteredLines = [];
 
   final nonProductPatterns = [
@@ -123,35 +124,23 @@ class _ResultScreenState extends State<ResultScreen> {
     _keyboardListenerFocusNode = FocusNode();
     responseJson = ApiData.responseJson;
     lineMatchesMap = {};
+    filteredLines = _filterLines(unfilteredLines);
 
+  }
+
+  List<String> _filterLines(List<String> lines) {
+    return lines.where((line) {
+      final trimmedLine = line.trim();
+      final startsWithNonAlphanumeric = RegExp(r'^\W').hasMatch(trimmedLine);
+      final containsNonProductPattern = nonProductPatterns.any((pattern) => pattern.hasMatch(trimmedLine));
+      return !startsWithNonAlphanumeric && !containsNonProductPattern;
+    }).toList();
   }
 
   Completer<void> _uploadCompleter = Completer<void>();
 
-  void _printLineMatchesMap() {
-    lineMatchesMap.forEach((line, matches) {
-      print('Line: $line');
-      print('Matches:');
-      for (var match in matches) {
-        print('\tProduct Description: ${match.product_description}');
-        print('\tReason for Recall: ${match.reason_for_recall}');
-        print('\tStatus: ${match.status}');
-        print('\tClassification: ${match.classification}');
-        print('\tRecalling Firm: ${match.recalling_firm}');
-        print('\tVoluntary Mandated: ${match.voluntary_mandated}');
-        print('\n');
-      }
-    });
-  }
-
   // Update _handleLineTap method to correctly handle line taps and navigation
   void _handleLineTap(int index) {
-    final filteredLines = unfilteredLines.where((line) {
-      final trimmedLine = line.trim();
-      final startsWithNonAlphanumeric = RegExp(r'^\W').hasMatch(trimmedLine); // Check if line starts with a non-alphanumeric character
-      final containsNonProductPattern = nonProductPatterns.any((pattern) => pattern.hasMatch(trimmedLine));
-      return !startsWithNonAlphanumeric && !containsNonProductPattern;
-    }).toList();
     if (!_isEditing && index >= 0 && index < filteredLines.length) {
       final line = filteredLines[index].trim(); // Get the line item text and trim any whitespace
       print("the line $line");
@@ -180,27 +169,33 @@ class _ResultScreenState extends State<ResultScreen> {
 
 
   List<DetailDataModel>? _getMatchesForLine(int index) {
-    final filteredLines = unfilteredLines.where((line) {
-      final trimmedLine = line.trim();
-      final startsWithNonAlphanumeric = RegExp(r'^\W').hasMatch(trimmedLine); // Check if line starts with a non-alphanumeric character
-      final containsNonProductPattern = nonProductPatterns.any((pattern) => pattern.hasMatch(trimmedLine));
-      return !startsWithNonAlphanumeric && !containsNonProductPattern;
-    }).toList();
+    final line = filteredLines[index].trim();
+    String lineContent = line;
+    String? tag;
 
-    final line = filteredLines[index];
-    return lineMatchesMap[line];
+    // Check for tags and separate them from the actual line content
+    if (line.contains('- Potential Matches Found')) {
+      lineContent = line.replaceAll(RegExp(r'\s*-\s*Potential Matches Found \(\d+\), Click to see Details$'), '');
+      tag = 'Potential Matches Found';
+    } else if (line.contains('- Item Cleared')) {
+      lineContent = line.replaceAll(RegExp(r'\s*-\s*Item Cleared$'), '');
+      tag = 'Item Cleared';
+    }
+
+    // Retrieve matches based on the cleaned line content
+    final matches = lineMatchesMap[lineContent];
+
+    // Optionally, you can handle the tag here as well
+    // For example, you might want to use the tag to customize the UI display
+
+    return matches;
   }
 
+
   Future<void> _upLoad(User? loggedInUser) async {
-    final filteredLines = unfilteredLines.where((line) {
-      final trimmedLine = line.trim();
-      final startsWithNonAlphanumeric = RegExp(r'^\W').hasMatch(trimmedLine); // Check if line starts with a non-alphanumeric character
-      final containsNonProductPattern = nonProductPatterns.any((pattern) => pattern.hasMatch(trimmedLine));
-      return !startsWithNonAlphanumeric && !containsNonProductPattern;
-    }).toList();
     if (_isUploading) {
       return;
-    }
+  }
 
     setState(() {
       _isUploading = true;
@@ -271,16 +266,11 @@ class _ResultScreenState extends State<ResultScreen> {
     _focusNode.dispose();
     super.dispose();
     _keyboardListenerFocusNode.dispose();
+
   }
 
   void _handleDismiss(int index) {
     setState(() {
-      final filteredLines = unfilteredLines.where((line) {
-        final trimmedLine = line.trim();
-        final startsWithNonAlphanumeric = RegExp(r'^\W').hasMatch(trimmedLine); // Check if line starts with a non-alphanumeric character
-        final containsNonProductPattern = nonProductPatterns.any((pattern) => pattern.hasMatch(trimmedLine));
-        return !startsWithNonAlphanumeric && !containsNonProductPattern;
-      }).toList();
       if (index >= 0 && index < filteredLines.length) {
         final removedLine = filteredLines.removeAt(index); // Remove the item from the filtered list
         unfilteredLines.remove(removedLine); // Also remove the item from the unfiltered list
@@ -290,23 +280,16 @@ class _ResultScreenState extends State<ResultScreen> {
 
 
   Future<void> _checkItems() async {
-    var filteredLines = unfilteredLines.where((line) {
-      final trimmedLine = line.trim();
-      final startsWithNonAlphanumeric = RegExp(r'^\W').hasMatch(trimmedLine); // Check if line starts with a non-alphanumeric character
-      final containsNonProductPattern = nonProductPatterns.any((pattern) => pattern.hasMatch(trimmedLine));
-      return !startsWithNonAlphanumeric && !containsNonProductPattern;
-    }).toList();
-
     setState(() {
       _isSearching = true;
     });
 
+    // Clear the lineMatchesMap before updating it
     lineMatchesMap.clear();
-    List<String> updatedLines = List<String>.from(filteredLines);
-    print("the updated lines $updatedLines");
+    filteredLines.clear(); // Clear the filtered lines
 
-    for (int i = 0; i < updatedLines.length; i++) {
-      String line = updatedLines[i];
+    for (int i = 0; i < unfilteredLines.length; i++) {
+      String line = unfilteredLines[i];
       if (line.trim().isEmpty) {
         continue;
       }
@@ -332,37 +315,27 @@ class _ResultScreenState extends State<ResultScreen> {
         }
       }
 
+      // Update lineMatchesMap and filteredLines
       lineMatchesMap[line] = matches;
-      print("these are the matches $matches");
 
       if (matches.isNotEmpty) {
-        updatedLines[i] = "$line - Potential Matches Found (${matches.length}), Click to see Details";
+        filteredLines.add("$line - Potential Matches Found (${matches.length}), Click to see Details");
       } else {
-        updatedLines[i] = "$line - Item Cleared";
+        filteredLines.add("$line - Item Cleared");
       }
     }
 
+    // Update the state after updating lineMatchesMap and filteredLines
     setState(() {
-      filteredLines = updatedLines;
       _isSearching = false;
+      _searchResults = lineMatchesMap.entries.map((entry) => {entry.key: entry.value}).toList();
     });
-
-    _searchResults = lineMatchesMap.entries
-        .map((entry) => {entry.key: entry.value})
-        .toList();
-    // Print the line matches map
-    _printLineMatchesMap();
   }
 
 
-  Widget _buildNotebookList() {
-    final filteredLines = unfilteredLines.where((line) {
-      final trimmedLine = line.trim();
-      final startsWithNonAlphanumeric = RegExp(r'^\W').hasMatch(trimmedLine); // Check if line starts with a non-alphanumeric character
-      final containsNonProductPattern = nonProductPatterns.any((pattern) => pattern.hasMatch(trimmedLine));
-      return !startsWithNonAlphanumeric && !containsNonProductPattern;
-    }).toList();
 
+
+  Widget _buildNotebookList() {
     return Material(
       child: RawKeyboardListener(
         focusNode: _keyboardListenerFocusNode,
@@ -398,7 +371,7 @@ class _ResultScreenState extends State<ResultScreen> {
                     child: TextFormField(
                       controller: _textEditingController,
                       focusNode: _focusNode,
-                      style: TextStyle(color: Colors.white),
+                      style: const TextStyle(color: Colors.white),
                       onEditingComplete: () {
                         setState(() {
                           final originalIndex = filteredLines.indexOf(filteredLines[index]);
@@ -416,7 +389,7 @@ class _ResultScreenState extends State<ResultScreen> {
                     background: Container(color: Colors.red),
                     child: Material(
                       child: Container(
-                        decoration: BoxDecoration(
+                        decoration: const BoxDecoration(
                           color: Colors.black,
                           border: Border(
                             top: BorderSide(color: Colors.amber),
@@ -497,58 +470,3 @@ class _ResultScreenState extends State<ResultScreen> {
     );
   }
 }
-
-//
-//
-// // Update _handleLineTap method to correctly handle line taps and navigation
-// void _handleLineTap(int index) {
-//   if (!_isEditing) {
-//     if (index < _searchResults.length) {
-//       List<DetailDataModel> matches = _searchResults[index].values.first;
-//       if (matches == null || clearedIndices.contains(index)) {
-//         print('Item cleared. No matches found.');
-//       } else if (matches.isNotEmpty) {
-//         Navigator.push(
-//           context,
-//           MaterialPageRoute(
-//             builder: (context) => SelectionScreen(matches: matches),
-//           ),
-//         );
-//       }
-//     }
-//   } else {
-//     setState(() {
-//       _editingLineIndex = index;
-//       _isEditing = false;
-//       _textEditingController.text = unfilteredLines[index];
-//       FocusScope.of(context).requestFocus(_focusNode);
-//     });
-//   }
-// }
-//
-// // Update _handleLineTap method to correctly handle line taps and navigation
-// void _handleLineTap(int index) {
-//   if (!_isEditing) {
-//     // Only enable editing if not searching
-//     setState(() {
-//       _editingLineIndex = index;
-//       _isEditing = true; // Set _isEditing to true to enable editing
-//       _textEditingController.text = unfilteredLines[index];
-//       FocusScope.of(context).requestFocus(_focusNode);
-//     });
-//   } else {
-//     if (index < _searchResults.length) {
-//       List<DetailDataModel> matches = _searchResults[index].values.first;
-//       if (matches == null || clearedIndices.contains(index)) {
-//         print('Item cleared. No matches found.');
-//       } else if (matches.isNotEmpty) {
-//         Navigator.push(
-//           context,
-//           MaterialPageRoute(
-//             builder: (context) => SelectionScreen(matches: matches),
-//           ),
-//         );
-//       }
-//     }
-//   }
-// }
