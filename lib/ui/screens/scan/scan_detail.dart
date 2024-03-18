@@ -6,8 +6,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:safe_scan/data/network/current_weather_api.dart';
 import 'package:flutter/services.dart';
+import 'package:safe_scan/ui/screens/receipts/view_receipts.dart';
 import '../../../model/detail_data_model.dart';
 import '../detail/detail.dart';
+import '../home/home.dart';
 
 
 User? loggedInUser = FirebaseAuth.instance.currentUser;
@@ -240,6 +242,7 @@ class _ResultScreenState extends State<ResultScreen> {
             'date': dateString,
           });
           _showUploadSuccessDialog();
+          Navigator.of(context).pushNamed(ReceiptListScreen.path);
         } else {
           print(
               "No items to upload. All items marked as 'Item cleared', contain 'Potential Matches Found', or match non-product patterns.");
