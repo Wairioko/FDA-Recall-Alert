@@ -39,6 +39,7 @@ class _DashBoardWidgetState extends State<DashBoardWidget> {
   }
 
   @override
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: RefreshIndicator(
@@ -48,7 +49,7 @@ class _DashBoardWidgetState extends State<DashBoardWidget> {
         child: Column(
           children: [
             Padding(
-              padding: const EdgeInsets.only(top: 24),
+              padding: const EdgeInsets.only(top: 35),
               child: CommonAppBar(
                 darkAssetLocation: 'assets/icons/menu.svg',
                 lightAssetLocation: 'assets/icons/light_menu.svg',
@@ -56,7 +57,9 @@ class _DashBoardWidgetState extends State<DashBoardWidget> {
                 title: 'Safe Recall',
               ),
             ),
+            SizedBox(height: 1), // Adjusted padding below the app bar
             QueryWidget(homeCubit: _homeCubit),
+            SizedBox(height: 0), // Adjusted padding below the QueryWidget
             BlocProvider.value(
               value: _homeCubit,
               child: BlocBuilder<HomeCubit, HomeState>(
@@ -75,11 +78,13 @@ class _DashBoardWidgetState extends State<DashBoardWidget> {
                 },
               ),
             ),
+            SizedBox(height: 2), // Adjusted padding below the RecallList or DataUnavailableWidget
           ],
         ),
       ),
     );
   }
+
 
   @override
   void dispose() {

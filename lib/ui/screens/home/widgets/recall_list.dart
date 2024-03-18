@@ -17,7 +17,7 @@ class RecallList extends StatelessWidget {
     if (articles.isEmpty) {
       return Expanded(
         child: Padding(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(16),
           child: Text(
             'No recall Items available',
             textAlign: TextAlign.center,
@@ -33,16 +33,16 @@ class RecallList extends StatelessWidget {
     return Expanded(
       child: ListView.separated(
         itemCount: articles.length,
-        separatorBuilder: (context, index) => SizedBox(height: 16),
+        separatorBuilder: (context, index) => SizedBox(height: 2.5),
         itemBuilder: (context, index) {
           return Container(
-            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+            padding: const EdgeInsets.symmetric(horizontal: 16),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(12),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
+                  color: Colors.blueAccent.withOpacity(0.3),
                   blurRadius: 6,
                   offset: Offset(0, 3),
                 ),

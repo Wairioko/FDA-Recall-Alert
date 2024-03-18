@@ -294,11 +294,10 @@ class _QueryWidgetState extends State<QueryWidget> {
                     ),
 
                   ],
-
                 ),
               if (showSearchParameters)
                 Padding(
-                  padding: EdgeInsets.all(8), // Adjust the padding values as needed
+                  padding: const EdgeInsets.only(top: 8), // Adjust the padding values as needed
                   child: CupertinoButton(
                     onPressed: () async {
                       reloadData();
@@ -353,19 +352,17 @@ class _QueryWidgetState extends State<QueryWidget> {
                       },
                       style: ElevatedButton.styleFrom(
                         foregroundColor: Colors.white.withOpacity(0.8), backgroundColor: Colors.blue, // Use primary instead of backgroundColor
-                        padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 12.0),
+                        padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 12.0),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
                         shadowColor: Colors.grey,
                         elevation: 3,
                       ),
-                      child: Text('Search Again'),
+                      child: const Text('Search Again'),
                     ),
-
-
                   ],
                 ),
 
-                SizedBox(height: 10),
+                const SizedBox(height: 10),
               if (!showSearchParameters)// Add some spacing between the buttons and the share button
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center, // Align the share button to the center
