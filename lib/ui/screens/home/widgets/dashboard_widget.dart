@@ -57,9 +57,9 @@ class _DashBoardWidgetState extends State<DashBoardWidget> {
                 title: 'Safe Recall',
               ),
             ),
-            SizedBox(height: 1), // Adjusted padding below the app bar
+
             QueryWidget(homeCubit: _homeCubit),
-            SizedBox(height: 0), // Adjusted padding below the QueryWidget
+
             BlocProvider.value(
               value: _homeCubit,
               child: BlocBuilder<HomeCubit, HomeState>(
@@ -78,7 +78,7 @@ class _DashBoardWidgetState extends State<DashBoardWidget> {
                 },
               ),
             ),
-            SizedBox(height: 2), // Adjusted padding below the RecallList or DataUnavailableWidget
+            // SizedBox(height: 2), // Adjusted padding below the RecallList or DataUnavailableWidget
           ],
         ),
       ),
