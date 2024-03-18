@@ -84,7 +84,9 @@ class _ReceiptListScreenState extends State<ReceiptListScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            _truncateText(receiptData['cleared_items'], 30), // Adjust the number of characters for preview
+                            _truncateText(receiptData['cleared_items'], 30),// Adjust the number of characters for preview
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
                             style: TextStyle(
                               fontSize: 16.0,
                               fontWeight: FontWeight.bold,
@@ -98,6 +100,12 @@ class _ReceiptListScreenState extends State<ReceiptListScreen> {
                               fontSize: 14.0,
                               color: Colors.grey,
                             ),
+                          ),
+                          IconButton(
+                            icon: Icon(Icons.delete),
+                            onPressed: () {
+                              _showDeleteConfirmationDialog(snapshot.data!.docs[index].id);
+                            },
                           ),
                         ],
                       ),
