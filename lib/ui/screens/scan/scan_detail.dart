@@ -334,7 +334,6 @@ class _ResultScreenState extends State<ResultScreen> {
 
 
 
-
   Widget _buildNotebookList() {
     return Material(
       child: RawKeyboardListener(
@@ -365,6 +364,12 @@ class _ResultScreenState extends State<ResultScreen> {
               itemBuilder: (context, index) {
                 final isSelected = lineMatchesMap.containsKey(filteredLines[index]);
                 if (!nonProductPatterns.any((pattern) => pattern.hasMatch(filteredLines[index]))) {
+                  Color textColor = Colors.white; // Default color is white
+                  if (filteredLines[index].contains('Potential Matches Found')) {
+                    textColor = Colors.red; // Change color to red if potential matches found
+                  } else if (filteredLines[index].contains('Item Cleared')) {
+                    textColor = Colors.green; // Change color to green if item is cleared
+                  }
                   return _isEditing && index == _editingLineIndex
                       ? Material(
                     color: Colors.black,
@@ -402,7 +407,7 @@ class _ResultScreenState extends State<ResultScreen> {
                             child: Text(
                               filteredLines[index],
                               style: TextStyle(
-                                color: isSelected ? Colors.white : Colors.white,
+                                color: textColor,
                                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                               ),
                             ),
@@ -426,6 +431,9 @@ class _ResultScreenState extends State<ResultScreen> {
       ),
     );
   }
+
+
+
 
   @override
   Widget build(BuildContext context) {
