@@ -33,7 +33,7 @@ class RecallList extends StatelessWidget {
     return Expanded(
       child: ListView.separated(
         itemCount: articles.length,
-        separatorBuilder: (context, index) => SizedBox(height: 2.5),
+        separatorBuilder: (context, index) => SizedBox(height: 5),
         itemBuilder: (context, index) {
           return Container(
             padding: const EdgeInsets.symmetric(horizontal: 16),
