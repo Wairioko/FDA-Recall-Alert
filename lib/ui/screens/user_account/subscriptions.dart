@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
@@ -39,8 +40,6 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
   void initState() {
     super.initState();
     _initPlatformState();
-    // Purchases.listener.listen((PurchaserInfoUpdate purchaserInfoUpdate) {
-    //
     Purchases.addCustomerInfoUpdateListener((customerInfo) {
 
 
@@ -104,7 +103,7 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
       CustomerInfo purchaserInfo = await Purchases.purchasePackage(package);
 
       // Handle successful purchase. Here are a couple of things you'd likely do:
-      if (purchaserInfo.entitlements.all["your_entitlement_id"]!.isActive) {
+      if (purchaserInfo.entitlements.all["premium"]!.isActive) {
         // Unlock premium features based on the entitlement
         print('Purchase successful, premium features unlocked!');
       } else {
@@ -291,20 +290,21 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
       ),
     );
   }
+  final user = FirebaseAuth.instance.currentUser;
 
   Future<void> _initPlatformState() async {
     await Purchases.setDebugLogsEnabled(true);
 
     PurchasesConfiguration configuration;
     if (Platform.isAndroid) {
-      configuration = PurchasesConfiguration('google_play_console_public_key');
+      configuration = PurchasesConfiguration('goog_ZfrdtkQtiwLcpHvPjOUfvqxPqCq');
     } else if (Platform.isIOS) {
       configuration = PurchasesConfiguration('ios_app_user_id');
     } else {
       throw UnsupportedError('This platform is not supported.');
     }
-    await Purchases.setup('revenuecat_api_key', appUserId: 'current_user_id');
+    await Purchases.setup('goog_ZfrdtkQtiwLcpHvPjOUfvqxPqCq', appUserId: user?.uid);
   }
 }
 
-// goog_ZfrdtkQtiwLcpHvPjOUfvqxPqCq
+//sk_rUtnRFrwRXCagIcSPWhuHWWPfrXRh

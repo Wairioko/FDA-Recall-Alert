@@ -27,7 +27,7 @@ class AppRoutes {
       ReceiptListScreen.path: (context) => const ReceiptListScreen(),
       WatchlistScreen.path: (context) =>  WatchlistScreen(),
       UserAccountPage.path: (context) => const UserAccountPage(),
-      // SubscriptionPage.path: (context) => SubscriptionPage(),
+      SubscriptionPage.path: (context) => SubscriptionPage(),
       FeedbackForm.path: (context) => FeedbackForm(),
       AccountSettingsWidget.path: (context) => AccountSettingsWidget(),
       TermsOfServicePage.path: (context) => const TermsOfServicePage(),
