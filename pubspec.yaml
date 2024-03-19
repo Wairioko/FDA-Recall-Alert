@@ -46,7 +46,7 @@ dependencies:
   google_generative_ai: ^0.2.1
   url_launcher: ^6.2.5
   sign_in_button: ^3.0.0
-  purchases_flutter: ^6.22.0
+  purchases_flutter: ^6.24.0
   sign_in_with_apple: ^6.0.0
   share: ^2.0.4
   google_mlkit_text_recognition: ^0.11.0
