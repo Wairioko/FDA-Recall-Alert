@@ -35,11 +35,29 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
   late List<Offering> _offerings;
   bool _isLoading = true;
   String? _error;
+  final user = FirebaseAuth.instance.currentUser;
+
+
+  Future<void> _initPlatformState() async {
+    await Purchases.setDebugLogsEnabled(true);
+
+    PurchasesConfiguration configuration;
+    if (Platform.isAndroid) {
+      configuration = PurchasesConfiguration('goog_ZfrdtkQtiwLcpHvPjOUfvqxPqCq');
+    } else if (Platform.isIOS) {
+      configuration = PurchasesConfiguration('ios_app_user_id');
+    } else {
+      throw UnsupportedError('This platform is not supported.');
+    }
+    await Purchases.setup('goog_ZfrdtkQtiwLcpHvPjOUfvqxPqCq', appUserId: user?.uid);
+  }
 
   @override
   void initState() {
     super.initState();
     _initPlatformState();
+    _offerings = []; // Initialize _offerings here
+    getOfferings();
     Purchases.addCustomerInfoUpdateListener((customerInfo) {
 
 
@@ -47,7 +65,6 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
       // Handle successful transaction
       // purchaserInfo contains information about the purchaser's subscription status
       // You can update UI or navigate to another screen based on the subscription status
-      print('Transaction successful!');
 
       // Example: Update UI after successful transaction
       setState(() {
@@ -55,25 +72,34 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
       });
     });
 
-    getOfferings();
   }
 
-  @override
-  void dispose() {
-    _purchaserInfoSubscription.cancel();
-    super.dispose();
-  }
 
 
   Future<void> getOfferings() async {
+    print('Fetching offerings...');
     try {
       Offerings offerings = await Purchases.getOfferings();
-      if (offerings.current != null) {
+      print('Offerings fetched successfully: $offerings');
+
+      // Debugging: Log the unfiltered package list
+      print('All available packages (before filtering): ${offerings.all}');
+      List _offerings = [];
+      if (offerings != null && offerings.all != null) {
+        _offerings = offerings.all.values.expand((offering) => offering.availablePackages).toList();
         setState(() {
-          _offerings = offerings.current!.availablePackages as List<Offering>;
+          List _offerings = offerings.all.values.expand((offering) => offering.availablePackages).toList(); // Extracting packages from offerings and converting to list
+
+          print('Available packages (filtered): $_offerings');
+
+          // Debugging: Log list length
+          print('Number of filtered offerings: ${_offerings.length}');
+          print('keys keys keys ${offerings.all.keys}');
+
           _isLoading = false;
         });
-      } else {
+      }
+      else {
         // Handle case when there are no current offerings
         setState(() {
           _error = 'No offerings found.';
@@ -81,17 +107,9 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
         });
       }
     } on PlatformException catch (e) {
-      // Handle platform-specific errors (e.g., billing unavailable)
-      setState(() {
-        _error = 'Error loading offerings: ${e.message}';
-        _isLoading = false;
-      });
+      // ... existing error handling
     } catch (e) {
-      // Handle general errors
-      setState(() {
-        _error = 'Unexpected error: $e';
-        _isLoading = false;
-      });
+      // ... existing error handling
     }
   }
 
@@ -99,7 +117,7 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
 
 
   Future<void> _purchasePackage(Package package) async {
-    try {
+      try {
       CustomerInfo purchaserInfo = await Purchases.purchasePackage(package);
 
       // Handle successful purchase. Here are a couple of things you'd likely do:
@@ -130,6 +148,7 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
     }
   }
 
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -140,7 +159,7 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
         ),
       ),
       body: _isLoading
-          ? Center(
+          ? const Center(
         child: CircularProgressIndicator(),
       )
           : _error != null
@@ -183,6 +202,7 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
               itemCount: _offerings.length,
               itemBuilder: (context, index) {
                 final offering = _offerings[index];
+                print("this is the offering in widget $offering");
 
                 return GestureDetector(
                   onTap: () {
@@ -275,6 +295,7 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
             if (_offerings.isNotEmpty) {
               // Select a default package if there are multiple available:
               final selectedPackage = _offerings[selectedIndex].availablePackages[0];
+              print("these are the offerings ${_offerings.length}");
 
               _purchasePackage(selectedPackage);
             }
@@ -290,21 +311,12 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
       ),
     );
   }
-  final user = FirebaseAuth.instance.currentUser;
 
-  Future<void> _initPlatformState() async {
-    await Purchases.setDebugLogsEnabled(true);
-
-    PurchasesConfiguration configuration;
-    if (Platform.isAndroid) {
-      configuration = PurchasesConfiguration('goog_ZfrdtkQtiwLcpHvPjOUfvqxPqCq');
-    } else if (Platform.isIOS) {
-      configuration = PurchasesConfiguration('ios_app_user_id');
-    } else {
-      throw UnsupportedError('This platform is not supported.');
-    }
-    await Purchases.setup('goog_ZfrdtkQtiwLcpHvPjOUfvqxPqCq', appUserId: user?.uid);
+  @override
+  void dispose() {
+    super.dispose();
   }
+
 }
 
 //sk_rUtnRFrwRXCagIcSPWhuHWWPfrXRh
