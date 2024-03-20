@@ -82,24 +82,16 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
       Offerings offerings = await Purchases.getOfferings();
       print('Offerings fetched successfully: $offerings');
 
-      // Debugging: Log the unfiltered package list
-      print('All available packages (before filtering): ${offerings.all}');
-      List _offerings = [];
       if (offerings != null && offerings.all != null) {
-        _offerings = offerings.all.values.expand((offering) => offering.availablePackages).toList();
         setState(() {
-          List _offerings = offerings.all.values.expand((offering) => offering.availablePackages).toList(); // Extracting packages from offerings and converting to list
-
-          print('Available packages (filtered): $_offerings');
-
-          // Debugging: Log list length
-          print('Number of filtered offerings: ${_offerings.length}');
+          _offerings = offerings.all.values.toList(); // Assign offerings directly
+          print('Available offerings: $_offerings');
+          print('Number of offerings: ${_offerings.length}');
           print('keys keys keys ${offerings.all.keys}');
 
           _isLoading = false;
         });
-      }
-      else {
+      } else {
         // Handle case when there are no current offerings
         setState(() {
           _error = 'No offerings found.';
@@ -112,6 +104,8 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
       // ... existing error handling
     }
   }
+
+
 
 
 
@@ -207,6 +201,7 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
                 return GestureDetector(
                   onTap: () {
                     setState(() {
+                      print(offering.monthly!.storeProduct.priceString);
                       selectedIndex = index;
                     });
                   },
@@ -245,16 +240,37 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
                                       : Colors.black,
                                 ),
                               ),
-                              // const SizedBox(height: 4),
-                              // Text(
-                              //   '${offering.package.priceString} / ${offering.package.billingPeriod}',
-                              //   style: TextStyle(
-                              //     fontSize: 16,
-                              //     color: selectedIndex == index
-                              //         ? Colors.white
-                              //         : Colors.black87,
-                              //   ),
-                              // ),
+                              const SizedBox(height: 4),
+                              Text(
+                                '${offering.monthly?.storeProduct.priceString} / ${offering.monthly?.storeProduct.subscriptionPeriod}',
+
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: selectedIndex == index
+                                      ? Colors.white
+                                      : Colors.black87,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                '${offering.sixMonth?.storeProduct.priceString} / ${offering.sixMonth?.storeProduct.subscriptionPeriod}',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: selectedIndex == index
+                                      ? Colors.white
+                                      : Colors.black87,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                '${offering.annual?.storeProduct.priceString} / ${offering.annual?.storeProduct.subscriptionPeriod}',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: selectedIndex == index
+                                      ? Colors.white
+                                      : Colors.black87,
+                                ),
+                              ),
                             ],
                           ),
                         ),
@@ -292,11 +308,11 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
             backgroundColor: Colors.blue,
           ),
           onPressed: () {
+            print("these are the offerings: $_offerings");
             if (_offerings.isNotEmpty) {
               // Select a default package if there are multiple available:
               final selectedPackage = _offerings[selectedIndex].availablePackages[0];
               print("these are the offerings ${_offerings.length}");
-
               _purchasePackage(selectedPackage);
             }
           },
