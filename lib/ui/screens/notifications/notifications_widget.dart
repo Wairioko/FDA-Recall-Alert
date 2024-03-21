@@ -1,24 +1,38 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 
-class NotificationsPage extends StatelessWidget {
+
+class NotificationsPage extends StatefulWidget {
   static const String path = '/notifications';
 
-  // Define your notifications data
-  final List<Notification> notifications = [
-    Notification(
-      icon: Icons.notification_important,
-      color: Colors.red,
-      title: 'Urgent Notification',
-      message: 'This is an urgent notification.',
-    ),
-    Notification(
-      icon: Icons.notifications,
-      color: Colors.blue,
-      title: 'General Notification',
-      message: 'This is a general notification.',
-    ),
-    // Add more notifications as needed
-  ];
+  @override
+  _NotificationsPageState createState() => _NotificationsPageState();
+}
+
+class _NotificationsPageState extends State<NotificationsPage> {
+  // Define a list to hold incoming notifications
+  List<Notification> notifications = [];
+
+  // Initialize Firebase messaging
+  final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Configure Firebase messaging
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      print("Message received: ${message.notification?.title}");
+      // Process the received message
+      setState(() {
+        notifications.add(Notification(
+          icon: Icons.notifications,
+          title: message.notification?.title ?? "Notification",
+          message: message.notification?.body ?? "New notification",
+        ));
+      });
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -53,7 +67,7 @@ class NotificationItem extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(notification.icon, color: notification.color),
+          Icon(notification.icon),
           SizedBox(width: 16),
           Expanded(
             child: Column(
@@ -74,13 +88,11 @@ class NotificationItem extends StatelessWidget {
 // Sample Notification Model
 class Notification {
   final IconData icon;
-  final Color color;
   final String title;
   final String message;
 
   Notification({
     required this.icon,
-    required this.color,
     required this.title,
     required this.message,
   });
