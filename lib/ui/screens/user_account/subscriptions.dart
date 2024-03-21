@@ -196,12 +196,11 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
               itemCount: _offerings.length,
               itemBuilder: (context, index) {
                 final offering = _offerings[index];
-                print("this is the offering in widget $offering");
+
 
                 return GestureDetector(
                   onTap: () {
                     setState(() {
-                      print(offering.monthly!.storeProduct.priceString);
                       selectedIndex = index;
                     });
                   },
@@ -224,57 +223,91 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
                       ],
                     ),
                     child: Row(
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment:
-                            CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                offering.identifier,
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 18,
-                                  color: selectedIndex == index
-                                      ? Colors.white
-                                      : Colors.black,
+                              children: [
+                                // Display monthly price
+                                if(offering.monthly != null)
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Monthly',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 18,
+                                        color: selectedIndex == index
+                                            ? Colors.white
+                                            : Colors.black,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      '${offering.monthly?.storeProduct.priceString}',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        color: selectedIndex == index
+                                            ? Colors.white
+                                            : Colors.black87,
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                '${offering.monthly?.storeProduct.priceString} / ${offering.monthly?.storeProduct.subscriptionPeriod}',
-
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: selectedIndex == index
-                                      ? Colors.white
-                                      : Colors.black87,
+                                // Display 6 months price
+                                if(offering.sixMonth != null)
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      '6 Months',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 18,
+                                        color: selectedIndex == index
+                                            ? Colors.white
+                                            : Colors.black,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      '${offering.sixMonth?.storeProduct.priceString}',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        color: selectedIndex == index
+                                            ? Colors.white
+                                            : Colors.black87,
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                '${offering.sixMonth?.storeProduct.priceString} / ${offering.sixMonth?.storeProduct.subscriptionPeriod}',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: selectedIndex == index
-                                      ? Colors.white
-                                      : Colors.black87,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                '${offering.annual?.storeProduct.priceString} / ${offering.annual?.storeProduct.subscriptionPeriod}',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: selectedIndex == index
-                                      ? Colors.white
-                                      : Colors.black87,
-                                ),
-                              ),
-                            ],
+                                // Display yearly price
+                                if(offering.annual != null)
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Yearly',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 18,
+                                        color: selectedIndex == index
+                                            ? Colors.white
+                                            : Colors.black,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      '${offering.annual?.storeProduct.priceString}',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        color: selectedIndex == index
+                                            ? Colors.white
+                                            : Colors.black87,
+                                      ),
+                                    ),
+                                  ],
+                                // Add more categories as needed
                           ),
-                        ),
-                        if (offering.identifier == 'best_value')
+
+                        if (offering.annual != null)
                           Container(
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 8, vertical: 4),
