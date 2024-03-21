@@ -68,8 +68,9 @@ class _SignUpPageState extends State<SignUpPage> {
           idToken: googleAuth.idToken,
         );
         await FirebaseAuth.instance.signInWithCredential(google_credential);
-        // Call the method to collect additional information
-        _collectAdditionalInformation(); // Added this line
+        // Save user details to Firestore
+        _saveUserDetailsToFirestore();
+        print('saving details to firestore');
       } else {
         // Handle Google sign-in cancellation
       }
@@ -98,39 +99,36 @@ class _SignUpPageState extends State<SignUpPage> {
         accessToken: credential.authorizationCode,
       );
       await FirebaseAuth.instance.signInWithCredential(apple_credential);
-      // Call the method to collect additional information
-      _collectAdditionalInformation(); // Added this line
+      // Save user details to Firestore
+      _saveUserDetailsToFirestore();
     } catch (e) {
       // Handle Apple sign-in errors
       print("Apple sign-in error: $e");
     }
   }
 
+  void _saveUserDetailsToFirestore() {
+    print("Saving user details to Firestore...");
+    // Call the method to collect additional information
+    _collectAdditionalInformation();
+  }
+
+
+
   void _collectAdditionalInformation() {
     showDialog(
       context: context,
       builder: (BuildContext context) {
+        // Create a new GlobalKey for the second Form widget
+        final GlobalKey<FormState> secondFormKey = GlobalKey<FormState>();
+
         return AlertDialog(
           title: Text('Additional Information'),
           content: Form(
-            key: formkey,
+            key: secondFormKey, // Use the new GlobalKey
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Add other form fields here
-                TextFormField(
-                  controller: defaultStateController,
-                  decoration: const InputDecoration(
-                    hintText: "Your Default State",
-                    labelText: "Enter Default State",
-                  ),
-                  validator: (value) {
-                    if (value!.isEmpty) {
-                      return "State cannot be empty";
-                    }
-                    return null;
-                  },
-                ),
                 const SizedBox(height: 16),
                 DropdownButtonFormField<String>(
                   value: shoppingFrequency,
@@ -165,6 +163,20 @@ class _SignUpPageState extends State<SignUpPage> {
                     return null;
                   },
                 ),
+                // Add other form fields here
+                TextFormField(
+                  controller: defaultStateController,
+                  decoration: const InputDecoration(
+                    hintText: "Your Default State",
+                    labelText: "Enter Default State",
+                  ),
+                  validator: (value) {
+                    if (value!.isEmpty) {
+                      return "State cannot be empty";
+                    }
+                    return null;
+                  },
+                ),
               ],
             ),
           ),
@@ -176,25 +188,28 @@ class _SignUpPageState extends State<SignUpPage> {
               child: const Text('Cancel'),
             ),
             ElevatedButton(
-              onPressed: () {
-                if (formkey.currentState!.validate()) {
-                  // Save the additional information to Firebase or any other storage
-                  // For example:
+              onPressed: () async {
+                if (secondFormKey.currentState!.validate()) {
                   final user = FirebaseAuth.instance.currentUser;
-
+                  final token = await _getFCMToken();
                   FirebaseFirestore.instance.collection('users').doc(user!.uid).set({
-                    'email':user.email,
+                    'email': user.email,
                     'defaultState': defaultStateController.text,
                     'shoppingFrequency': shoppingFrequency,
-                    'token': _getFCMToken,
+                    'token': token,
+                  }).then((_) {
+                    print('Data saved to Firestore successfully!');
+                  }).catchError((error) {
+                    print('Error saving data to Firestore: $error');
                   });
+
                   // Close the dialog
                   Navigator.of(context).pop();
                   // Proceed with other actions
                   // For example, navigate to another screen
-                  Navigator.push(context, MaterialPageRoute(builder: (context) =>
-                  const Home()
-                  )
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const Home()),
                   );
                 }
               },
@@ -205,6 +220,7 @@ class _SignUpPageState extends State<SignUpPage> {
       },
     );
   }
+
 
 
 
@@ -227,11 +243,18 @@ class _SignUpPageState extends State<SignUpPage> {
 
         // Save additional information to Firebase or any other storage
         final user = FirebaseAuth.instance.currentUser;
-        await FirebaseFirestore.instance.collection('users').doc(user!.uid).set({
+        final token = await _getFCMToken();
+        FirebaseFirestore.instance.collection('users').doc(user!.uid).set({
           'email': user.email,
           'defaultState': defaultStateController.text,
           'shoppingFrequency': shoppingFrequency,
+          'token': token,
+        }).then((_) {
+          print('Data saved to Firestore successfully!');
+        }).catchError((error) {
+          print('Error saving data to Firestore: $error');
         });
+
 
         // Navigate to the login page
         Navigator.push(context, MaterialPageRoute(builder: (context) => const LogInPage()));
