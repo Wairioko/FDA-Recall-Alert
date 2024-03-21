@@ -21,6 +21,36 @@ class SubscriptionPackage {
   });
 }
 
+Column buildPackageColumn(
+    BuildContext context,
+    String packageName,
+    String priceString,
+    bool isSelected,
+    ) {
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text(
+        packageName,
+        style: TextStyle(
+          fontWeight: FontWeight.bold,
+          fontSize: 18,
+          color: isSelected ? Colors.white : Colors.black,
+        ),
+      ),
+      const SizedBox(height: 4),
+      Text(
+        priceString,
+        style: TextStyle(
+          fontSize: 16,
+          color: isSelected ? Colors.white : Colors.black87,
+        ),
+      ),
+    ],
+  );
+}
+
+
 class SubscriptionPage extends StatefulWidget {
   static const String path = '/subscription_page';
 
@@ -222,112 +252,61 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
                             : const BoxShadow()
                       ],
                     ),
-                    child: Row(
-                              children: [
-                                // Display monthly price
-                                if(offering.monthly != null)
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      'Monthly',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 18,
-                                        color: selectedIndex == index
-                                            ? Colors.white
-                                            : Colors.black,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      '${offering.monthly?.storeProduct.priceString}',
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        color: selectedIndex == index
-                                            ? Colors.white
-                                            : Colors.black87,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                // Display 6 months price
-                                if(offering.sixMonth != null)
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      '6 Months',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 18,
-                                        color: selectedIndex == index
-                                            ? Colors.white
-                                            : Colors.black,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      '${offering.sixMonth?.storeProduct.priceString}',
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        color: selectedIndex == index
-                                            ? Colors.white
-                                            : Colors.black87,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                // Display yearly price
-                                if(offering.annual != null)
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      'Yearly',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 18,
-                                        color: selectedIndex == index
-                                            ? Colors.white
-                                            : Colors.black,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      '${offering.annual?.storeProduct.priceString}',
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        color: selectedIndex == index
-                                            ? Colors.white
-                                            : Colors.black87,
-                                      ),
-                                    ),
-                                  ],
-                                // Add more categories as needed
+                    child:Row(
+                      children: [
+                        // Display monthly price
+                        if (offering.monthly != null)
+                          buildPackageColumn(
+                            context,
+                            'Monthly',
+                            offering.monthly!.storeProduct.priceString,
+                            selectedIndex == index,
                           ),
-
+                        // Display 6 months price
+                        if (offering.sixMonth != null)
+                          buildPackageColumn(
+                            context,
+                            '6 Months',
+                            offering.sixMonth!.storeProduct.priceString,
+                            selectedIndex == index,
+                          ),
+                        // Display yearly price
                         if (offering.annual != null)
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 8, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: Colors.green,
-                              borderRadius: BorderRadius.circular(30),
-                            ),
-                            child: const Text(
-                              'Best Value',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontFamily: 'SF Pro Text',
-                              ),
+                          Expanded(
+                            child: Stack(
+                              children: [
+                                buildPackageColumn(
+                                  context,
+                                  'Yearly',
+                                  offering.annual!.storeProduct.priceString,
+                                  selectedIndex == index,
+                                ),
+                                Positioned(
+                                  right: 0,
+                                  top: 0,
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: Colors.green,
+                                      borderRadius: BorderRadius.circular(30),
+                                    ),
+                                    child: const Text(
+                                      'Best Value',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                        fontFamily: 'SF Pro Text',
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                       ],
                     ),
-                  ),
-                );
+
+                  ));
               },
             ),
           ),
