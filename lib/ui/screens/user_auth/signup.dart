@@ -116,16 +116,17 @@ class _SignUpPageState extends State<SignUpPage> {
 
 
   void _collectAdditionalInformation() {
+    BuildContext parentContext = context; // Store the context
+
     showDialog(
-      context: context,
+      context: parentContext,
       builder: (BuildContext context) {
-        // Create a new GlobalKey for the second Form widget
         final GlobalKey<FormState> secondFormKey = GlobalKey<FormState>();
 
         return AlertDialog(
           title: Text('Additional Information'),
           content: Form(
-            key: secondFormKey, // Use the new GlobalKey
+            key: secondFormKey,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -138,7 +139,6 @@ class _SignUpPageState extends State<SignUpPage> {
                     });
                   },
                   items: const [
-                    // Dropdown menu items
                     DropdownMenuItem(
                       value: '1-3 times per month',
                       child: Text('1-3 times per month'),
@@ -163,7 +163,6 @@ class _SignUpPageState extends State<SignUpPage> {
                     return null;
                   },
                 ),
-                // Add other form fields here
                 TextFormField(
                   controller: defaultStateController,
                   decoration: const InputDecoration(
@@ -192,25 +191,19 @@ class _SignUpPageState extends State<SignUpPage> {
                 if (secondFormKey.currentState!.validate()) {
                   final user = FirebaseAuth.instance.currentUser;
                   final token = await _getFCMToken();
+
+                  // Use the stored parentContext here
                   FirebaseFirestore.instance.collection('users').doc(user!.uid).set({
                     'email': user.email,
                     'defaultState': defaultStateController.text,
                     'shoppingFrequency': shoppingFrequency,
                     'token': token,
                   }).then((_) {
-                    print('Data saved to Firestore successfully!');
+                    Navigator.of(parentContext).pop(); // Use parentContext to close dialog
+                    Navigator.push(parentContext, MaterialPageRoute(builder: (context) => const Home()));
                   }).catchError((error) {
                     print('Error saving data to Firestore: $error');
                   });
-
-                  // Close the dialog
-                  Navigator.of(context).pop();
-                  // Proceed with other actions
-                  // For example, navigate to another screen
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const Home()),
-                  );
                 }
               },
               child: const Text('Save'),
@@ -220,8 +213,6 @@ class _SignUpPageState extends State<SignUpPage> {
       },
     );
   }
-
-
 
 
 
