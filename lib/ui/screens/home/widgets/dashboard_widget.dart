@@ -39,7 +39,6 @@ class _DashBoardWidgetState extends State<DashBoardWidget> {
   }
 
   @override
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: RefreshIndicator(
@@ -78,7 +77,6 @@ class _DashBoardWidgetState extends State<DashBoardWidget> {
                 },
               ),
             ),
-            // SizedBox(height: 2), // Adjusted padding below the RecallList or DataUnavailableWidget
           ],
         ),
       ),

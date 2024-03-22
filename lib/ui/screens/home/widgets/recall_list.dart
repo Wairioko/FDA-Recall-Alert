@@ -1,7 +1,6 @@
 import 'package:safe_scan/model/detail_data_model.dart';
 import 'package:safe_scan/utility/news_texts.dart';
 import 'package:flutter/material.dart';
-
 import '../../../../domain/entities/top_headlines.dart';
 import '../../../../model/new_item_model.dart';
 import 'recall_item.dart';
@@ -15,9 +14,9 @@ class RecallList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (articles.isEmpty) {
-      return Expanded(
+      return const Expanded(
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.all(16),
           child: Text(
             'No recall Items available',
             textAlign: TextAlign.center,
@@ -33,7 +32,7 @@ class RecallList extends StatelessWidget {
     return Expanded(
       child: ListView.separated(
         itemCount: articles.length,
-        separatorBuilder: (context, index) => SizedBox(height: 5),
+        separatorBuilder: (context, index) => const SizedBox(height: 5),
         itemBuilder: (context, index) {
           return Container(
             padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -44,7 +43,7 @@ class RecallList extends StatelessWidget {
                 BoxShadow(
                   color: Colors.blueAccent.withOpacity(0.3),
                   blurRadius: 6,
-                  offset: Offset(0, 3),
+                  offset: const Offset(0, 3),
                 ),
               ],
             ),
