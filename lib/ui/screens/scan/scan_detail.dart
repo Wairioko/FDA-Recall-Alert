@@ -106,6 +106,7 @@ class _ResultScreenState extends State<ResultScreen> {
   late List<String> checkedLines = [];
   late List<String> filteredLines = [];
   bool _searched = false; // Flag to keep track of whether search has been performed
+
   final nonProductPatterns = [
     RegExp(r'^\d+\.$'),
     RegExp(r'^[a-zA-Z]$', caseSensitive: false),
@@ -244,8 +245,6 @@ class _ResultScreenState extends State<ResultScreen> {
           final dateTime = timestamp.toDate();
           // Format the DateTime as a string
           final dateString = DateFormat('yyyy-MM-dd').format(dateTime);
-
-          print(dateString); // Output: "2024-03-18"
 
           DocumentReference userDoc = FirebaseFirestore.instance
               .collection('receipts-data')
