@@ -51,7 +51,7 @@ class _QueryWidgetState extends State<QueryWidget> {
   void clearItem() {
     setState(() {
       itemHintText = "Recall Category";
-      requestQuery.item = "";
+      requestQuery.item = "FOOD";
     });
   }
 
@@ -300,7 +300,9 @@ class _QueryWidgetState extends State<QueryWidget> {
                   padding: const EdgeInsets.only(top: 8), // Adjust the padding values as needed
                   child: CupertinoButton(
                     onPressed: () async {
+                      shouldSearch = true; // Set the flag to trigger search
                       reloadData();
+                      _onSearchTextChanged();
                       setState(() {
                         showSearchParameters = false;
                       });
