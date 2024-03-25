@@ -9,6 +9,7 @@ import 'package:flutter/services.dart';
 import 'package:safe_scan/ui/screens/receipts/view_receipts.dart';
 import '../../../model/detail_data_model.dart';
 import '../detail/detail.dart';
+import '../home/home.dart';
 
 
 User? loggedInUser = FirebaseAuth.instance.currentUser;
@@ -107,6 +108,7 @@ class _ResultScreenState extends State<ResultScreen> {
   late List<String> filteredLines = [];
   bool _searched = false; // Flag to keep track of whether search has been performed
 
+
   final nonProductPatterns = [
     RegExp(r'^\d+\.$'),
     RegExp(r'^[a-zA-Z]$', caseSensitive: false),
@@ -115,6 +117,7 @@ class _ResultScreenState extends State<ResultScreen> {
     RegExp(r'\b\d+\.\d+\b'),
     RegExp(r'\b\d+\s*(PCS|pack|pieces|amount|kgs|gms)\b', caseSensitive: false),
   ];
+
 
   @override
   void initState() {
@@ -166,7 +169,8 @@ class _ResultScreenState extends State<ResultScreen> {
         _isEditing = false;
         _textEditingController.text = filteredLines[index];
         FocusScope.of(context).requestFocus(_focusNode);
-      });
+      }
+      );
     }
   }
 
@@ -291,7 +295,7 @@ class _ResultScreenState extends State<ResultScreen> {
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.pop(context);
+                Navigator.push(context, MaterialPageRoute(builder: (context) => const Home()));
               },
               child: const Text("OK"),
             ),
