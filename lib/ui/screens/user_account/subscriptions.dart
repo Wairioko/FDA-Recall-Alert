@@ -320,11 +320,9 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
             backgroundColor: Colors.blue,
           ),
           onPressed: () {
-            print("these are the offerings: $_offerings");
             if (_offerings.isNotEmpty) {
               // Select a default package if there are multiple available:
               final selectedPackage = _offerings[selectedIndex].availablePackages[0];
-              print("these are the offerings ${_offerings.length}");
               _purchasePackage(selectedPackage);
             }
           },

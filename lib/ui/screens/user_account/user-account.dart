@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:safe_scan/ui/screens/user_account/account_security.dart';
 import 'package:safe_scan/ui/screens/user_account/feedback.dart';
 import 'package:safe_scan/ui/screens/user_account/subscriptions.dart';
-import 'package:safe_scan/ui/screens/user_account/terms_of_service.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 
 
 class UserAccountPage extends StatelessWidget {
@@ -183,11 +184,12 @@ class UserAccountPage extends StatelessWidget {
     );
   }
 
+
   Widget _buildLegalCompliance(BuildContext context) {
     return Card(
       child: ListTile(
         onTap: () {
-          Navigator.of(context).pushNamed(TermsOfServicePage.path);
+          launchUrlString('https://www.termsfeed.com/live/dc8eb1b0-e905-46b7-85b0-408a1dbb8604');
         },
         leading: Icon(Icons.gavel),
         title: Text('Legal and Compliance'),

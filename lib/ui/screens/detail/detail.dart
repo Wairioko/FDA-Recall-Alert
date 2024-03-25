@@ -17,7 +17,6 @@ class Detail extends StatelessWidget {
   }) : super(key: key);
 
   @override
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(

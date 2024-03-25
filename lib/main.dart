@@ -9,7 +9,6 @@ import 'package:provider/provider.dart';
 import 'core/news_application.dart';
 import 'core/service_locator.dart';
 import 'core/app.dart';
-import 'notifications/notification_service.dart';
 
 
 void main() async {
@@ -30,9 +29,7 @@ void main() async {
     ),
   );
 
-  // Initialize NotificationService
-  final NotificationService notificationService = NotificationService();
-  await notificationService.init();
+
   User? user = FirebaseAuth.instance.currentUser;
 
   RecallEventApplication application = RecallEventApplication();
