@@ -439,6 +439,8 @@ class _ResultScreenState extends State<ResultScreen> {
                             controller: _textEditingController,
                             focusNode: _focusNode,
                             style: const TextStyle(color: Colors.white),
+
+
                             // onEditingComplete: () {
                             //   setState(() {
                             //     final originalIndex = filteredLines.indexOf(filteredLines[index]);
