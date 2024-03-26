@@ -15,6 +15,7 @@ import '../home/home.dart';
 User? loggedInUser = FirebaseAuth.instance.currentUser;
 
 
+
 class SelectionScreen extends StatelessWidget {
   final List<DetailDataModel> matches;
 
@@ -146,9 +147,15 @@ class _ResultScreenState extends State<ResultScreen> {
 
   Completer<void> _uploadCompleter = Completer<void>();
 
-  // Update _handleLineTap method to correctly handle line taps and navigation
+
   void _handleLineTap(int index) {
     if (!_isEditing && index >= 0 && index < filteredLines.length) {
+      setState(() {
+        _editingLineIndex = index;
+        _isEditing = true;
+        _textEditingController.text = filteredLines[index];
+        FocusScope.of(context).requestFocus(_focusNode);
+      });
       final line = filteredLines[index].trim(); // Get the line item text and trim any whitespace
       print("the line $line");
       final matches = _getMatchesForLine(index); // Retrieve matches based on the line item text
@@ -156,6 +163,12 @@ class _ResultScreenState extends State<ResultScreen> {
       if (matches == null || clearedIndices.contains(index)) {
         print('Item cleared. No matches found.');
       } else if (matches.isNotEmpty) {
+        setState(() {
+          _editingLineIndex = index;
+          _isEditing = false;
+          _textEditingController.text = filteredLines[index];
+          FocusScope.of(context).requestFocus(_focusNode);
+        });
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -283,8 +296,6 @@ class _ResultScreenState extends State<ResultScreen> {
   }
 
 
-
-
   void _showUploadSuccessDialog() {
     showDialog(
       context: context,
@@ -308,19 +319,24 @@ class _ResultScreenState extends State<ResultScreen> {
   @override
   void dispose() {
     _focusNode.dispose();
+    _textEditingController.dispose(); // Dispose text controller
     super.dispose();
     _keyboardListenerFocusNode.dispose();
-
   }
 
   void _handleDismiss(int index) {
     setState(() {
       if (index >= 0 && index < filteredLines.length) {
-        final removedLine = filteredLines.removeAt(index); // Remove the item from the filtered list
-        unfilteredLines.remove(removedLine); // Also remove the item from the unfiltered list
+        final removedLine = filteredLines.removeAt(index);
+        unfilteredLines.remove(removedLine);
+        // Ensure _isEditing is set to false if an item is dismissed while in editing mode
+        if (_isEditing && index == _editingLineIndex) {
+          _isEditing = false;
+        }
       }
     });
   }
+
 
 
   Future<void> _checkItems() async {
@@ -416,18 +432,43 @@ class _ResultScreenState extends State<ResultScreen> {
                   }
                   return _isEditing && index == _editingLineIndex
                       ? Material(
-                    color: Colors.black,
-                    child: TextFormField(
-                      controller: _textEditingController,
-                      focusNode: _focusNode,
-                      style: const TextStyle(color: Colors.white),
-                      onEditingComplete: () {
-                        setState(() {
-                          final originalIndex = filteredLines.indexOf(filteredLines[index]);
-                          filteredLines[originalIndex] = _textEditingController.text;
-                          _isEditing = false;
-                        });
-                      },
+                      child: Container(
+                          color: Colors.black,
+                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                          child: TextFormField(
+                            controller: _textEditingController,
+                            focusNode: _focusNode,
+                            style: const TextStyle(color: Colors.white),
+                            // onEditingComplete: () {
+                            //   setState(() {
+                            //     final originalIndex = filteredLines.indexOf(filteredLines[index]);
+                            //     filteredLines[originalIndex] = _textEditingController.text;
+                            //     _isEditing = false;
+                            //   });
+                            // },
+
+                            // onEditingComplete: () {
+                            //   setState(() {
+                            //     filteredLines = List.from(filteredLines); // Create a new list to trigger rebuild
+                            //     filteredLines[index] = _textEditingController.text;
+                            //     _isEditing = false;
+                            //   });
+                            // },
+
+                            onEditingComplete: () {
+                              setState(() {
+                                filteredLines[index] = _textEditingController.text;
+                                _isEditing = false;
+                                }
+                              );
+                              _focusNode.unfocus(); // Ensure focus is removed from the TextFormField
+                            },
+
+
+
+
+
+                          ),
                     ),
                   )
                       : Dismissible(
