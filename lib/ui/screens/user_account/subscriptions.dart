@@ -107,151 +107,11 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
     }
   }
 
-  Widget _buildLoading() {
-    return Center(
-      child: CircularProgressIndicator(),
-    );
-  }
-
-  Widget _buildError() {
-    return Center(
-      child: Text(_error!),
-    );
-  }
-
-  Widget _buildOfferingTile(BuildContext context, Offering offering, bool isSelected, int index) {
-    final isSelected = index == selectedIndex;
-    final isYearlyPackage = offering.annual != null;
-    return GestureDetector(
-      onTap: () {
-        // Handle package selection
-        setState(() {
-          selectedIndex = index;
-        });
-      },
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 20),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: isSelected ? Colors.blueAccent : Colors.grey[200],
-          borderRadius: BorderRadius.circular(30),
-          boxShadow: [
-            BoxShadow(
-              color: isSelected ? Colors.black26 : Colors.transparent,
-              blurRadius: 4,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            // Display monthly price
-            if (offering.monthly != null)
-              buildPackageColumn(
-                context,
-                'Monthly',
-                offering.monthly!.storeProduct.priceString,
-                isSelected,
-              ),
-            // Display 6 months price
-            if (offering.sixMonth != null)
-              buildPackageColumn(
-                context,
-                '6 Months',
-                offering.sixMonth!.storeProduct.priceString,
-                isSelected,
-              ),
-            // Display yearly price
-            if (offering.annual != null)
-              Expanded(
-                child: Stack(
-                  children: [
-                    buildPackageColumn(
-                      context,
-                      'Yearly',
-                      offering.annual!.storeProduct.priceString,
-                      isSelected,
-                    ),
-                      Positioned(
-                        right: 0,
-                        top: 0,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: Colors.green,
-                            borderRadius: BorderRadius.circular(30),
-                          ),
-                          child: const Text(
-                            'Best Value',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontFamily: 'SF Pro Text',
-                            ),
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildOfferings() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(20),
-          child: Center(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                const Text(
-                  'Choose Your Plan',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'SF Pro Text',
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Container(
-                  width: 100,
-                  height: 100,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.grey[300],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-        Expanded(
-          child: ListView.builder(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            itemCount: _offerings.length,
-            itemBuilder: (context, index) {
-              final offering = _offerings[index];
-              final isSelected = index == selectedIndex; // Adjust this based on your selection logic
-              return _buildOfferingTile(context, offering, isSelected, index);
-            },
-          ),
-        ),
-      ],
-    );
-  }
-
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           'Subscription Packages',
           style: TextStyle(fontFamily: 'SF Pro Text'),
         ),
@@ -276,25 +136,280 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
         padding: const EdgeInsets.all(16.0),
         child: ElevatedButton(
           style: ElevatedButton.styleFrom(
-            foregroundColor: Colors.blue,
-            backgroundColor: Colors.blue,
+            foregroundColor: Colors.white, backgroundColor: Colors.blue,
           ),
           onPressed: () {
             if (_offerings.isNotEmpty) {
-              // Select a default package if there are multiple available:
-              final selectedPackage = _offerings[0].availablePackages[0];
+              final selectedPackage =
+              _offerings[selectedIndex ?? 0].availablePackages[0];
               _purchasePackage(selectedPackage);
             }
           },
-          child: const Text(
+          child: Text(
             'Subscribe',
             style: TextStyle(
-              color: Colors.white,
               fontFamily: 'SF Pro Text',
             ),
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildOfferings() {
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: Center(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text(
+                    'Choose Your Plan',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'SF Pro Text',
+                    ),
+                  ),
+                  SizedBox(height: 10),
+                  Container(
+                    width: 100,
+                    height: 100,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.grey[300],
+                    ),
+                    child: ClipOval(
+                      child: Image.asset(
+                        'assets/image/subs_icon.jpg',
+                        fit: BoxFit.cover,
+                        width: 300,
+                        height: 300,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          ListView.builder(
+            shrinkWrap: true,
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            itemCount: _offerings.length,
+            itemBuilder: (context, index) {
+              final offering = _offerings[index];
+              final isSelected = index == selectedIndex;
+              return _buildOfferingTile(context, offering, isSelected, index);
+            },
+          ),
+          if (_offerings.isNotEmpty && selectedIndex != null)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(height: 20),
+                  Text(
+                    'Subscription Benefits:',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'SF Pro Text',
+                    ),
+                  ),
+                  SizedBox(height: 10),
+                  Text(
+                    '1. Access to premium features',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontFamily: 'SF Pro Text',
+                    ),
+                  ),
+                  Text(
+                    '2. No ads and get full access to upcoming features',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontFamily: 'SF Pro Text',
+                    ),
+                  ),
+                  Text(
+                    '3.Your purchase supports an independent app developer',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontFamily: 'SF Pro Text',
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          SizedBox(height: 100),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildOfferingTile(BuildContext context, Offering offering,
+      bool isSelected, int index) {
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          selectedIndex = index;
+        });
+      },
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 20),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: isSelected ? Colors.blueAccent : Colors.grey[200],
+          borderRadius: BorderRadius.circular(30),
+          boxShadow: [
+            BoxShadow(
+              color: isSelected ? Colors.black26 : Colors.transparent,
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            if (offering.monthly != null)
+              _buildPackageColumn(
+                context,
+                'Monthly',
+                offering.monthly!.storeProduct.priceString,
+                isSelected,
+              ),
+            if (offering.sixMonth != null)
+              Expanded(
+                child: Stack(
+                  children: [
+                    _buildPackageColumn(
+                      context,
+                      '6 Months',
+                      offering.sixMonth!.storeProduct.priceString,
+                      isSelected,
+                    ),
+                    Positioned(
+                      right: 0,
+                      top: 0,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.green,
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                        child: Text(
+                          '${_calculateAverageMonthlyCost(offering.sixMonth, offering)} per month',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontFamily: 'SF Pro Text',
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            if (offering.annual != null)
+              Expanded(
+                child: Stack(
+                  children: [
+                    _buildPackageColumn(
+                      context,
+                      'Yearly',
+                      offering.annual!.storeProduct.priceString,
+                      isSelected,
+                    ),
+                    Positioned(
+                      right: 0,
+                      top: 0,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.green,
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                        child: Text(
+                          'Best Value\n${_calculateAverageMonthlyCost(offering.annual, offering)} per month',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontFamily: 'SF Pro Text',
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _calculateAverageMonthlyCost(Package? package, Offering offering) {
+    if (package == null || package.storeProduct == null) return '0.00';
+
+    // Remove non-numeric characters and commas from the price string
+    String priceString = package.storeProduct.priceString.replaceAll(RegExp(r'[^0-9.]'), '');
+
+    double totalPrice = double.tryParse(priceString) ?? 0.0;
+
+    if (package == offering.sixMonth) {
+      return (totalPrice / 6).toStringAsFixed(2);
+    } else if (package == offering.annual) {
+      return (totalPrice / 12).toStringAsFixed(2);
+    }
+    return '0.00';
+  }
+
+
+
+
+
+  Widget _buildPackageColumn(
+    BuildContext context, String title, String price, bool isSelected) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            fontFamily: 'SF Pro Text',
+          ),
+        ),
+        SizedBox(height: 5),
+        Text(
+          price,
+          style: TextStyle(
+            fontSize: 16,
+            fontFamily: 'SF Pro Text',
+            color: isSelected ? Colors.white : Colors.black,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildLoading() {
+    return Center(
+      child: CircularProgressIndicator(),
+    );
+  }
+
+  Widget _buildError() {
+    return Center(
+      child: Text('Error occurred while loading data.'),
     );
   }
 

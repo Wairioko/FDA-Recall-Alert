@@ -440,23 +440,6 @@ class _ResultScreenState extends State<ResultScreen> {
                             focusNode: _focusNode,
                             style: const TextStyle(color: Colors.white),
 
-
-                            // onEditingComplete: () {
-                            //   setState(() {
-                            //     final originalIndex = filteredLines.indexOf(filteredLines[index]);
-                            //     filteredLines[originalIndex] = _textEditingController.text;
-                            //     _isEditing = false;
-                            //   });
-                            // },
-
-                            // onEditingComplete: () {
-                            //   setState(() {
-                            //     filteredLines = List.from(filteredLines); // Create a new list to trigger rebuild
-                            //     filteredLines[index] = _textEditingController.text;
-                            //     _isEditing = false;
-                            //   });
-                            // },
-
                             onEditingComplete: () {
                               setState(() {
                                 filteredLines[index] = _textEditingController.text;
@@ -465,10 +448,6 @@ class _ResultScreenState extends State<ResultScreen> {
                               );
                               _focusNode.unfocus(); // Ensure focus is removed from the TextFormField
                             },
-
-
-
-
 
                           ),
                     ),

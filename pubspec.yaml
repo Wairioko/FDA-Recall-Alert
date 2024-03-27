@@ -115,6 +115,7 @@ flutter:
     - assets/image/login.png
     - assets/image/background.png
     - assets/image/google_icon.png
+    - assets/image/subs_icon.jpg
 
   fonts:
     - family: Nunito
