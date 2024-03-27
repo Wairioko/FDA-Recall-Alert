@@ -346,10 +346,10 @@ class _ResultScreenState extends State<ResultScreen> {
 
     // Clear the lineMatchesMap before updating it
     lineMatchesMap.clear();
-    filteredLines.clear(); // Clear the filtered lines
+    List<String> updatedFilteredLines = []; // Create a new list to hold the filtered items
 
-    for (int i = 0; i < unfilteredLines.length; i++) {
-      String line = unfilteredLines[i];
+    for (int i = 0; i < filteredLines.length; i++) {
+      String line = filteredLines[i];
       if (line.trim().isEmpty) {
         continue;
       }
@@ -375,18 +375,19 @@ class _ResultScreenState extends State<ResultScreen> {
         }
       }
 
-      // Update lineMatchesMap and filteredLines
+      // Update lineMatchesMap
       lineMatchesMap[line] = matches;
 
       if (matches.isNotEmpty) {
-        filteredLines.add("$line - Potential Matches Found (${matches.length}), Click to see Details");
+        updatedFilteredLines.add("$line - Potential Matches Found (${matches.length}), Click to see Details");
       } else {
-        filteredLines.add("$line - Item Cleared");
+        updatedFilteredLines.add("$line - Item Cleared");
       }
     }
 
     // Update the state after updating lineMatchesMap and filteredLines
     setState(() {
+      filteredLines = updatedFilteredLines; // Update filteredLines with the new list
       _isSearching = false;
       _searchResults = lineMatchesMap.entries.map((entry) => {entry.key: entry.value}).toList();
     });
@@ -440,14 +441,23 @@ class _ResultScreenState extends State<ResultScreen> {
                             focusNode: _focusNode,
                             style: const TextStyle(color: Colors.white),
 
+                            // onEditingComplete: () {
+                            //   setState(() {
+                            //     filteredLines[index] = _textEditingController.text;
+                            //     _isEditing = false;
+                            //     }
+                            //   );
+                            //   _focusNode.unfocus(); // Ensure focus is removed from the TextFormField
+                            // },
                             onEditingComplete: () {
                               setState(() {
-                                filteredLines[index] = _textEditingController.text;
+                                filteredLines[_editingLineIndex] = _textEditingController.text;
+                                print("this is the filtered lines after edit $filteredLines");
                                 _isEditing = false;
-                                }
-                              );
-                              _focusNode.unfocus(); // Ensure focus is removed from the TextFormField
+                              });
+                              _focusNode.unfocus();
                             },
+
 
                           ),
                     ),
