@@ -21,6 +21,19 @@ class SelectionScreen extends StatelessWidget {
 
   const SelectionScreen({Key? key, required this.matches}) : super(key: key);
 
+  Color _getColorForClassification(String classification) {
+    switch (classification.toUpperCase()) { // Normalize for comparison
+      case 'CLASS I':
+        return Colors.redAccent;
+      case 'CLASS II':
+        return Colors.orangeAccent;
+      case 'CLASS III':
+        return Colors.yellow;
+      default:
+        return Colors.grey; // Neutral color for unknown classification
+    }
+  }
+
   String cleanText(String inputText) {
     return inputText.replaceAll('\n', ' ').trim();
   }
@@ -69,7 +82,8 @@ class SelectionScreen extends StatelessWidget {
                         cleanText(matches[index].classification),
                         style: TextStyle(
                           fontSize: 14.0,
-                          color: Colors.black,
+                          fontWeight: FontWeight.w900,
+                          color: _getColorForClassification(matches[index].classification),
                         ),
                       ),
                       SizedBox(height: 8.0), // Add some space between items

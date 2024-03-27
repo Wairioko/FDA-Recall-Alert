@@ -69,7 +69,8 @@ class RecallItem extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 fontSize: 15.0, // Slightly larger for emphasis
-                fontWeight: FontWeight.w500, // Slightly bolder for emphasis
+                fontWeight: FontWeight.w900,
+                // fontWeight: FontWeight.w500, // Slightly bolder for emphasis
                 fontFamily: 'San Francisco',
                 color: _getColorForClassification(newsItemModel.classification),
               ),
