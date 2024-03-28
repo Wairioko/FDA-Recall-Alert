@@ -108,6 +108,7 @@ class _AccountSettingsWidgetState extends State<AccountSettingsWidget> {
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
+                fontFamily: 'San Francisco',
               ),
             ),
             SizedBox(height: 10),
@@ -161,7 +162,8 @@ class _AccountSettingsWidgetState extends State<AccountSettingsWidget> {
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white
+                    color: Colors.white,
+                    fontFamily: 'San Francisco',
                   ),
                 ),
               ),
@@ -178,6 +180,7 @@ class _AccountSettingsWidgetState extends State<AccountSettingsWidget> {
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
+                fontFamily: 'San Francisco',
               ),
             ),
             SizedBox(height: 10),
@@ -193,7 +196,8 @@ class _AccountSettingsWidgetState extends State<AccountSettingsWidget> {
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white
+                    color: Colors.white,
+                    fontFamily: 'San Francisco',
                   ),
                 ),
               ),
