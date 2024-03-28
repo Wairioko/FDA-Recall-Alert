@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:safe_scan/ui/screens/user_auth/login.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -9,6 +9,7 @@ import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import '../home/home.dart';
+import 'login.dart';
 
 
 class UserModel {
@@ -57,28 +58,176 @@ class _SignUpPageState extends State<SignUpPage> {
   }
 
 
-  void _handleGoogleSignUp() async {
+  // void _showSnackBar(BuildContext context, String message) {
+  //   ScaffoldMessenger.of(context).showSnackBar(
+  //     SnackBar(
+  //       content: Text(message),
+  //     ),
+  //   );
+  // }
+
+
+  void _handleGoogleSignUp(BuildContext context) async {
     try {
-      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
-      if (googleUser != null) {
-        authMethod = AuthMethod.Google;
-        final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      final GoogleSignIn googleSignIn = GoogleSignIn(scopes: ['email']);
+      // Sign out the current user to allow selecting from other accounts
+      await googleSignIn.signOut();
+      // Proceed with sign-in
+      final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
+      if (googleUser == null) {
+        // User not registered, show list of active Google accounts
+        final List<GoogleSignInAccount?> googleAccounts = await googleSignIn.onCurrentUserChanged.toList();
+        final List<GoogleSignInAccount> nonNullGoogleAccounts = googleAccounts.where((account) => account != null).cast<GoogleSignInAccount>().toList();
+
+
+        if (nonNullGoogleAccounts.isNotEmpty) {
+          _showGoogleAccountsDialog(context, googleSignIn, nonNullGoogleAccounts);
+        } else {
+          // No active Google accounts found
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text('No active Google accounts found'),
+          ));
+        }
+      } else {
+        final GoogleSignInAuthentication? googleAuth = await googleUser.authentication;
         final AuthCredential google_credential = GoogleAuthProvider.credential(
-          accessToken: googleAuth.accessToken,
-          idToken: googleAuth.idToken,
+          accessToken: googleAuth?.accessToken,
+          idToken: googleAuth?.idToken,
         );
         await FirebaseAuth.instance.signInWithCredential(google_credential);
         // Save user details to Firestore
         _saveUserDetailsToFirestore();
-        print('saving details to firestore');
-      } else {
-        // Handle Google sign-in cancellation
+
       }
     } catch (e) {
       // Handle Google sign-in errors
-      print("Google sign-in error: $e");
+      print('Error signing in with Google: $e');
     }
   }
+
+  void _saveUserDetailsToFirestore() {
+    // Call the method to collect additional information
+    _collectAdditionalInformation();
+  }
+
+
+  void _showGoogleAccountsDialog(BuildContext context, GoogleSignIn googleSignIn, List<GoogleSignInAccount> accounts) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20.0),
+          ),
+          elevation: 0.0,
+          backgroundColor: Colors.transparent,
+          child: AlertDialog(
+            contentPadding: EdgeInsets.zero,
+            content: SingleChildScrollView(
+              child: Container(
+                width: MediaQuery.of(context).size.width * 0.8,
+                padding: EdgeInsets.all(20.0),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(10.0),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Continue with:',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    SizedBox(height: 10),
+                    ...accounts.map((account) {
+                      return Container(
+                        margin: EdgeInsets.symmetric(vertical: 5.0),
+                        decoration: BoxDecoration(
+                          color: Colors.grey[200],
+                          borderRadius: BorderRadius.circular(50.0),
+                        ),
+                        child: ListTile(
+                          onTap: () {
+                            context.read<UserProviderLogin>().signInWithGoogle();
+                            Navigator.push(context, MaterialPageRoute(
+                                builder: (context) => Home()));
+                          },
+                          title: Text(
+                            '${account.email}',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey[700],
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            maxLines: 1,
+                          ),
+                          leading: Icon(Icons.account_circle),
+                        ),
+                      );
+                    }).toList(),
+                    SizedBox(height: 20),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Expanded(
+                          child: Divider(
+                            color: Colors.grey,
+                            height: 36,
+                          ),
+                        ),
+                        Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 10),
+                          child: Text(
+                            'OR',
+                            style: TextStyle(color: Colors.grey, fontWeight: FontWeight.w900),
+                          ),
+                        ),
+                        Expanded(
+                          child: Divider(
+                            color: Colors.grey,
+                            height: 36,
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 20),
+                    Align(
+                      alignment: Alignment.center,
+                      child: TextButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          _handleGoogleSignUp(context);
+                        },
+                        child: Container(
+                          padding: EdgeInsets.all(10.0),
+                          decoration: BoxDecoration(
+                            color: Colors.blue,
+                            borderRadius: BorderRadius.circular(30.0),
+                          ),
+                          child: const Text(
+                            'Register With Another Account',
+                            style: TextStyle(
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+
 
   void _handleAppleSignUp() async {
     try {
@@ -106,13 +255,6 @@ class _SignUpPageState extends State<SignUpPage> {
       print("Apple sign-in error: $e");
     }
   }
-
-  void _saveUserDetailsToFirestore() {
-    print("Saving user details to Firestore...");
-    // Call the method to collect additional information
-    _collectAdditionalInformation();
-  }
-
 
 
   void _collectAdditionalInformation() {
@@ -193,8 +335,8 @@ class _SignUpPageState extends State<SignUpPage> {
                   final token = await _getFCMToken();
 
                   // Use the stored parentContext here
-                  FirebaseFirestore.instance.collection('users').doc(user!.uid).set({
-                    'email': user.email,
+                  FirebaseFirestore.instance.collection('users').doc(user?.uid).set({
+                    'email': user?.email,
                     'defaultState': defaultStateController.text,
                     'shoppingFrequency': shoppingFrequency,
                     'token': token,
@@ -216,51 +358,6 @@ class _SignUpPageState extends State<SignUpPage> {
 
 
 
-  MoveToLog() async {
-    if (formkey.currentState!.validate()) {
-      if (authMethod == AuthMethod.EmailPassword && (email.text.isEmpty || password.text.isEmpty)) {
-        // Email and password fields are required for traditional sign-up method
-        return;
-      }
-
-      try {
-        if (authMethod == AuthMethod.EmailPassword) {
-          // Perform email/password sign-up
-          await FirebaseAuth.instance.createUserWithEmailAndPassword(
-            email: email.text,
-            password: password.text.trim(),
-          );
-        }
-
-        // Save additional information to Firebase or any other storage
-        final user = FirebaseAuth.instance.currentUser;
-        final token = await _getFCMToken();
-        FirebaseFirestore.instance.collection('users').doc(user!.uid).set({
-          'email': user.email,
-          'defaultState': defaultStateController.text,
-          'shoppingFrequency': shoppingFrequency,
-          'token': token,
-        }).then((_) {
-          print('Data saved to Firestore successfully!');
-        }).catchError((error) {
-          print('Error saving data to Firestore: $error');
-        });
-
-
-        // Navigate to the login page
-        Navigator.push(context, MaterialPageRoute(builder: (context) => const LogInPage()));
-      } catch (e) {
-        // Handle authentication exceptions
-        print(e.toString());
-      }
-    }
-  }
-
-
-
-
-
-
   @override
   Widget build(BuildContext context) {
     List<String> shoppingFrequencyOptions = [
@@ -269,198 +366,178 @@ class _SignUpPageState extends State<SignUpPage> {
       '7+ times per month'
     ];
 
-    // Boolean variables to track if email and password fields should be visible
-    bool showEmailAndPassword = true;
 
     return Scaffold(
       body: Container(
-        decoration: BoxDecoration(),
+        decoration: const BoxDecoration(color: Colors.white),
         child: SafeArea(
           child: Center(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.only(top: 10.0),
+              padding: const EdgeInsets.all(25.0),
               child: Form(
                 key: formkey,
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const SizedBox(height: 30),
+                    const SizedBox(height: 0),
                     Padding(
                       padding: const EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 8.0),
                       child: Container(
                         child: Text(
-                          "Register",
+                          "Safe Recall",
                           style: GoogleFonts.lato(fontSize: 50.0, color: Colors.blue),
                         ),
                       ),
                     ),
-                    const SizedBox(height: 10),
-                    // Conditional rendering of email and password fields
-                    if (showEmailAndPassword)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 5.0),
-                      child: TextFormField(
-                        controller: email,
-                        decoration: InputDecoration(
-                          suffixIcon: const Icon(Icons.mail),
-                          hintText: "username@gmail.com",
-                          labelText: "Enter Email",
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(30),
-                          ),
-                        ),
-                      ),
+                    SizedBox(height: 20),
+                    Text(
+                      'Keeping you and your family safe',
+                      style: TextStyle(fontSize: 20, fontFamily: 'San Francisco'),
                     ),
-                    const SizedBox(height: 10),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 5.0),
-                      child: TextFormField(
-                        obscureText: true,
-                        controller: password,
-                        decoration: InputDecoration(
-                          suffixIcon: const Icon(Icons.lock),
-                          hintText: "Abcd@54#87",
-                          labelText: "Enter Password",
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(30),
-                          ),
-                        ),
-                      ),
+                    SizedBox(height: 20),
+                    Text(
+                      'One Scan at a time!',
+                      style: TextStyle(fontSize: 20, fontFamily: 'San Francisco'),
                     ),
-                    const SizedBox(height: 10),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 5.0),
-                      child: TextFormField(
-                        controller: defaultStateController,
-                        decoration: InputDecoration(
-                          suffixIcon: const Icon(Icons.location_on),
-                          hintText: "Your Default State",
-                          labelText: "Enter Default State",
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(30),
-                          ),
-                        ),
-                        validator: (value) {
-                          if (value!.isEmpty) {
-                            return "To Enable Notifications For Your State";
-                          }
-                          return null;
-                        },
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                      child: DropdownButton<String>(
-                        // ... other properties
-
-                        value: shoppingFrequency.isEmpty
-                            ? null // Assign null if shoppingFrequency is empty
-                            : shoppingFrequency,
-                        items: shoppingFrequencyOptions.map((String value) {
-                          return DropdownMenuItem<String>(
-                            value: value, // Ensure values are unique
-                            child: Text(value, ),
-                          );
-                        }).toList(),
-                        onChanged: (String? newValue) {
-                          if (newValue != null) {
-                            setState(() {
-                              shoppingFrequency = newValue;
-                            });
-                          }
-                        },
-                      ),
-                    ),
-                    SizedBox(height: 16),
-                    FractionallySizedBox(
-                      widthFactor: 0.87,
-                      child: ElevatedButton(
-                        onPressed: () {
-                          MoveToLog();
-                        },
+                    SizedBox(height: 50), // Reduced the height
+                    SizedBox(
+                      width: double.infinity, // Make the button as wide as possible
+                      child: ElevatedButton.icon(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blue,
-                          padding: const EdgeInsets.symmetric(vertical: 15),
-                          textStyle: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 16,
-                            fontFamily: 'SF Pro Text',
+                          backgroundColor: Colors.white,
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 20, vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30.0),
                           ),
-                          shape: const StadiumBorder(),
                         ),
-                        child: const Text(
-                          "Create Account",
+                        onPressed: () {
+                          _handleGoogleSignUp(context);
+                        },
+                        icon: FaIcon(FontAwesomeIcons.google),
+                        label: Text(
+                          'Sign up with Google',
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontFamily: 'San Francisco',
+                          ),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 20),
+                    Text(
+                      'OR',
+                      style: TextStyle(color: Colors.grey, fontWeight: FontWeight.w900),
+                    ),
+                    SizedBox(height: 20), // Adjusted gap between buttons
+                    SizedBox(
+                      width: double.infinity,
+                      // Make the button as wide as possible
+                      child: ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.black,
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 20, vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30.0),
+                          ),
+                        ),
+                        onPressed: () {
+                          _handleAppleSignUp();
+                        },
+                        icon: const FaIcon(
+                          FontAwesomeIcons.apple,
+                          color: Colors.white,
+                        ),
+                        label: const Text(
+                          'Sign up with Apple',
                           style: TextStyle(
                             color: Colors.white,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 16,
-                            fontFamily: 'SF Pro Text',
+                            fontFamily: 'San Francisco',
                           ),
                         ),
                       ),
                     ),
-
-                    const SizedBox(height: 20), // Space above the "OR" line
-                    Center(
+                    // const SizedBox(height: 20),
+                    // SizedBox(
+                    //   width: double.infinity,
+                    //   child: TextFormField(
+                    //     controller: defaultStateController,
+                    //     decoration: InputDecoration(
+                    //       suffixIcon: const Icon(Icons.location_on),
+                    //       labelText: "Enter Home State",
+                    //       border: OutlineInputBorder(
+                    //         borderRadius: BorderRadius.circular(30),
+                    //       ),
+                    //     ),
+                    //     validator: (value) {
+                    //       if (value!.isEmpty) {
+                    //         return "To Enable Notifications For Your State";
+                    //       }
+                    //       return null;
+                    //     },
+                    //   ),
+                    // ),
+                    // const SizedBox(height: 16),
+                    // Padding(
+                    //   padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    //   child: DropdownButton<String>(
+                    //     // ... other properties
+                    //
+                    //     value: shoppingFrequency.isEmpty
+                    //         ? null // Assign null if shoppingFrequency is empty
+                    //         : shoppingFrequency,
+                    //     items: shoppingFrequencyOptions.map((String value) {
+                    //       return DropdownMenuItem<String>(
+                    //         value: value, // Ensure values are unique
+                    //         child: Text(value, ),
+                    //       );
+                    //     }).toList(),
+                    //     onChanged: (String? newValue) {
+                    //       if (newValue != null) {
+                    //         setState(() {
+                    //           shoppingFrequency = newValue;
+                    //         });
+                    //       }
+                    //     },
+                    //   ),
+                    // ),
+                    const SizedBox(height: 40), // Space above the "OR" line
+                    const Center(
                       child: Text(
-                        '--------------------OR--------------------',
-                        style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold),
+                        '------------------Login------------------',
+                        style: TextStyle(color: Colors.grey, fontWeight: FontWeight.w900, fontSize: 14),
                       ),
                     ),
-
-
+                    const SizedBox(height: 40), // Adjusted gap
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Flexible( // Wrap the entire Row with Flexible
-                          child: Padding(
-                            padding: EdgeInsets.all(10.0),
-                            child: ElevatedButton.icon(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.white,
-                              ),
-                              onPressed: _handleGoogleSignUp,
-                              icon: FaIcon(FontAwesomeIcons.google),
-                              label: Text(
-                                'Sign up Google',
-                                style: TextStyle(
-                                  color: Colors.black,
-                                  fontFamily: 'SF Pro Text',
-                                ),
-                                overflow: TextOverflow.visible,
-                              ),
-                            ),
+                        const Text(
+                          'Already a member?',
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                            fontFamily: 'San Francisco',
                           ),
                         ),
-                        SizedBox(width: 10), // Add space between buttons
-                        Flexible(
-                          child: Padding(
-                            padding: const EdgeInsets.all(10.0),
-                            child: ElevatedButton.icon(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.black,
-                              ),
-                              onPressed: _handleAppleSignUp,
-                              icon: const FaIcon(
-                                FontAwesomeIcons.apple,
-                                color: Colors.white,
-                              ),
-                              label: const Text(
-                                'Sign up Apple',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontFamily: 'SF Pro Text',
-                                ),
-                                overflow: TextOverflow.visible,
-                              ),
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.pushNamed(context, '/login');
+                          },
+                          child:const Text(
+                            ' Sign In',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.blue,
+                              fontFamily: 'San Francisco',
                             ),
                           ),
                         ),
                       ],
                     ),
-
 
                   ],
                 ),
