@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:safe_scan/ui/screens/user_account/user-account.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 import '../../../../utility/utility.dart';
 import '../../../shared/theme/theme_cubit.dart';
 import '../../about/about_screen.dart';
@@ -146,23 +148,21 @@ class MenuWidget extends StatelessWidget {
                             : 'assets/icons/notifications.svg',
                         text: 'Notifications',
                       ),
+                    // _buildMenuItem(
+                    //   onTap: () {
+                    //     context.read<ThemeCubit>().toggleTheme();
+                    //   },
+                    //   icon: Utility.isLightTheme(state.themeType)
+                    //       ? 'assets/icons/theme.svg'
+                    //       : 'assets/icons/light_theme.svg',
+                    //   text: Utility.isLightTheme(state.themeType) ? 'Dark' : 'Light',
+                    // ),
                     _buildMenuItem(
                       onTap: () {
-                        context.read<ThemeCubit>().toggleTheme();
+                        launchUrlString('https://www.termsfeed.com/live/dc8eb1b0-e905-46b7-85b0-408a1dbb8604');
                       },
-                      icon: Utility.isLightTheme(state.themeType)
-                          ? 'assets/icons/theme.svg'
-                          : 'assets/icons/light_theme.svg',
-                      text: Utility.isLightTheme(state.themeType) ? 'Dark' : 'Light',
-                    ),
-                    _buildMenuItem(
-                      onTap: () {
-                        Navigator.of(context).pushNamed(AboutScreen.path);
-                      },
-                      icon: Utility.isLightTheme(state.themeType)
-                          ? 'assets/icons/about.svg'
-                          : 'assets/icons/light_about.svg',
-                      text: 'About',
+                      icon: 'assets/icons/rate.svg', // Replace with appropriate icon
+                      text: 'Rate Us',
                     ),
                     SizedBox(height: 16),
                     if (user != null)
