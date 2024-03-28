@@ -34,6 +34,7 @@ Column buildPackageColumn(
         style: TextStyle(
           fontWeight: FontWeight.bold,
           fontSize: 18,
+          fontFamily: 'San Francisco',
           color: isSelected ? Colors.white : Colors.black,
         ),
       ),
@@ -113,7 +114,7 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
       appBar: AppBar(
         title: Text(
           'Subscription Packages',
-          style: TextStyle(fontFamily: 'SF Pro Text'),
+          style: TextStyle(fontFamily: 'San Francisco',),
         ),
       ),
       body: FutureBuilder<void>(
@@ -148,7 +149,7 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
           child: Text(
             'Subscribe',
             style: TextStyle(
-              fontFamily: 'SF Pro Text',
+              fontFamily: 'San Francisco',
             ),
           ),
         ),
@@ -172,7 +173,7 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
                     style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
-                      fontFamily: 'SF Pro Text',
+                      fontFamily: 'San Francisco',
                     ),
                   ),
                   SizedBox(height: 10),
@@ -218,7 +219,7 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      fontFamily: 'SF Pro Text',
+                      fontFamily: 'San Francisco',
                     ),
                   ),
                   SizedBox(height: 10),
@@ -226,21 +227,21 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
                     '1. Access to premium features',
                     style: TextStyle(
                       fontSize: 16,
-                      fontFamily: 'SF Pro Text',
+                      fontFamily: 'San Francisco',
                     ),
                   ),
                   Text(
                     '2. No ads and get full access to upcoming features',
                     style: TextStyle(
                       fontSize: 16,
-                      fontFamily: 'SF Pro Text',
+                      fontFamily: 'San Francisco',
                     ),
                   ),
                   Text(
                     '3.Your purchase supports an independent app developer',
                     style: TextStyle(
                       fontSize: 16,
-                      fontFamily: 'SF Pro Text',
+                      fontFamily: 'San Francisco',
                     ),
                   ),
                 ],
@@ -308,7 +309,7 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
                           style: TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
-                            fontFamily: 'SF Pro Text',
+                            fontFamily: 'San Francisco',
                           ),
                         ),
                       ),
@@ -341,7 +342,7 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
                           style: TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
-                            fontFamily: 'SF Pro Text',
+                            fontFamily: 'San Francisco',
                           ),
                         ),
                       ),
@@ -385,7 +386,7 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
-            fontFamily: 'SF Pro Text',
+            fontFamily: 'San Francisco',
           ),
         ),
         SizedBox(height: 5),
@@ -393,7 +394,7 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
           price,
           style: TextStyle(
             fontSize: 16,
-            fontFamily: 'SF Pro Text',
+            fontFamily: 'San Francisco',
             color: isSelected ? Colors.white : Colors.black,
           ),
         ),
