@@ -9,6 +9,7 @@ class AccountSettingsWidget extends StatefulWidget {
 }
 
 class _AccountSettingsWidgetState extends State<AccountSettingsWidget> {
+  bool _isSocialSignIn = true; // Set this value based on your authentication method
   String _currentPassword = '';
   String _newPassword = '';
   String _confirmPassword = '';
@@ -103,6 +104,7 @@ class _AccountSettingsWidgetState extends State<AccountSettingsWidget> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            if (!_isSocialSignIn)
             const Text(
               'Change Password',
               style: TextStyle(
