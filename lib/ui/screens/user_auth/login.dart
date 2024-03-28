@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -20,8 +21,11 @@ class UserProviderLogin extends ChangeNotifier {
   }
 
   Future<void> signInWithGoogle() async {
+
     try {
+      final GoogleSignIn googleSignIn = GoogleSignIn(scopes: ['email']);
       final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+      await googleSignIn.signOut();
       if (googleUser != null) {
         final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
         final credential = GoogleAuthProvider.credential(
@@ -109,269 +113,184 @@ class _LogInPageState extends State<LogInPage> {
   TextEditingController password = TextEditingController();
   bool _obscurePassword = true;
 
-  void moveToHome(BuildContext context) async {
-    if (formkey.currentState!.validate()) {
-      try {
-        await FirebaseAuth.instance.signInWithEmailAndPassword(
-          email: email.text,
-          password: password.text,
-        );
-        context.read<UserProviderLogin>().setUser(FirebaseAuth.instance.currentUser);
-        Navigator.push(context, MaterialPageRoute(builder: (context) => const Home()));
-      } on FirebaseAuthException catch (e) {
-        if (e.code == "invalid-email") {
-          return showDialog(
-            context: context,
-            builder: (context) {
-              return const AlertDialog(
-                content: Text("Please Enter A Valid Email"),
-              );
-            },
-          );
-        } else if (e.code == "wrong-password") {
-          return showDialog(
-            context: context,
-            builder: (context) {
-              return const AlertDialog(
-                content: Text("Wrong Password"),
-              );
-            },
-          );
-        }
-      }
-    }
-  }
+  // void moveToHome(BuildContext context) async {
+  //   if (formkey.currentState!.validate()) {
+  //     try {
+  //       await FirebaseAuth.instance.signInWithEmailAndPassword(
+  //         email: email.text,
+  //         password: password.text,
+  //       );
+  //       context.read<UserProviderLogin>().setUser(FirebaseAuth.instance.currentUser);
+  //       Navigator.push(context, MaterialPageRoute(builder: (context) => const Home()));
+  //     } on FirebaseAuthException catch (e) {
+  //       if (e.code == "invalid-email") {
+  //         return showDialog(
+  //           context: context,
+  //           builder: (context) {
+  //             return const AlertDialog(
+  //               content: Text("Please Enter A Valid Email"),
+  //             );
+  //           },
+  //         );
+  //       } else if (e.code == "wrong-password") {
+  //         return showDialog(
+  //           context: context,
+  //           builder: (context) {
+  //             return const AlertDialog(
+  //               content: Text("Wrong Password"),
+  //             );
+  //           },
+  //         );
+  //       }
+  //     }
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (context) => UserProviderLogin(),
-      child: Scaffold(
-        backgroundColor: Colors.white,
-        body: SafeArea(
-          child: Stack(
-            children: [
-              Center(
-                child: SingleChildScrollView(
-                  child: Form(
-                    key: formkey,
-                    child: Column(
+    return Scaffold(
+      body: Container(
+        decoration: const BoxDecoration(color: Colors.white),
+        child: SafeArea(
+          child: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(25.0),
+              child: Form(
+                key: formkey,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const SizedBox(height: 0),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 8.0),
+                      child: Container(
+                        child: Text(
+                          "Safe Recall",
+                          style: GoogleFonts.lato(fontSize: 50.0, color: Colors.blue),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 20),
+                    Text(
+                      'Keeping you and your family safe',
+                      style: TextStyle(fontSize: 20, fontFamily: 'SF Pro Text'),
+                    ),
+                    SizedBox(height: 20),
+                    Text(
+                      'One Scan at a time!',
+                      style: TextStyle(fontSize: 20, fontFamily: 'San Francisco'),
+                    ),
+                    SizedBox(height: 50), // Reduced the height
+                    SizedBox(
+                      width: double.infinity, // Make the button as wide as possible
+                      child: ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 20, vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30.0),
+                          ),
+                        ),
+
+                        onPressed: () {
+                          context.read<UserProviderLogin>().signInWithGoogle();
+                          Navigator.push(context, MaterialPageRoute(
+                              builder: (context) => Home()));
+                        },
+                        icon: FaIcon(FontAwesomeIcons.google),
+                        label: Text(
+                          'Sign in with Google',
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontFamily: 'San Francisco',
+                          ),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 20),
+                    Text(
+                      'OR',
+                      style: TextStyle(color: Colors.grey, fontWeight: FontWeight.w900),
+                    ),
+                    SizedBox(height: 20), // Adjusted gap between buttons
+                    SizedBox(
+                      width: double.infinity,
+                      // Make the button as wide as possible
+                      child: ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.black,
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 20, vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30.0),
+                          ),
+                        ),
+                        onPressed: () {
+                          context.read<UserProviderLogin>().signInWithApple(
+                              context);
+                          Navigator.push(context, MaterialPageRoute(
+                              builder: (context) => Home()));
+                        },
+                        icon: const FaIcon(
+                          FontAwesomeIcons.apple,
+                          color: Colors.white,
+                        ),
+                        label: const Text(
+                          'Sign in with Apple',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontFamily: 'San Francisco',
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 40), // Space above the "OR" line
+                    const Center(
+                      child: Text(
+                        '----------------Register----------------',
+                        style: TextStyle(color: Colors.grey, fontWeight: FontWeight.w900, fontSize: 14),
+                      ),
+                    ),
+                    const SizedBox(height: 40), // Adjusted gap
+                    Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        SizedBox(height: 50),
-                        Text(
-                          'Safe Recall',
+                        const Text(
+                          'Not a member?',
                           style: TextStyle(
-                            fontWeight: FontWeight.w400,
-                            color: Colors.blue,
-                            fontSize: 50,
-                            fontFamily: 'SF Pro Text',
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                            fontFamily: 'San Francisco',
                           ),
                         ),
-                        SizedBox(height: 10),
-                        Text(
-                          'Keeping you and your family safe',
-                          style: TextStyle(fontSize: 20, fontFamily: 'SF Pro Text'),
-                        ),
-                        SizedBox(height: 10),
-                        Text(
-                          'One Scan at a time!',
-                          style: TextStyle(fontSize: 20, fontFamily: 'SF Pro Text'),
-                        ),
-                        SizedBox(height: 50),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 25.0),
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              border: Border.all(color: Colors.black),
-                              borderRadius: BorderRadius.circular(30),
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.only(left: 5.0),
-                              child: TextFormField(
-                                controller: email,
-                                validator: (value) {
-                                  if (value == null || value.isEmpty) {
-                                    return 'Please enter your email';
-                                  }
-                                  return null;
-                                },
-                                decoration: InputDecoration(
-                                  prefixIcon: Icon(Icons.email),
-                                  hintText: 'Email',
-                                  border: InputBorder.none,
-                                ),
-                              ),
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.pushNamed(context, '/signup');
+                          },
+                          child:const Text(
+                            ' Sign up',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.blue,
+                              fontFamily: 'San Francisco',
                             ),
                           ),
-                        ),
-                        SizedBox(height: 25),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 25.0),
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              border: Border.all(color: Colors.black),
-                              borderRadius: BorderRadius.circular(30),
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.only(left: 5.0),
-                              child: TextFormField(
-                                controller: password,
-                                validator: (value) {
-                                  if (value == null || value.isEmpty) {
-                                    return 'Please enter your password';
-                                  }
-                                  return null;
-                                },
-                                obscureText: _obscurePassword,
-                                decoration: InputDecoration(
-                                  prefixIcon: Icon(Icons.password),
-                                  hintText: 'Password',
-                                  border: InputBorder.none,
-                                  suffixIcon: IconButton(
-                                    icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility),
-                                    onPressed: () {
-                                      setState(() {
-                                        _obscurePassword = !_obscurePassword;
-                                      });
-                                    },
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                        SizedBox(height: 20),
-                        FractionallySizedBox(
-                          widthFactor: 0.87,
-                          child: ElevatedButton(
-                            onPressed: () {
-                              moveToHome(context);
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.blue,
-                              padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
-                              textStyle: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w600,
-                                fontSize: 16,
-                                fontFamily: 'SF Pro Text',
-                              ),
-                              shape: const StadiumBorder(),
-                            ),
-                            child: const Text(
-                              "Login",
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w600,
-                                fontSize: 16,
-                                fontFamily: 'SF Pro Text',
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 20), // Space above the "OR" line
-                        Center(
-                          child: Text(
-                            '--------------------OR--------------------',
-                            style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Flexible(
-                              child: Padding(
-                                padding: EdgeInsets.all(10.0),
-                                child: ElevatedButton.icon(
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.white,
-                                  ),
-                                  onPressed: () {
-                                    context.read<UserProviderLogin>().signInWithGoogle();
-                                    Navigator.push(context, MaterialPageRoute(builder: (context) => Home()));
-                                  },
-                                  icon: FaIcon(FontAwesomeIcons.google),
-                                  label: Text(
-                                    'Sign in Google',
-                                    style: TextStyle(
-                                      color: Colors.black,
-                                      fontFamily: 'SF Pro Text',
-                                    ),
-                                    overflow: TextOverflow.visible,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            SizedBox(width: 10),
-                            Flexible(
-                              child: Padding(
-                                padding: EdgeInsets.all(10.0),
-                                child: ElevatedButton.icon(
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.black,
-                                  ),
-                                  onPressed: () {
-                                    context.read<UserProviderLogin>().signInWithApple(context);
-                                    Navigator.push(context, MaterialPageRoute(builder: (context) => Home()));
-                                  },
-                                  icon: FaIcon(
-                                    FontAwesomeIcons.apple,
-                                    color: Colors.white,
-                                  ),
-                                  label: Text(
-                                    'Sign in Apple',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontFamily: 'SF Pro Text',
-                                    ),
-                                    overflow: TextOverflow.visible,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        SizedBox(height: 25),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              'Not a member?',
-                              style: TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black,
-                                fontFamily: 'SF Pro Text',
-                              ),
-                            ),
-                            GestureDetector(
-                              onTap: () {
-                                Navigator.pushNamed(context, '/signup');
-                              },
-                              child: Text(
-                                'Register Now',
-                                style: TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.blue,
-                                  fontFamily: 'SF Pro Text',
-                                ),
-                              ),
-                            ),
-                          ],
                         ),
                       ],
                     ),
-                  ),
+
+                  ],
                 ),
               ),
-            ],
+            ),
           ),
         ),
       ),
     );
   }
 }
+
