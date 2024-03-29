@@ -33,11 +33,6 @@ class UserAccountPage extends StatelessWidget {
               // Implement billing and subscription widgets here
               _buildBillingSubscriptions(context),
 
-              // Security and Privacy
-              _buildSectionHeader('Security and Privacy'),
-              // Implement security and privacy widgets here
-              _buildSecurityPrivacy(context),
-
               // Feedback and Suggestions
               _buildSectionHeader('Feedback and Support'),
               // Implement feedback and support widgets here
@@ -47,6 +42,11 @@ class UserAccountPage extends StatelessWidget {
               _buildSectionHeader('Legal and Compliance'),
               // Implement legal and compliance widgets here
               _buildLegalCompliance(context),
+
+              // Security and Privacy
+              _buildSectionHeader('Security and Privacy'),
+              // Implement security and privacy widgets here
+              _buildSecurityPrivacy(context),
             ],
           ),
         ),
