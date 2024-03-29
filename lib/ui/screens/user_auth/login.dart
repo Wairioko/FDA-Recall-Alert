@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:safe_scan/ui/screens/user_auth/signup.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:safe_scan/ui/screens/home/home.dart';
@@ -20,11 +21,10 @@ class UserProviderLogin extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> signInWithGoogle() async {
-
+  Future<void> signInWithGoogle(BuildContext context) async {
     try {
       final GoogleSignIn googleSignIn = GoogleSignIn(scopes: ['email']);
-      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+      final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
       await googleSignIn.signOut();
       if (googleUser != null) {
         final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
@@ -32,13 +32,25 @@ class UserProviderLogin extends ChangeNotifier {
           accessToken: googleAuth.accessToken,
           idToken: googleAuth.idToken,
         );
-        await FirebaseAuth.instance.signInWithCredential(credential);
-        setUser(FirebaseAuth.instance.currentUser);
+
+        // Sign in with the Google credential
+        final authResult = await FirebaseAuth.instance.signInWithCredential(credential);
+
+        // Check if the user is already registered
+        if (authResult.additionalUserInfo!.isNewUser) {
+          // Redirect to sign-up page if the user is not registered
+          Navigator.pushNamed(context, '/signup');
+        } else {
+          // User is already registered, handle accordingly
+          setUser(authResult.user);
+        }
       }
     } catch (e) {
-      print(e.toString());
+      Navigator.pushNamed(context, '/signup');
+      print('Error signing in with Google: $e');
     }
   }
+
 
   Future<void> signInWithApple(BuildContext context) async {
     try {
@@ -63,36 +75,6 @@ class UserProviderLogin extends ChangeNotifier {
     }
   }
 
-  Future<void> signInWithEmail(BuildContext context, String email, String password) async {
-    try {
-      await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
-      setUser(FirebaseAuth.instance.currentUser);
-    } on FirebaseAuthException catch (e) {
-      if (e.code == "invalid-email") {
-        showDialog(
-          context: context,
-          builder: (context) {
-            return const AlertDialog(
-              content: Text("Please Enter A Valid Email"),
-            );
-          },
-        );
-      } else if (e.code == "wrong-password") {
-        showDialog(
-          context: context,
-          builder: (context) {
-            return const AlertDialog(
-              content: Text("Wrong Password"),
-            );
-          },
-        );
-      }
-    }
-  }
-
   Future<void> signOut() async {
     await FirebaseAuth.instance.signOut();
     setUser(null);
@@ -111,40 +93,6 @@ class _LogInPageState extends State<LogInPage> {
   final formkey = GlobalKey<FormState>();
   TextEditingController email = TextEditingController();
   TextEditingController password = TextEditingController();
-  bool _obscurePassword = true;
-
-  // void moveToHome(BuildContext context) async {
-  //   if (formkey.currentState!.validate()) {
-  //     try {
-  //       await FirebaseAuth.instance.signInWithEmailAndPassword(
-  //         email: email.text,
-  //         password: password.text,
-  //       );
-  //       context.read<UserProviderLogin>().setUser(FirebaseAuth.instance.currentUser);
-  //       Navigator.push(context, MaterialPageRoute(builder: (context) => const Home()));
-  //     } on FirebaseAuthException catch (e) {
-  //       if (e.code == "invalid-email") {
-  //         return showDialog(
-  //           context: context,
-  //           builder: (context) {
-  //             return const AlertDialog(
-  //               content: Text("Please Enter A Valid Email"),
-  //             );
-  //           },
-  //         );
-  //       } else if (e.code == "wrong-password") {
-  //         return showDialog(
-  //           context: context,
-  //           builder: (context) {
-  //             return const AlertDialog(
-  //               content: Text("Wrong Password"),
-  //             );
-  //           },
-  //         );
-  //       }
-  //     }
-  //   }
-  // }
 
   @override
   Widget build(BuildContext context) {
@@ -194,9 +142,7 @@ class _LogInPageState extends State<LogInPage> {
                         ),
 
                         onPressed: () {
-                          context.read<UserProviderLogin>().signInWithGoogle();
-                          Navigator.push(context, MaterialPageRoute(
-                              builder: (context) => Home()));
+                          context.read<UserProviderLogin>().signInWithGoogle(context);
                         },
                         icon: FaIcon(FontAwesomeIcons.google),
                         label: Text(
