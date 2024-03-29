@@ -66,7 +66,6 @@ class _SignUpPageState extends State<SignUpPage> {
   //   );
   // }
 
-
   void _handleGoogleSignUp(BuildContext context) async {
     try {
       final GoogleSignIn googleSignIn = GoogleSignIn(scopes: ['email']);
@@ -75,35 +74,35 @@ class _SignUpPageState extends State<SignUpPage> {
       // Proceed with sign-in
       final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
       if (googleUser == null) {
-        // User not registered, show list of active Google accounts
-        final List<GoogleSignInAccount?> googleAccounts = await googleSignIn.onCurrentUserChanged.toList();
-        final List<GoogleSignInAccount> nonNullGoogleAccounts = googleAccounts.where((account) => account != null).cast<GoogleSignInAccount>().toList();
-
-
-        if (nonNullGoogleAccounts.isNotEmpty) {
-          _showGoogleAccountsDialog(context, googleSignIn, nonNullGoogleAccounts);
-        } else {
-          // No active Google accounts found
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text('No active Google accounts found'),
-          ));
-        }
+        // No active Google accounts found
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('No active Google accounts found'),
+        ));
       } else {
         final GoogleSignInAuthentication? googleAuth = await googleUser.authentication;
         final AuthCredential google_credential = GoogleAuthProvider.credential(
           accessToken: googleAuth?.accessToken,
           idToken: googleAuth?.idToken,
         );
-        await FirebaseAuth.instance.signInWithCredential(google_credential);
-        // Save user details to Firestore
-        _saveUserDetailsToFirestore();
 
+        // Check if the user account already exists
+        final userCredential = await FirebaseAuth.instance.signInWithCredential(google_credential);
+        if (userCredential.additionalUserInfo?.isNewUser ?? true) {
+          // If the user is a new user, save details to Firestore
+          _saveUserDetailsToFirestore();
+        } else {
+          // If the user already exists, show account dialog
+          final List<GoogleSignInAccount> accounts = [googleUser];
+          _showGoogleAccountsDialog(context, googleSignIn, accounts);
+        }
       }
     } catch (e) {
       // Handle Google sign-in errors
       print('Error signing in with Google: $e');
     }
   }
+
+
 
   void _saveUserDetailsToFirestore() {
     // Call the method to collect additional information
