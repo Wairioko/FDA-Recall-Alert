@@ -102,7 +102,7 @@ class UserAccountPage extends StatelessWidget {
             );
           } else {
             // User is not logged in
-            return Card(
+            return const Card(
               child: ListTile(
                 leading: Icon(Icons.person),
                 title: Text(
@@ -125,25 +125,6 @@ class UserAccountPage extends StatelessWidget {
     );
   }
 
-
-  Widget _buildSecurityPrivacy(BuildContext context) {
-    return Card(
-      child: ListTile(
-        onTap: () {
-          Navigator.of(context).pushNamed(AccountSettingsWidget.path);
-        },
-        leading: Icon(Icons.security),
-        title: Text('Account Security'),
-        subtitle: Text('Password strength: Strong'),
-        trailing: IconButton(
-          icon: Icon(Icons.lock),
-          onPressed: () {
-            // Implement security settings
-          },
-        ),
-      ),
-    );
-  }
 
   Widget _buildBillingSubscriptions(BuildContext context) {
     return Card(
@@ -178,6 +159,25 @@ class UserAccountPage extends StatelessWidget {
           icon: Icon(Icons.chat),
           onPressed: () {
             // Implement feedback and suggestions actions
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSecurityPrivacy(BuildContext context) {
+    return Card(
+      child: ListTile(
+        onTap: () {
+          Navigator.of(context).pushNamed(AccountSettingsWidget.path);
+        },
+        leading: const Icon(Icons.security),
+        title: const Text('Account Security'),
+        subtitle: const Text('Delete Account'),
+        trailing: IconButton(
+          icon: const Icon(Icons.lock),
+          onPressed: () {
+            // Implement security settings
           },
         ),
       ),
