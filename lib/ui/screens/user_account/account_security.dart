@@ -9,10 +9,6 @@ class AccountSettingsWidget extends StatefulWidget {
 }
 
 class _AccountSettingsWidgetState extends State<AccountSettingsWidget> {
-  bool _isSocialSignIn = true; // Set this value based on your authentication method
-  String _currentPassword = '';
-  String _newPassword = '';
-  String _confirmPassword = '';
 
   Future<void> _showDeleteConfirmationDialog() async {
     return showDialog<void>(
@@ -24,8 +20,8 @@ class _AccountSettingsWidgetState extends State<AccountSettingsWidget> {
           content: SingleChildScrollView(
             child: ListBody(
               children: <Widget>[
-                Text('Are you sure you want to delete your account?'
-                    'This will permanently delete all associated data.'), // Emphasize data loss
+                Text('Are you sure you want to delete your account?'),
+                Text('This will permanently delete all associated data and your account'),// Emphasize data loss
                 Text('Thank you for choosing Safe Recall'),
               ],
             ),
@@ -45,13 +41,10 @@ class _AccountSettingsWidgetState extends State<AccountSettingsWidget> {
 
                 if (uid != null) { // Ensure user is logged in
                   try {
-                    // Step 1: Delete user info in 'users'
-                    await FirebaseFirestore.instance
-                        .collection('users')
-                        .doc(uid)
-                        .delete();
 
-                    // Step 2: Delete data in other collections
+
+                    // Step 2: Delete data in collections
+                    await deleteDataFromCollection('users', uid);
                     await deleteDataFromCollection('receipts-data', uid);
                     await deleteDataFromCollection('notifications', uid);
                     await deleteDataFromCollection('watchlist', uid);
@@ -104,78 +97,6 @@ class _AccountSettingsWidgetState extends State<AccountSettingsWidget> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (!_isSocialSignIn)
-            const Text(
-              'Change Password',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                fontFamily: 'San Francisco',
-              ),
-            ),
-            SizedBox(height: 10),
-            TextFormField(
-              decoration: InputDecoration(
-                labelText: 'Current Password',
-              ),
-              onChanged: (value) {
-                setState(() {
-                  _currentPassword = value;
-                });
-              },
-              obscureText: true,
-            ),
-            SizedBox(height: 10),
-            TextFormField(
-              decoration: InputDecoration(
-                labelText: 'New Password',
-              ),
-              onChanged: (value) {
-                setState(() {
-                  _newPassword = value;
-                });
-              },
-              obscureText: true,
-            ),
-            SizedBox(height: 10),
-            TextFormField(
-              decoration: InputDecoration(
-                labelText: 'Confirm New Password',
-              ),
-              onChanged: (value) {
-                setState(() {
-                  _confirmPassword = value;
-                });
-              },
-              obscureText: true,
-            ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                // Implement password change logic here
-                // Check if current password matches
-                // Check if new password and confirm password match
-                // Perform password change action
-              },
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-                child: Text(
-                  'Change Password',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                    fontFamily: 'San Francisco',
-                  ),
-                ),
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue, // Use your preferred color scheme
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-            ),
             SizedBox(height: 30),
             Text(
               'Delete Account',
