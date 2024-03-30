@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -24,32 +25,78 @@ class UserProviderLogin extends ChangeNotifier {
   Future<void> signInWithGoogle(BuildContext context) async {
     try {
       final GoogleSignIn googleSignIn = GoogleSignIn(scopes: ['email']);
-      final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
       await googleSignIn.signOut();
-      if (googleUser != null) {
-        final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
-        final credential = GoogleAuthProvider.credential(
-          accessToken: googleAuth.accessToken,
-          idToken: googleAuth.idToken,
-        );
+      final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
 
-        // Sign in with the Google credential
-        final authResult = await FirebaseAuth.instance.signInWithCredential(credential);
+      if (googleUser == null) {
+        // User canceled the sign-in process
+        return;
+      }
 
-        // Check if the user is already registered
-        if (authResult.additionalUserInfo!.isNewUser) {
-          // Redirect to sign-up page if the user is not registered
-          Navigator.pushNamed(context, '/signup');
-        } else {
-          // User is already registered, handle accordingly
-          setUser(authResult.user);
-        }
+      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      // Sign in with the Google credential
+      final authResult = await FirebaseAuth.instance.signInWithCredential(credential);
+
+      final isNewUser = authResult.additionalUserInfo?.isNewUser ?? true;
+
+      if (isNewUser) {
+        // Redirect to the signup page if the user is new
+        Navigator.pushNamed(context, '/signup');
+      } else {
+        // Update authentication state
+        setUser(authResult.user);
+
+        // Redirect to the home page upon successful authentication
+        Navigator.pushNamed(context, '/home'); // Replace '/home' with your home page route
       }
     } catch (e) {
-      Navigator.pushNamed(context, '/signup');
-      print('Error signing in with Google: $e');
+      // Handle sign-in errors
+      if (e.toString().contains('Bad state: User is no longer signed in')) {
+        // Handle token expiration or user no longer signed in
+        print('User is no longer signed in. Please try signing in again.');
+        // You may want to show a snackbar or dialog to inform the user
+      } else {
+        // For other errors, log the error and handle it accordingly
+        print('Error signing in with Google: $e');
+      }
     }
   }
+
+
+  Future<bool> checkIfUserIsRegistered(GoogleSignInAccount googleUser) async {
+    // Get the UID (unique identifier) of the Google user
+    String userUid = googleUser.id;
+
+    // Query Firestore to check if the user's UID exists in the 'users' collection
+    QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+        .collection('users')
+        .where('uid', isEqualTo: userUid)
+        .get();
+
+    // Check if any documents match the query
+    bool userExists = querySnapshot.docs.isNotEmpty;
+
+    // Print statement based on whether matches were found or not
+    if (userExists) {
+      print('Matches found');
+    } else {
+      print('No matches found');
+    }
+
+    return userExists;
+  }
+
+// Example usage:
+// Assuming you have a GoogleSignInAccount instance named 'googleUser'
+// and you call the function like this:
+// bool isUserRegistered = await checkIfUserIsRegistered(googleUser);
+// This will print either "Matches found" or "No matches found" based on the result.
+
 
 
   Future<void> signInWithApple(BuildContext context) async {
@@ -75,11 +122,16 @@ class UserProviderLogin extends ChangeNotifier {
     }
   }
 
+
   Future<void> signOut() async {
     await FirebaseAuth.instance.signOut();
     setUser(null);
   }
 }
+
+
+
+
 
 class LogInPage extends StatefulWidget {
   static const String path = '/login';
@@ -143,6 +195,8 @@ class _LogInPageState extends State<LogInPage> {
 
                         onPressed: () {
                           context.read<UserProviderLogin>().signInWithGoogle(context);
+
+
                         },
                         icon: FaIcon(FontAwesomeIcons.google),
                         label: Text(
