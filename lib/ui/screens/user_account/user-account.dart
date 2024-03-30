@@ -44,7 +44,7 @@ class UserAccountPage extends StatelessWidget {
               _buildLegalCompliance(context),
 
               // Security and Privacy
-              _buildSectionHeader('Security and Privacy'),
+              _buildSectionHeader('Account and Data Deletion'),
               // Implement security and privacy widgets here
               _buildSecurityPrivacy(context),
             ],
