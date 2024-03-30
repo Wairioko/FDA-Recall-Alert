@@ -1,6 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class AccountSettingsWidget extends StatefulWidget {
   @override
@@ -9,67 +12,78 @@ class AccountSettingsWidget extends StatefulWidget {
 }
 
 class _AccountSettingsWidgetState extends State<AccountSettingsWidget> {
+  bool _isLoading = false;
 
   Future<void> _showDeleteConfirmationDialog() async {
     return showDialog<void>(
       context: context,
       barrierDismissible: false,
       builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Confirm Account Deletion'),
-          content: SingleChildScrollView(
-            child: ListBody(
-              children: <Widget>[
-                Text('Are you sure you want to delete your account?'),
-                Text('This will permanently delete all associated data and your account'),// Emphasize data loss
-                Text('Thank you for choosing Safe Recall'),
+        return StatefulBuilder(
+          builder: (BuildContext context, setState) {
+            return AlertDialog(
+              title: Text('Confirm Account Deletion'),
+              content: SingleChildScrollView(
+                child: ListBody(
+                  children: <Widget>[
+                    Text('Are you sure you want to delete your account?'),
+                    Text('This will permanently delete all associated data and your account'), // Emphasize data loss
+                    Text('Thank you for choosing Safe Recall'),
+                  ],
+                ),
+              ),
+              actions: <Widget>[
+                TextButton(
+                  child: Text('Cancel'),
+                  onPressed: () {
+                    Navigator.of(context).pop(); // Close the dialog
+                  },
+                ),
+                TextButton(
+                  child: Text('Delete'),
+                  onPressed: () async {
+                    setState(() {
+                      _isLoading = true; // Show loading indicator
+                    });
+
+                    var current = FirebaseAuth.instance.currentUser;
+                    var uid = current?.uid;
+
+                    if (uid != null) {
+                      try {
+                        // Step 2: Delete data in collections
+                        await deleteDataFromCollection('users', uid);
+                        await deleteDataFromCollection('receipts-data', uid);
+                        await deleteDataFromCollection('notifications', uid);
+                        await deleteDataFromCollection('watchlist', uid);
+                        await deleteDataFromCollection('feedback', uid);
+
+                        // Step 3: Delete user from Authentication
+                        await current!.delete();
+
+                        // Step 4: Sign out and navigate
+                        await FirebaseAuth.instance.signOut();
+                        Navigator.of(context).pushNamedAndRemoveUntil('/home', (route) => false);
+                      } catch (e) {
+                        // Handle any potential errors during the deletion process
+                        print('Error deleting user data: $e');
+                      } finally {
+                        setState(() {
+                          _isLoading = false; // Hide loading indicator
+                        });
+                      }
+                    }
+                  },
+                ),
               ],
-            ),
-          ),
-          actions: <Widget>[
-            TextButton(
-              child: Text('Cancel'),
-              onPressed: () {
-                Navigator.of(context).pop(); // Close the dialog
-              },
-            ),
-            TextButton(
-              child: Text('Delete'),
-              onPressed: () async {
-                var current = FirebaseAuth.instance.currentUser;
-                var uid = current?.uid;
-
-                if (uid != null) { // Ensure user is logged in
-                  try {
-
-
-                    // Step 2: Delete data in collections
-                    await deleteDataFromCollection('users', uid);
-                    await deleteDataFromCollection('receipts-data', uid);
-                    await deleteDataFromCollection('notifications', uid);
-                    await deleteDataFromCollection('watchlist', uid);
-                    await deleteDataFromCollection('feedback', uid);
-
-                    // Step 3: Delete user from Authentication
-                    await current!.delete();
-
-                    // Step 4: Sign out and navigate
-                    await FirebaseAuth.instance.signOut();
-                    Navigator.of(context).pushNamedAndRemoveUntil('/home', (route) => false);
-                  } catch (e) {
-                    // Handle any potential errors during the deletion process
-                    print('Error deleting user data: $e');
-                  }
-                }
-              },
-            ),
-          ],
+            );
+          },
         );
       },
     );
   }
 
-// Helper function to delete data from a collection
+  // Helper function to delete data from a collection
   Future<void> deleteDataFromCollection(String collectionName, String uid) async {
     await FirebaseFirestore.instance
         .collection(collectionName)
@@ -81,9 +95,6 @@ class _AccountSettingsWidgetState extends State<AccountSettingsWidget> {
       }
     });
   }
-
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -130,8 +141,7 @@ class _AccountSettingsWidgetState extends State<AccountSettingsWidget> {
                   borderRadius: BorderRadius.circular(8),
                 ),
               ),
-            ),
-
+            ), // Loading indicator
           ],
         ),
       ),
@@ -144,3 +154,4 @@ void main() {
     home: AccountSettingsWidget(),
   ));
 }
+
