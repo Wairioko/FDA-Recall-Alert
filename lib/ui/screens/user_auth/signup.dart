@@ -31,6 +31,7 @@ class UserModel {
 
 
 String shoppingFrequencyHintText = "";
+
 class SignUpPage extends StatefulWidget {
   static const String path = '/signup';
 
@@ -40,31 +41,29 @@ class SignUpPage extends StatefulWidget {
   _SignUpPageState createState() => _SignUpPageState();
 }
 // Define a variable to track the authentication method
-enum AuthMethod { EmailPassword, Google, Apple }
+enum AuthMethod {Google, Apple }
 
 class _SignUpPageState extends State<SignUpPage> {
   final formkey = GlobalKey<FormState>();
-  TextEditingController email = TextEditingController();
-  TextEditingController password = TextEditingController();
   TextEditingController defaultStateController = TextEditingController();
   String shoppingFrequency = '1-3 times per month';
+  bool additionalInfoCollected = false; // Define this variable in your stateful widget
+
 
   // Initialize it with the default method
-  AuthMethod authMethod = AuthMethod.EmailPassword;
+  AuthMethod authMethod = AuthMethod.Google;
+
+  @override
+  void initState() {
+    super.initState();
+    // Reset text controllers and other state variables when the sign-up page is initialized
+  }
 
   Future<String?> _getFCMToken() async {
     String? token = await FirebaseMessaging.instance.getToken();
     return token;
   }
 
-
-  // void _showSnackBar(BuildContext context, String message) {
-  //   ScaffoldMessenger.of(context).showSnackBar(
-  //     SnackBar(
-  //       content: Text(message),
-  //     ),
-  //   );
-  // }
 
   void _handleGoogleSignUp(BuildContext context) async {
     try {
@@ -80,18 +79,30 @@ class _SignUpPageState extends State<SignUpPage> {
         ));
       } else {
         final GoogleSignInAuthentication? googleAuth = await googleUser.authentication;
-        final AuthCredential google_credential = GoogleAuthProvider.credential(
+        final AuthCredential googleCredential = GoogleAuthProvider.credential(
           accessToken: googleAuth?.accessToken,
           idToken: googleAuth?.idToken,
         );
 
+
         // Check if the user account already exists
-        final userCredential = await FirebaseAuth.instance.signInWithCredential(google_credential);
-        if (userCredential.additionalUserInfo?.isNewUser ?? true) {
-          // If the user is a new user, save details to Firestore
-          _saveUserDetailsToFirestore();
+        final userCredential = await FirebaseAuth.instance.signInWithCredential(googleCredential);
+        final isNewUser = userCredential.additionalUserInfo?.isNewUser ?? true;
+        var current = FirebaseAuth.instance.currentUser;
+        current?.reload();
+
+        // Check if additional information has been collected
+        final userId = userCredential.user?.uid;
+        final additionalInfoCollected = await isAdditionalInfoCollected(userId);
+
+        if (isNewUser && !additionalInfoCollected) {
+          String email = googleUser.email;
+          // If the user is new and additional information has not been collected,
+          // prompt the user to provide additional information
+          _collectAdditionalInformation(userId, context, email);
         } else {
-          // If the user already exists, show account dialog
+          // If the user already exists or additional information has been collected,
+          // proceed with the regular sign-in flow
           final List<GoogleSignInAccount> accounts = [googleUser];
           _showGoogleAccountsDialog(context, googleSignIn, accounts);
         }
@@ -103,10 +114,143 @@ class _SignUpPageState extends State<SignUpPage> {
   }
 
 
+// Function to check if additional information is collected for the user
+  Future<bool> isAdditionalInfoCollected(String? userId) async {
+    if (userId == null) return false;
 
-  void _saveUserDetailsToFirestore() {
-    // Call the method to collect additional information
-    _collectAdditionalInformation();
+    try {
+      // Get a reference to the user document in Firestore
+      final userDoc = FirebaseFirestore.instance.collection('users').doc(userId);
+      final userData = await userDoc.get();
+
+      // Check if the user document exists and if additional information is present
+      return userData.exists && userData['shoppingFrequency'] != null && userData['defaultState'] != null;
+    } catch (e) {
+      print('Error checking additional information: $e');
+      return false;
+    }
+  }
+
+
+
+// Function to handle the selection of shopping frequency
+  void _onShoppingFrequencyChanged(String? newValue) {
+    setState(() {
+      shoppingFrequency = newValue!;
+    });
+  }
+
+  void _collectAdditionalInformation(String? userId, BuildContext context, String? email) {
+    if (userId == null) return;
+
+    // Show a dialog to collect additional information
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        // Variables to store collected information
+        String defaultState = '';
+
+        // GlobalKey to access the form state
+        final GlobalKey<FormState> formKey = GlobalKey<FormState>();
+
+        return AlertDialog(
+          title:const Text('Additional Information'),
+          content: SingleChildScrollView(
+            child: Form(
+              key: formKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Dropdown to select shopping frequency
+                  DropdownButtonFormField<String>(
+                    value: shoppingFrequency,
+                    onChanged: _onShoppingFrequencyChanged,
+                    items: const [
+                      DropdownMenuItem(
+                        value: '1-3 times per month',
+                        child: Text('1-3 times per month'),
+                      ),
+                      DropdownMenuItem(
+                        value: '4-6 times per month',
+                        child: Text('4-6 times per month'),
+                      ),
+                      DropdownMenuItem(
+                        value: '7+ times per month',
+                        child: Text('7+ times per month'),
+                      ),
+                    ],
+                    decoration: const InputDecoration(
+                      labelText: 'Shopping Frequency',
+                      hintText: 'Select Shopping Frequency',
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please select shopping frequency';
+                      }
+                      return null;
+                    },
+                  ),
+                  // Text field to enter default state
+                  TextFormField(
+                    onChanged: (value) {
+                      defaultState = value;
+                    },
+                    decoration:const InputDecoration(
+                      hintText: 'Your Default State',
+                      labelText: 'Enter Default State',
+                    ),
+                    validator: (value) {
+                      if (value!.isEmpty) {
+                        return 'State cannot be empty';
+                      }
+                      return null;
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                if (formKey.currentState!.validate()) {
+                  try {
+                    // Get FCM token
+                    String? fcmToken = await _getFCMToken();
+
+                    // Store additional information in Firestore
+                    await FirebaseFirestore.instance.collection('users').doc(userId).set({
+                      'shoppingFrequency': shoppingFrequency,
+                      'defaultState': defaultState,
+                      'token': fcmToken,
+                      'email': email,
+                    }, SetOptions(merge: true)); // Merge with existing data if present
+
+                    // Update the state to indicate that additional information has been collected
+                    setState(() {
+                      additionalInfoCollected = true;
+                    });
+
+                    // Close the dialog
+                    Navigator.of(context).pop();
+                    Navigator.of(context).pushNamed('/home');
+                  } catch (e) {
+                    print('Error saving additional information: $e');
+                  }
+                }
+              },
+              child: Text('Save'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
 
@@ -125,7 +269,7 @@ class _SignUpPageState extends State<SignUpPage> {
             content: SingleChildScrollView(
               child: Container(
                 width: MediaQuery.of(context).size.width * 0.8,
-                padding: EdgeInsets.all(20.0),
+                padding:const EdgeInsets.all(20.0),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(10.0),
@@ -134,24 +278,25 @@ class _SignUpPageState extends State<SignUpPage> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
+                    const Text(
                       'Continue with:',
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    SizedBox(height: 10),
+                    const SizedBox(height: 10),
                     ...accounts.map((account) {
                       return Container(
-                        margin: EdgeInsets.symmetric(vertical: 5.0),
+                        margin:const EdgeInsets.symmetric(vertical: 5.0),
                         decoration: BoxDecoration(
                           color: Colors.grey[200],
                           borderRadius: BorderRadius.circular(50.0),
                         ),
                         child: ListTile(
                           onTap: () {
-                            context.read<UserProviderLogin>().signInWithGoogle();
+                            context.read<UserProviderLogin>().signInWithGoogle(context);
+                            Navigator.pop(context);
                             Navigator.push(context, MaterialPageRoute(
                                 builder: (context) => Home()));
                           },
@@ -168,8 +313,8 @@ class _SignUpPageState extends State<SignUpPage> {
                         ),
                       );
                     }).toList(),
-                    SizedBox(height: 20),
-                    Row(
+                    const SizedBox(height: 20),
+                    const Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Expanded(
@@ -193,7 +338,7 @@ class _SignUpPageState extends State<SignUpPage> {
                         ),
                       ],
                     ),
-                    SizedBox(height: 20),
+                    const SizedBox(height: 20),
                     Align(
                       alignment: Alignment.center,
                       child: TextButton(
@@ -202,13 +347,13 @@ class _SignUpPageState extends State<SignUpPage> {
                           _handleGoogleSignUp(context);
                         },
                         child: Container(
-                          padding: EdgeInsets.all(10.0),
+                          padding: const EdgeInsets.all(10.0),
                           decoration: BoxDecoration(
                             color: Colors.blue,
                             borderRadius: BorderRadius.circular(30.0),
                           ),
                           child: const Text(
-                            'Register With Another Account',
+                            'Register Another Account',
                             style: TextStyle(
                               color: Colors.white,
                             ),
@@ -248,112 +393,12 @@ class _SignUpPageState extends State<SignUpPage> {
       );
       await FirebaseAuth.instance.signInWithCredential(apple_credential);
       // Save user details to Firestore
-      _saveUserDetailsToFirestore();
     } catch (e) {
       // Handle Apple sign-in errors
       print("Apple sign-in error: $e");
     }
   }
 
-
-  void _collectAdditionalInformation() {
-    BuildContext parentContext = context; // Store the context
-
-    showDialog(
-      context: parentContext,
-      builder: (BuildContext context) {
-        final GlobalKey<FormState> secondFormKey = GlobalKey<FormState>();
-
-        return AlertDialog(
-          title: Text('Additional Information'),
-          content: Form(
-            key: secondFormKey,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const SizedBox(height: 16),
-                DropdownButtonFormField<String>(
-                  value: shoppingFrequency,
-                  onChanged: (String? newValue) {
-                    setState(() {
-                      shoppingFrequency = newValue!;
-                    });
-                  },
-                  items: const [
-                    DropdownMenuItem(
-                      value: '1-3 times per month',
-                      child: Text('1-3 times per month'),
-                    ),
-                    DropdownMenuItem(
-                      value: '4-6 times per month',
-                      child: Text('4-6 times per month'),
-                    ),
-                    DropdownMenuItem(
-                      value: '7+ times per month',
-                      child: Text('7+ times per month'),
-                    ),
-                  ],
-                  decoration: const InputDecoration(
-                    labelText: 'Shopping Frequency',
-                    hintText: 'Select Shopping Frequency',
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please select shopping frequency';
-                    }
-                    return null;
-                  },
-                ),
-                TextFormField(
-                  controller: defaultStateController,
-                  decoration: const InputDecoration(
-                    hintText: "Your Default State",
-                    labelText: "Enter Default State",
-                  ),
-                  validator: (value) {
-                    if (value!.isEmpty) {
-                      return "State cannot be empty";
-                    }
-                    return null;
-                  },
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                if (secondFormKey.currentState!.validate()) {
-                  final user = FirebaseAuth.instance.currentUser;
-                  final token = await _getFCMToken();
-
-                  // Use the stored parentContext here
-                  FirebaseFirestore.instance.collection('users').doc(user?.uid).set({
-                    'email': user?.email,
-                    'defaultState': defaultStateController.text,
-                    'shoppingFrequency': shoppingFrequency,
-                    'token': token,
-                  }).then((_) {
-                    Navigator.of(parentContext).pop(); // Use parentContext to close dialog
-                    Navigator.push(parentContext, MaterialPageRoute(builder: (context) => const Home()));
-                  }).catchError((error) {
-                    print('Error saving data to Firestore: $error');
-                  });
-                }
-              },
-              child: const Text('Save'),
-            ),
-          ],
-        );
-      },
-    );
-  }
 
 
 
@@ -415,7 +460,7 @@ class _SignUpPageState extends State<SignUpPage> {
                         },
                         icon: FaIcon(FontAwesomeIcons.google),
                         label: Text(
-                          'Sign up with Google',
+                          'Register with Google',
                           style: TextStyle(
                             color: Colors.black,
                             fontFamily: 'San Francisco',
@@ -449,7 +494,7 @@ class _SignUpPageState extends State<SignUpPage> {
                           color: Colors.white,
                         ),
                         label: const Text(
-                          'Sign up with Apple',
+                          'Register with Apple',
                           style: TextStyle(
                             color: Colors.white,
                             fontFamily: 'San Francisco',
@@ -457,50 +502,7 @@ class _SignUpPageState extends State<SignUpPage> {
                         ),
                       ),
                     ),
-                    // const SizedBox(height: 20),
-                    // SizedBox(
-                    //   width: double.infinity,
-                    //   child: TextFormField(
-                    //     controller: defaultStateController,
-                    //     decoration: InputDecoration(
-                    //       suffixIcon: const Icon(Icons.location_on),
-                    //       labelText: "Enter Home State",
-                    //       border: OutlineInputBorder(
-                    //         borderRadius: BorderRadius.circular(30),
-                    //       ),
-                    //     ),
-                    //     validator: (value) {
-                    //       if (value!.isEmpty) {
-                    //         return "To Enable Notifications For Your State";
-                    //       }
-                    //       return null;
-                    //     },
-                    //   ),
-                    // ),
-                    // const SizedBox(height: 16),
-                    // Padding(
-                    //   padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    //   child: DropdownButton<String>(
-                    //     // ... other properties
-                    //
-                    //     value: shoppingFrequency.isEmpty
-                    //         ? null // Assign null if shoppingFrequency is empty
-                    //         : shoppingFrequency,
-                    //     items: shoppingFrequencyOptions.map((String value) {
-                    //       return DropdownMenuItem<String>(
-                    //         value: value, // Ensure values are unique
-                    //         child: Text(value, ),
-                    //       );
-                    //     }).toList(),
-                    //     onChanged: (String? newValue) {
-                    //       if (newValue != null) {
-                    //         setState(() {
-                    //           shoppingFrequency = newValue;
-                    //         });
-                    //       }
-                    //     },
-                    //   ),
-                    // ),
+
                     const SizedBox(height: 40), // Space above the "OR" line
                     const Center(
                       child: Text(
