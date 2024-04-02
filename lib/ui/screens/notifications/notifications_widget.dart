@@ -1,6 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 
+
+class NotificationMessage {
+  static String? notificationMessage;
+
+  static void setNotification(String message) {
+    notificationMessage = message;
+  }
+
+  static String? getNotification() {
+    return notificationMessage;
+  }
+}
+
+
+
 class NotificationsPage extends StatefulWidget {
   static const String path = '/notifications';
 
@@ -29,6 +44,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
           title: message.notification?.title ?? "Notification",
           message: message.notification?.body ?? "New notification",
         ));
+        NotificationMessage.setNotification(message.notification?.body ?? "New notification");
       });
     });
   }
@@ -53,6 +69,7 @@ class NotificationItem extends StatelessWidget {
   final NotificationModel notification;
 
   NotificationItem({required this.notification});
+
 
   @override
   Widget build(BuildContext context) {
