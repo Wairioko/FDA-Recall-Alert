@@ -92,16 +92,16 @@ class _DashBoardWidgetState extends State<DashBoardWidget> {
   }
 }
 
-class MenuScreen extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Menu'),
-      ),
-      body: const Center(
-        child: Text('Menu Content'),
-      ),
-    );
-  }
-}
+// class MenuScreen extends StatelessWidget {
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       appBar: AppBar(
+//         title: Text('Menu'),
+//       ),
+//       body: const Center(
+//         child: Text('Menu Content'),
+//       ),
+//     );
+//   }
+// }
