@@ -91,13 +91,6 @@ class UserProviderLogin extends ChangeNotifier {
     return userExists;
   }
 
-// Example usage:
-// Assuming you have a GoogleSignInAccount instance named 'googleUser'
-// and you call the function like this:
-// bool isUserRegistered = await checkIfUserIsRegistered(googleUser);
-// This will print either "Matches found" or "No matches found" based on the result.
-
-
 
   Future<void> signInWithApple(BuildContext context) async {
     try {
