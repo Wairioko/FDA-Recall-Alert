@@ -9,6 +9,7 @@ import 'package:provider/provider.dart';
 import 'core/news_application.dart';
 import 'core/service_locator.dart';
 import 'core/app.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 
 
 void main() async {
@@ -16,6 +17,8 @@ void main() async {
     statusBarColor: Colors.transparent,
     statusBarIconBrightness: Brightness.dark,
   ));
+
+
 
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
@@ -29,6 +32,8 @@ void main() async {
     ),
   );
 
+  // Enable Crashlytics
+  FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(true);
 
   User? user = FirebaseAuth.instance.currentUser;
 
