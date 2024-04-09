@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -67,6 +68,9 @@ class _SignUpPageState extends State<SignUpPage> {
 
   void _handleGoogleSignUp(BuildContext context) async {
     try {
+      // Log event: User initiates sign-up process
+      FirebaseCrashlytics.instance.log('User initiates sign-up process');
+
       final GoogleSignIn googleSignIn = GoogleSignIn(scopes: ['email']);
       // Sign out the current user to allow selecting from other accounts
       await googleSignIn.signOut();
@@ -84,12 +88,14 @@ class _SignUpPageState extends State<SignUpPage> {
           idToken: googleAuth?.idToken,
         );
 
-
         // Check if the user account already exists
         final userCredential = await FirebaseAuth.instance.signInWithCredential(googleCredential);
         final isNewUser = userCredential.additionalUserInfo?.isNewUser ?? true;
         var current = FirebaseAuth.instance.currentUser;
         current?.reload();
+
+        // Log event: User selects email
+        FirebaseCrashlytics.instance.log('User selects email: ${googleUser.email}');
 
         // Check if additional information has been collected
         final userId = userCredential.user?.uid;
@@ -97,7 +103,6 @@ class _SignUpPageState extends State<SignUpPage> {
 
         if (isNewUser && !additionalInfoCollected) {
           String email = googleUser.email;
-          // If the user is new and additional information has not been collected,
           // prompt the user to provide additional information
           _collectAdditionalInformation(userId, context, email);
         } else {
@@ -107,7 +112,9 @@ class _SignUpPageState extends State<SignUpPage> {
           _showGoogleAccountsDialog(context, googleSignIn, accounts);
         }
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
+      // Log error: Error signing in with Google
+      FirebaseCrashlytics.instance.recordError(e, stackTrace);
       // Handle Google sign-in errors
       print('Error signing in with Google: $e');
     }
@@ -143,6 +150,9 @@ class _SignUpPageState extends State<SignUpPage> {
   void _collectAdditionalInformation(String? userId, BuildContext context, String? email) {
     if (userId == null) return;
 
+    // Log event: _collectAdditionalInformation function is called
+    FirebaseCrashlytics.instance.log('_collectAdditionalInformation function is called');
+
     // Show a dialog to collect additional information
     showDialog(
       context: context,
@@ -154,7 +164,7 @@ class _SignUpPageState extends State<SignUpPage> {
         final GlobalKey<FormState> formKey = GlobalKey<FormState>();
 
         return AlertDialog(
-          title:const Text('Additional Information'),
+          title: const Text('Additional Information'),
           content: SingleChildScrollView(
             child: Form(
               key: formKey,
@@ -195,7 +205,7 @@ class _SignUpPageState extends State<SignUpPage> {
                     onChanged: (value) {
                       defaultState = value;
                     },
-                    decoration:const InputDecoration(
+                    decoration: const InputDecoration(
                       hintText: 'Your Default State',
                       labelText: 'Enter Default State',
                     ),
@@ -213,6 +223,8 @@ class _SignUpPageState extends State<SignUpPage> {
           actions: [
             TextButton(
               onPressed: () {
+                // Log event: User cancels the dialog
+                FirebaseCrashlytics.instance.log('User cancels the dialog');
                 Navigator.of(context).pop();
               },
               child: Text('Cancel'),
@@ -241,6 +253,8 @@ class _SignUpPageState extends State<SignUpPage> {
                     Navigator.of(context).pop();
                     Navigator.of(context).pushNamed('/home');
                   } catch (e) {
+                    // Log error: Error saving additional information
+                    FirebaseCrashlytics.instance.recordError(e, StackTrace.current);
                     print('Error saving additional information: $e');
                   }
                 }
@@ -252,6 +266,7 @@ class _SignUpPageState extends State<SignUpPage> {
       },
     );
   }
+
 
 
   void _showGoogleAccountsDialog(BuildContext context, GoogleSignIn googleSignIn, List<GoogleSignInAccount> accounts) {
