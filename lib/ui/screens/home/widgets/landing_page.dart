@@ -19,12 +19,14 @@ class MyApp extends StatelessWidget {
 }
 
 class LandingPage extends StatelessWidget {
-  static const String path = '/landing';
+  static const String path = 'landing';
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('Safe Recall'),
+        centerTitle: true,
+        leading: Container(),
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -32,119 +34,41 @@ class LandingPage extends StatelessWidget {
           children: [
             Container(
               padding: const EdgeInsets.all(20.0),
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 gradient: LinearGradient(
+                  colors: [Colors.blue[100]!, Colors.blue[200]!],
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  colors: [Color(0xFFBCE0FD), Color(0xFF63A4FF)],
                 ),
+                borderRadius: BorderRadius.circular(40.0),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.5),
+                    spreadRadius: 2,
+                    blurRadius: 5,
+                    offset: Offset(0, 3), // changes position of shadow
+                  ),
+                ],
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Protect Yourself from FDA Recalls',
-                    style: TextStyle(
-                      fontSize: 28.0,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                  const SizedBox(height: 10.0),
-                  const Text(
-                    'Your AI-powered companion for food, drug, and device safety.',
-                    style: TextStyle(
-                      fontSize: 16.0,
-                      color: Colors.white,
-                    ),
-                  ),
-                  // const SizedBox(height: 20.0),
-                  // GestureDetector(
-                  //   onTap: () {
-                  //     // Redirect to app store
-                  //   },
-                  //   child: Container(
-                  //     padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
-                  //     decoration: BoxDecoration(
-                  //       color: Colors.white,
-                  //       borderRadius: BorderRadius.circular(25.0),
-                  //     ),
-                  //     child: const Text(
-                  //       'Download the App Now',
-                  //       style: TextStyle(
-                  //         fontSize: 18.0,
-                  //         fontWeight: FontWeight.bold,
-                  //         color: Color(0xFF63A4FF),
-                  //       ),
-                  //     ),
-                  //   ),
-                  // ),
-                  const SizedBox(height: 20.0),
-                  Image.asset(
-                    'assets/landing_page_image.png', // Placeholder, replace with your image
-                    height: 200.0,
-                    width: 200.0,
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 20.0),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
+                  SizedBox(height: 10.0),
                   Text(
-                    'Key Features',
+                    'In 2022 the FDA recalled around 147 products per month',
                     style: TextStyle(
-                      fontSize: 24.0,
+                      fontSize: 18.0,
+                      color: Colors.black87,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   SizedBox(height: 10.0),
-                  ListTile(
-                    leading: Icon(Icons.location_on),
-                    title: Text('State-based recall tracking'),
-                  ),
-                  ListTile(
-                    leading: Icon(Icons.lightbulb),
-                    title: Text('AI-powered safety information'),
-                  ),
-                  ListTile(
-                    leading: Icon(Icons.playlist_add_check),
-                    title: Text('Customizable watchlists and recall alerts'),
-                  ),
-                  ListTile(
-                    leading: Icon(Icons.receipt),
-                    title: Text('Receipt scanning and recall alerts'),
-                  ),
-                  ListTile(
-                    leading: Icon(Icons.share),
-                    title: Text('Social sharing of recalls with family of recalls in their state'),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 20.0),
-            Container(
-              padding: const EdgeInsets.all(20.0),
-              color: const Color(0xFFF5F5F5),
-              child: const Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
                   Text(
-                    'Statistics',
+                    'It\'s hard to safeguard against such numbers',
                     style: TextStyle(
-                      fontSize: 24.0,
+                      fontSize: 18.0,
+                      color: Colors.black87,
                       fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  SizedBox(height: 10.0),
-                  // Infographic-style dynamic visuals can be added here
-                  Text(
-                    'Annual FDA recall count: 105', // Placeholder value, replace with actual data
-                    style: TextStyle(
-                      fontSize: 16.0,
                     ),
                   ),
                 ],
@@ -152,24 +76,83 @@ class LandingPage extends StatelessWidget {
             ),
             SizedBox(height: 20.0),
             Container(
-              padding: EdgeInsets.all(20.0),
-              color: Color(0xFFE0F2F1),
+              padding: EdgeInsets.symmetric(horizontal: 20.0),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Colors.blue[100]!, Colors.blue[200]!],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
+                borderRadius: BorderRadius.circular(40.0),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.5),
+                    spreadRadius: 2,
+                    blurRadius: 5,
+                    offset: Offset(0, 3), // changes position of shadow
+                  ),
+                ],
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    'User Testimonial',
-                    style: TextStyle(
-                      fontSize: 24.0,
-                      fontWeight: FontWeight.bold,
+                  Padding(
+                    padding: EdgeInsets.only(left: 10.0, top: 10.0, bottom: 5.0),
+                    child: Text(
+                      'How We Help:',
+                      style: TextStyle(
+                        fontSize: 24.0,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
+                  ListTile(
+                    leading: Icon(Icons.lightbulb),
+                    title: Text('Create watchlists of your regular items to check against recalls'),
+                  ),
+                  ListTile(
+                    leading: Icon(Icons.receipt),
+                    title: Text('Scan your receipts for immediate checks against FDA-recall list.'),
+                  ),
+                  ListTile(
+                    leading: Icon(Icons.share),
+                    title: Text("Share with family members recalled items from their home state."),
+                  ),
+                  ListTile(
+                    leading: Icon(Icons.add_alert_sharp),
+                    title: Text('Daily checks done on your uploaded receipts and watchlist items and alerts if matches found'),
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(height: 20.0),
+            Container(
+              padding: const EdgeInsets.all(20.0),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Colors.blue[100]!, Colors.blue[200]!],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
+                borderRadius: BorderRadius.circular(40.0),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.5),
+                    spreadRadius: 2,
+                    blurRadius: 5,
+                    offset: Offset(0, 3), // changes position of shadow
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
                   SizedBox(height: 10.0),
                   Text(
-                    '"This app saved me from consuming a recalled product! Highly recommended."',
+                    "Sign up and let us be the watchdog keeping you and your family safe!",
                     style: TextStyle(
-                      fontSize: 16.0,
-                      fontStyle: FontStyle.italic,
+                      fontSize: 15.0,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                 ],
@@ -177,23 +160,24 @@ class LandingPage extends StatelessWidget {
             ),
             SizedBox(height: 20.0),
             Center(
-              child: GestureDetector(
-                onTap: () {
+              child: ElevatedButton(
+                onPressed: () {
                   // Redirect to detailed features breakdown
+                  Navigator.pushNamed(context, 'signup');
                 },
-                child: Container(
-                  padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
-                  decoration: BoxDecoration(
-                    color: Colors.blue,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue,
+                  padding: const EdgeInsets.symmetric(vertical: 15.0, horizontal: 50.0),
+                  shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(25.0),
                   ),
-                  child: const Text(
-                    'Learn More',
-                    style: TextStyle(
-                      fontSize: 18.0,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
+                ),
+                child: Text(
+                  'Get Started',
+                  style: TextStyle(
+                    fontSize: 18.0,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
                   ),
                 ),
               ),
