@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'dart:io';
-
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
+import 'package:in_app_purchase/in_app_purchase.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -414,19 +416,32 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
     );
   }
 
+  // Add the subscription handling functions within the _SubscriptionPageState class
   Future<void> _purchasePackage(Package package) async {
     try {
       // Initiate the purchase process for the specified package
       CustomerInfo purchaserInfo = await Purchases.purchasePackage(package);
-
       // Handle successful purchase
       if (purchaserInfo.entitlements.all["premium"]!.isActive) {
         // Unlock premium features based on the entitlement
-        print('Purchase successful, premium features unlocked!');
-      } else {
-        print('Purchase successful, but entitlement not found.'); // Might be an edge case
-      }
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Purchase successful, premium features unlocked!'),
+          ),
 
+        );
+        final bool isPro = purchaserInfo.entitlements.active.containsKey('premium');
+        final bool isActive = purchaserInfo.entitlements.all['premium'] != null && purchaserInfo.entitlements.all['premium']!.isActive;
+
+        Navigator.pushNamed(context, 'home');
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Purchase successful, but entitlement not found.'),
+          ),
+        );
+        Navigator.pushNamed(context, 'feedback');
+      }
       // Example: Update UI after successful transaction
       setState(() {
         // Update UI for success
@@ -434,19 +449,20 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
     } on PlatformException catch (e) {
       // Handle platform-specific errors (e.g., user cancels the purchase)
       var errorCode = PurchasesErrorHelper.getErrorCode(e);
-      setState(() {
-        _isLoading = false;
-        _error = 'Purchase failed: $errorCode';
-      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Purchase failed: $errorCode'),
+        ),
+      );
     } catch (e) {
       // Catch other unexpected errors
-      setState(() {
-        _isLoading = false;
-        _error = 'Unexpected error: $e';
-      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Unexpected error: $e'),
+        ),
+      );
     }
   }
-
 
   @override
   void dispose() {

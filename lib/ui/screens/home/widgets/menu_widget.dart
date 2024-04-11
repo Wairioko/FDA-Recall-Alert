@@ -1,3 +1,8 @@
+import 'dart:async';
+
+import 'package:purchases_flutter/models/customer_info_wrapper.dart';
+import 'package:purchases_flutter/models/package_wrapper.dart';
+import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:safe_scan/ui/screens/notifications/notifications_widget.dart';
 import 'package:safe_scan/ui/screens/scan/camera.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -5,16 +10,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:safe_scan/ui/screens/user_account/user-account.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import '../../../../utility/utility.dart';
 import '../../../shared/theme/theme_cubit.dart';
-import '../../about/about_screen.dart';
 import '../../user_auth/login.dart';
 import '../../user_auth/signup.dart';
 import '../../receipts/view_receipts.dart';
 import '../../watchlist/watchlist_home.dart';
 import '../../watchlist/watchlist_items.dart';
+
+
 
 class MenuWidget extends StatelessWidget {
   const MenuWidget({Key? key}) : super(key: key);
@@ -63,71 +68,96 @@ class MenuWidget extends StatelessWidget {
                             : 'assets/icons/register.svg',
                         text: 'Sign Up',
                       ),
-                    Container(
-                      margin: const EdgeInsets.only(left: 10),
-                      child: DropdownButton<String>(
-                        value: 'My Watchlist',
-                        onChanged: (String? newValue) {
-                          // Handle dropdown item selection here
-                          if (newValue == 'My Watchlist') {
-                            Navigator.of(context).pushNamed(WatchlistScreen.path);
-                          } else {
-                            // Navigate to other screens based on dropdown selection
-                            Navigator.of(context).pushNamed(
-                              WatchlistCategoryItemsScreen.path,
-                              arguments: newValue,
-                            );
-                          }
-                        },
-                        items: <String>[
-                          'My Watchlist',
-                          'FOOD',
-                          'DRUG',
-                          'DEVICE'
-                          // Add more items as needed
-                        ].map<DropdownMenuItem<String>>((String value) {
-                          // You can customize the icon based on the value
-                          IconData iconData;
-                          switch (value) {
-                            case 'My Watchlist':
-                              iconData = Icons.watch_later; // Change to your watchlist icon
-                              break;
-                            case 'FOOD':
-                              iconData = Icons.fastfood;
-                              break;
-                            case 'DRUG':
-                              iconData = Icons.local_pharmacy;
-                              break;
-                            case 'DEVICE':
-                              iconData = Icons.devices;
-                              break;
-                            default:
-                              iconData = Icons.error_outline; // Default icon
-                          }
-                          return DropdownMenuItem<String>(
-                            value: value,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.start, // Adjust alignment as needed
-                              children: [
-                                Icon(iconData), // Icon
-                                SizedBox(width: 15), // Adjust spacing between icon and text
-                                Text(value), // Text
-                              ],
-                            ),
+                    StreamBuilder<CustomerInfo>(
+                      stream: _checkSubsStream(),
+                      builder: (context, snapshot) {
+                        final customerInfo = snapshot.data;
+                        final bool isTrialExpired = _isTrialPeriodExpired(user);
+                        final bool hasSubscription = customerInfo != null && customerInfo.entitlements.active.containsKey('premium');
+
+                        if (isTrialExpired && !hasSubscription) {
+                          return Container(); // Trial expired and no subscription, hide watchlist and scan receipt
+                        } else {
+                          return Column(
+                            children: [
+                              if (!isTrialExpired || hasSubscription)
+                                Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: Container(
+                                    margin: const EdgeInsets.only(left: 10),
+                                    child: DropdownButton<String>(
+                                      value: 'My Watchlist',
+                                      onChanged: (String? newValue) {
+                                        // Handle dropdown item selection here
+                                        if (newValue == 'My Watchlist') {
+                                          Navigator.of(context).pushNamed(WatchlistScreen.path);
+                                        } else {
+                                          // Navigate to other screens based on dropdown selection
+                                          Navigator.of(context).pushNamed(
+                                            WatchlistCategoryItemsScreen.path,
+                                            arguments: newValue,
+                                          );
+                                        }
+                                      },
+                                      items: <String>[
+                                        'My Watchlist',
+                                        'FOOD',
+                                        'DRUG',
+                                        'DEVICE'
+                                        // Add more items as needed
+                                      ].map<DropdownMenuItem<String>>((String value) {
+                                        // You can customize the icon based on the value
+                                        IconData iconData;
+                                        switch (value) {
+                                          case 'My Watchlist':
+                                            iconData = Icons.watch_later; // Change to your watchlist icon
+                                            break;
+                                          case 'FOOD':
+                                            iconData = Icons.fastfood;
+                                            break;
+                                          case 'DRUG':
+                                            iconData = Icons.local_pharmacy;
+                                            break;
+                                          case 'DEVICE':
+                                            iconData = Icons.devices;
+                                            break;
+                                          default:
+                                            iconData = Icons.error_outline; // Default icon
+                                        }
+                                        return DropdownMenuItem<String>(
+                                          value: value,
+                                          child: Row(
+                                            mainAxisAlignment: MainAxisAlignment.start, // Adjust alignment as needed
+                                            children: [
+                                              Icon(iconData), // Icon
+                                              SizedBox(width: 15), // Adjust spacing between icon and text
+                                              Text(value), // Text
+                                            ],
+                                          ),
+                                        );
+                                      }).toList(),
+                                    ),
+                                  ),
+                                ),
+                              if (!isTrialExpired || hasSubscription)
+                                Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: _buildMenuItem(
+                                    onTap: () {
+                                      Navigator.of(context).pushNamed(MainScreen.path);
+                                    },
+                                    icon: Utility.isLightTheme(state.themeType)
+                                        ? 'assets/icons/camera1.svg'
+                                        : 'assets/icons/camera1.svg',
+                                    text: 'Scan Receipt',
+                                  ),
+                                ),
+
+                            ],
                           );
-                        }).toList(),
-                      ),
+                        }
+                      },
                     ),
-                    if (user != null)
-                      _buildMenuItem(
-                        onTap: () {
-                          Navigator.of(context).pushNamed(MainScreen.path);
-                        },
-                        icon: Utility.isLightTheme(state.themeType)
-                            ? 'assets/icons/camera1.svg'
-                            : 'assets/icons/camera1.svg',
-                        text: 'Scan Receipt',
-                      ),
                     if (user != null)
                       _buildMenuItem(
                         onTap: () {
@@ -148,15 +178,6 @@ class MenuWidget extends StatelessWidget {
                             : 'assets/icons/notifications.svg',
                         text: 'Notifications',
                       ),
-                    // _buildMenuItem(
-                    //   onTap: () {
-                    //     context.read<ThemeCubit>().toggleTheme();
-                    //   },
-                    //   icon: Utility.isLightTheme(state.themeType)
-                    //       ? 'assets/icons/theme.svg'
-                    //       : 'assets/icons/light_theme.svg',
-                    //   text: Utility.isLightTheme(state.themeType) ? 'Dark' : 'Light',
-                    // ),
                     _buildMenuItem(
                       onTap: () {
                         launchUrlString('https://www.termsfeed.com/live/dc8eb1b0-e905-46b7-85b0-408a1dbb8604');
@@ -207,6 +228,41 @@ class MenuWidget extends StatelessWidget {
       },
     );
   }
+
+
+  Stream<CustomerInfo> _checkSubsStream() async* {
+    try {
+      final customerInfo = await Purchases.getCustomerInfo();
+      yield customerInfo;
+    } catch (e) {
+      print('Error checking subscription: $e');
+    }
+  }
+
+  bool _isTrialPeriodExpired(User? user) {
+    if (user == null) {
+      return true; // Not registered
+    } else {
+      final registrationDate = _getRegistrationDate(user);
+      if (registrationDate == null) {
+        return true; // Not registered
+      } else {
+        const trialPeriodDuration = Duration(days: 10); // Change trial period duration as needed
+        final trialPeriodEnd = registrationDate.add(trialPeriodDuration);
+        return DateTime.now().isAfter(trialPeriodEnd);
+      }
+    }
+  }
+
+  DateTime? _getRegistrationDate(User? user) {
+    if (user == null) {
+      return null;
+    }
+    final registrationTimestamp = user.metadata.creationTime;
+    print("this is the $registrationTimestamp");
+    return registrationTimestamp;
+  }
+
 
   Widget _buildMenuItem({
     required VoidCallback onTap,
