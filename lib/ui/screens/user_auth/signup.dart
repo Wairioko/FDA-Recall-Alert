@@ -34,7 +34,7 @@ class UserModel {
 String shoppingFrequencyHintText = "";
 
 class SignUpPage extends StatefulWidget {
-  static const String path = '/signup';
+  static const String path = 'signup';
 
   const SignUpPage({Key? key}) : super(key: key);
 
