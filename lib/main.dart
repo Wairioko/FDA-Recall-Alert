@@ -1,3 +1,4 @@
+import 'package:safe_scan/ui/screens/home/widgets/landing_page.dart';
 import 'package:safe_scan/ui/screens/user_auth/login.dart';
 import 'package:safe_scan/ui/shared/theme/theme_cubit.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -10,6 +11,7 @@ import 'core/news_application.dart';
 import 'core/service_locator.dart';
 import 'core/app.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 
 void main() async {
@@ -21,6 +23,11 @@ void main() async {
 
 
   WidgetsFlutterBinding.ensureInitialized();
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  bool isFirstTime = prefs.getBool('isFirstTime') ?? true;
+  runApp(MaterialApp(
+    home: isFirstTime ? LandingPage() : MyApp(),
+  ));
   await Firebase.initializeApp(
     options: const FirebaseOptions(
       apiKey:
