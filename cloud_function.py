@@ -34,7 +34,7 @@ def fetch_food_results():
     end_date = datetime.today().strftime('%Y%m%d')
 
     url = f"{endpoint}.json?search=report_date:[{start_date}+TO+{end_date}]&limit=1000"
-    # url = "https://api.fda.gov/food/enforcement.json?search=report_date:%5B20231201+TO+20240320%5D&limit=1000"
+    # url = "https://api.fda.gov/food/enforcement.json?search=report_date:%5B20231201+TO+20240403%5D&limit=1000"
 
     try:
         response = requests.get(url)
@@ -55,7 +55,6 @@ def fetch_drug_results():
     end_date = datetime.today().strftime('%Y%m%d')
 
     url = f"{endpoint}.json?search=report_date:[{start_date}+TO+{end_date}]&limit=1000"
-    # url = "https://api.fda.gov/food/enforcement.json?search=report_date:%5B20231201+TO+20240313%5D&limit=1000"
 
     try:
         response = requests.get(url)
@@ -66,12 +65,14 @@ def fetch_drug_results():
         print(f"Error fetching FDA drug data:", e)
         return []
 
+
 def store_results_in_storage(results):
     storage_client = storage.Client()
     bucket = storage_client.bucket('fda_data_change')
     blob = bucket.blob('results.json')
     blob.upload_from_string(json.dumps({'results': results}), content_type='application/json')
     print("Successful upload to bucket")
+
 
 def fetch_device_results():
     # Define endpoint for device category
@@ -93,6 +94,7 @@ def fetch_device_results():
         print(f"Error fetching FDA device data:", e)
         return []
 
+
 def get_stored_results_from_storage():
     storage_client = storage.Client()
     bucket = storage_client.bucket('fda_data_change')
@@ -103,24 +105,23 @@ def get_stored_results_from_storage():
     else:
         return []
 
-def send_notifications(new_items):
+
+def send_notifications_async(new_items):
+    # Send notifications to users with new recall information
     registration_tokens = get_user_tokens()
     if registration_tokens:
-        try:
-            message = messaging.MulticastMessage(
-                notification=messaging.Notification(
-                    title="New FDA Recall Alert",
-                    body=f"{len(new_items)} new recall(s) added.",
-                ),
-                tokens=registration_tokens,
-            )
-            response = messaging.send_multicast(message)
-            print(f"Registration tokens: {registration_tokens}")
-            print(f"Notification sent successfully to {response.success_count} devices.")
-        except Exception as e:
-            print(f"Error sending multicast message: {e}")
+        message = messaging.MulticastMessage(
+            notification=messaging.Notification(
+                title="New FDA Recall Alert",
+                body=f"{len(new_items)} new recall(s) added.",
+            ),
+            tokens=registration_tokens,
+        )
+        response = messaging.send_multicast(message)
+        print(f"Notification sent successfully to {response.success_count} devices.")
     else:
         print("No devices registered for notifications.")
+
 
 def get_user_tokens():
     # Fetch tokens from Firestore
@@ -131,6 +132,7 @@ def get_user_tokens():
         if 'token' in user_data:
             tokens.append(user_data['token'])
     return tokens
+
 
 def compare_results(new_results, stored_results):
     new_elements = []
@@ -149,6 +151,7 @@ def compare_results(new_results, stored_results):
 
     return new_elements
 
+
 def retrieve_watchlist_items(user_id, category):
     # Retrieve watchlist items for the user and category from Firestore
     watchlist_items = []
@@ -157,6 +160,7 @@ def retrieve_watchlist_items(user_id, category):
     for doc in docs:
         watchlist_items.append(doc.to_dict())
     return watchlist_items
+
 
 def process_matches(results, user_id):
     user_watchlist_items_food = retrieve_watchlist_items(user_id, 'FOOD')
@@ -167,41 +171,59 @@ def process_matches(results, user_id):
         product_description = result.get('product_description', '').lower()
         for watchlist_item in user_watchlist_items_food:
             watchlist_item_description = watchlist_item.get('description', '').lower()
-            if watchlist_item_description in product_description:
+            if watchlist_item_description in product_description and not is_notification_sent(user_id, watchlist_item_description):
                 send_match_notification(watchlist_item, result, user_id)
         for watchlist_item in user_watchlist_items_drug:
             watchlist_item_description = watchlist_item.get('description', '').lower()
-            if watchlist_item_description in product_description:
+            if watchlist_item_description in product_description and not is_notification_sent(user_id, watchlist_item_description):
                 send_match_notification(watchlist_item, result, user_id)
         for watchlist_item in user_watchlist_items_device:
             watchlist_item_description = watchlist_item.get('description', '').lower()
-            if watchlist_item_description in product_description:
+            if watchlist_item_description in product_description and not is_notification_sent(user_id, watchlist_item_description):
                 send_match_notification(watchlist_item, result, user_id)
 
-def send_match_notification(item, result_data, user_id):
-    # Implement logic to send high alert notification to the user
-    user_token = get_user_token(user_id)
-    if user_token:
-        # Construct the notification message
-        notification_message = f"POTENTIAL MATCH FOUND FOR:\n{item}"
 
-        # Send notification using Firebase Cloud Messaging
-        message = messaging.Message(
-            notification=messaging.Notification(
-                title="Potential Match Alert",
-                body=notification_message
-            ),
-            token=user_token,
-        )
-        try:
-            response = messaging.send(message)
-            print(f"Notification sent successfully to user {user_id}.")
-            # Update notification record
-            update_notification_record(user_id, item)
-        except Exception as e:
-            print(f"Error sending notification to user {user_id}: {e}")
+def send_match_notification(item, result_data, user_id):
+    # Extracting relevant information from the item dictionary
+    item_name = item.get('name', '')
+    
+    # Check if the notification has already been sent for this item to this user
+    if not is_notification_sent(user_id, item_name):
+        # Implement logic to send high alert notification to the user
+        user_token = get_user_token(user_id)
+        if user_token:
+            # Construct the notification message with the formatted item name
+            notification_message = f"POTENTIAL MATCH FOUND FOR: {item_name}"
+
+            # Send notification using Firebase Cloud Messaging
+            message = messaging.Message(
+                notification=messaging.Notification(
+                    title="Potential Match Alert",
+                    body=notification_message
+                ),
+                token=user_token,
+            )
+            try:
+                response = messaging.send(message)
+                print(f"Notification sent successfully to user {user_id}.")
+                # Update notification record
+                update_notification_record(user_id, item_name)
+            except Exception as e:
+                print(f"Error sending notification to user {user_id}: {e}")
+        else:
+            print(f"No token found for user {user_id}. Notification not sent.")
     else:
-        print(f"No token found for user {user_id}. Notification not sent.")
+        print(f"Notification already sent for user {user_id} and item {item_name}. Skipping notification.")
+
+
+def is_notification_sent(user_id, item_name):
+    # Check if a notification record already exists for the user and item
+    user_doc_ref = firestore.client().collection('notifications').document(user_id)
+    user_notifications_ref = user_doc_ref.collection('user-notifications')
+    existing_notifications = user_notifications_ref.where('item', '==', item_name).limit(1).get()
+
+    # If existing_notifications is not empty, notification has been sent
+    return bool(existing_notifications)
 
 
 def get_user_token(user_id):
@@ -238,28 +260,33 @@ def main():
     new_food_elements = compare_results(food_results, stored_results)
     new_drug_elements = compare_results(drug_results, stored_results)
     new_device_elements = compare_results(device_results, stored_results)
-
-    # Print the length of old and new data
     print("Old food results length:", len(stored_results))
     print("New food results length:", len(food_results))
-    print("number of new elements: ", len(new_food_elements))
-   
-
+    print("New food elements: ", len(new_food_elements))
     # Store the new results for future comparison
     store_results_in_storage(food_results)
 
     # Send notifications for new elements
     if new_food_elements:
-        send_notifications(new_food_elements)
+        send_notifications_async(new_food_elements)
     else:
         print("No new elements for food")
 
-    # Process potential matches for each user
+    # Process potential matches for each user for all categories
     users_ref = firestore.client().collection('users')
+    all_users_notified = True
     for user in users_ref.stream():
         user_id = user.id
-        process_matches(food_results, user_id)
-        process_matches(drug_results, user_id)
-        process_matches(device_results, user_id)
+        # If any user hasn't been notified, set the flag to False
+        if not process_matches(new_food_elements, user_id) or \
+           not process_matches(new_drug_elements, user_id) or \
+           not process_matches(new_device_elements, user_id):
+           all_users_notified = False
+
+    # If all users are notified, print and sleep
+    if all_users_notified:
+        print("All users notified, going to sleep")
+        # Sleep for 2 minutes before next iteration
+
 
 main()
