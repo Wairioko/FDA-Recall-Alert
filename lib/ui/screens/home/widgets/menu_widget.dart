@@ -248,7 +248,7 @@ class MenuWidget extends StatelessWidget {
       if (registrationDate == null) {
         return true; // Not registered
       } else {
-        const trialPeriodDuration = Duration(days: 4); // Change trial period duration as needed
+        const trialPeriodDuration = Duration(days: 10); // Change trial period duration as needed
         final trialPeriodEnd = registrationDate.add(trialPeriodDuration);
         return DateTime.now().isAfter(trialPeriodEnd);
       }
