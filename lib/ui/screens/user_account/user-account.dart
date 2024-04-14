@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:safe_scan/ui/screens/home/widgets/landing_page.dart';
 import 'package:safe_scan/ui/screens/user_account/account_security.dart';
 import 'package:safe_scan/ui/screens/user_account/feedback.dart';
 import 'package:safe_scan/ui/screens/user_account/subscriptions.dart';
@@ -47,6 +48,10 @@ class UserAccountPage extends StatelessWidget {
               _buildSectionHeader('Account and Data Deletion'),
               // Implement security and privacy widgets here
               _buildSecurityPrivacy(context),
+
+              _buildSectionHeader('Landing Page'),
+              _buildLanding(context),
+
             ],
           ),
         ),
@@ -174,6 +179,24 @@ class UserAccountPage extends StatelessWidget {
         leading: const Icon(Icons.security),
         title: const Text('Account Security'),
         subtitle: const Text('Delete Account'),
+        trailing: IconButton(
+          icon: const Icon(Icons.lock),
+          onPressed: () {
+            // Implement security settings
+          },
+        ),
+      ),
+    );
+  }
+  Widget _buildLanding(BuildContext context) {
+    return Card(
+      child: ListTile(
+        onTap: () {
+          Navigator.of(context).pushNamed(LandingPage.path);
+        },
+        leading: const Icon(Icons.security),
+        title: const Text('Landing Page'),
+        subtitle: const Text('Kulandi'),
         trailing: IconButton(
           icon: const Icon(Icons.lock),
           onPressed: () {
