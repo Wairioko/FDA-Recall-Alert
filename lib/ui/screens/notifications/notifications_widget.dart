@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 
-
 class NotificationMessage {
   static String? notificationMessage;
 
@@ -13,8 +12,6 @@ class NotificationMessage {
     return notificationMessage;
   }
 }
-
-
 
 class NotificationsPage extends StatefulWidget {
   static const String path = '/notifications';
@@ -55,7 +52,11 @@ class _NotificationsPageState extends State<NotificationsPage> {
       appBar: AppBar(
         title: Text('Notifications'),
       ),
-      body: ListView.builder(
+      body: notifications.isEmpty
+          ? Center(
+        child: Text('No notifications yet'),
+      )
+          : ListView.builder(
         itemCount: notifications.length,
         itemBuilder: (context, index) {
           return NotificationItem(notification: notifications[index]);
@@ -69,7 +70,6 @@ class NotificationItem extends StatelessWidget {
   final NotificationModel notification;
 
   NotificationItem({required this.notification});
-
 
   @override
   Widget build(BuildContext context) {
