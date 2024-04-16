@@ -1,5 +1,7 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:safe_scan/ui/screens/about/about_screen.dart';
 import 'package:safe_scan/ui/screens/home/widgets/landing_page.dart';
+import 'package:safe_scan/ui/screens/notifications/notification_load_page.dart';
 import 'package:safe_scan/ui/screens/notifications/notifications_widget.dart';
 import 'package:safe_scan/ui/screens/user_account/account_security.dart';
 import 'package:safe_scan/ui/screens/user_account/feedback.dart';
@@ -31,6 +33,11 @@ class AppRoutes {
       FeedbackForm.path: (context) => FeedbackForm(),
       AccountSettingsWidget.path: (context) => AccountSettingsWidget(),
       NotificationsPage.path: (context) => NotificationsPage(),
+      NotificationDisplay.path: (context) {
+        final RemoteMessage message = ModalRoute.of(context)!.settings.arguments as RemoteMessage;
+        return NotificationDisplay(message: message);
+      },
+
       LandingPage.path: (context) => LandingPage(),
 
       WatchlistCategoryItemsScreen.path: (context) {
