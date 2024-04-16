@@ -35,6 +35,7 @@ class _QueryWidgetState extends State<QueryWidget> {
   String stateHintText = "State";
   String itemHintText = "Recall Category";
   final  uid = loggedInUser?.uid;
+  List<String> categories = ['DRUG', 'DEVICE', 'FOOD'];
 
   final TextEditingController _controller = TextEditingController();
   bool shouldSearch = false;
@@ -95,7 +96,6 @@ class _QueryWidgetState extends State<QueryWidget> {
     setState(() {
       // Update the requestQuery's query field
       requestQuery.query = query;
-
       // If the query is empty, clear state, category, and classification
       if (query.isEmpty) {
         clearState();
@@ -128,14 +128,12 @@ class _QueryWidgetState extends State<QueryWidget> {
     setState(() {
       // Clear the text field
       _controller.clear();
-
       // Reset all search parameters
       clearState();
       clearClassification();
       clearItem();
       requestQuery.query = ""; // Reset query
     });
-
     // Trigger data reload with empty query
     reloadData();
   }
@@ -144,8 +142,32 @@ class _QueryWidgetState extends State<QueryWidget> {
   @override
   void initState() {
     super.initState();
+    fetchAllCategoriesData();
     _controller.addListener(_onSearchTextChanged);
   }
+
+  Future<void> fetchAllCategoriesData() async {
+    Map<String, List<dynamic>> allData = {};
+
+    for (String category in categories) {
+      CategoryData.category = category;
+      await widget.homeCubit.getTopHeadlines(requestQuery: requestQuery);
+      // Wait for some time between each category fetch if needed
+      // await Future.delayed(Duration(seconds: 1));
+
+      // Collect data for the current category
+      Map<String, dynamic> categoryData = AllApiData.getAllResponseJson();
+      List<dynamic> categoryDataList = categoryData[category] ?? [];
+      allData[category] = categoryDataList;
+    }
+
+    // After fetching data for all categories, you can access it from allData
+    print("ALL THE DATA FOR EACH CATEGORY:");
+    allData.forEach((category, data) {
+      print("$category: $data");
+    });
+  }
+
 
 
   @override
@@ -364,7 +386,7 @@ class _QueryWidgetState extends State<QueryWidget> {
                   ],
                 ),
 
-                const SizedBox(height: 10),
+              const SizedBox(height: 10),
               if (!showSearchParameters)// Add some spacing between the buttons and the share button
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center, // Align the share button to the center
