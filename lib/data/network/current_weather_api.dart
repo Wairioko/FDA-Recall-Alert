@@ -20,7 +20,19 @@ class StateApiData{
   // Option 1: Make responseJson public
   static List<dynamic>? getstateResponseJson() => stateresponseJson;
 
+
 }
+
+class AllApiData {
+  static Map<String, List<dynamic>> _allResponseJson = {};
+
+  static void addResponseJson(String category, List<dynamic> responseJson) {
+    _allResponseJson[category] = responseJson;
+  }
+
+  static Map<String, List<dynamic>> getAllResponseJson() => _allResponseJson;
+}
+
 
 
 class RecallApi extends BaseApi<TopHeadlinesQueryParams,
@@ -31,7 +43,7 @@ class RecallApi extends BaseApi<TopHeadlinesQueryParams,
 
       // : super(NewsApiProvider.topHeadlines,
       // sl<NewsApiProvider>());
-      : super(CategoryData.category == 'DRUGS' ? RecallDataApiProvider.drugsRecalls :
+      : super(CategoryData.category == 'DRUG' ? RecallDataApiProvider.drugsRecalls :
               CategoryData.category == 'DEVICE' ? RecallDataApiProvider.deviceRecalls
       : RecallDataApiProvider.topHeadlines,
       sl<RecallDataApiProvider>());
@@ -51,7 +63,6 @@ class RecallApi extends BaseApi<TopHeadlinesQueryParams,
     List<dynamic> ongoingItems = responseJson?['results']
         .where((item) => item['status'] == "Ongoing")
         .toList();
-
 
     ApiData.responseJson = ongoingItems;
 
@@ -97,6 +108,9 @@ class RecallApi extends BaseApi<TopHeadlinesQueryParams,
     // Store filtered data according to the state in StateApiData.stateresponseJson
     StateApiData.stateresponseJson = stateFilteredItems;
 
+    // Store the response JSON in AllApiData
+    AllApiData.addResponseJson(CategoryData.category ?? '', stateFilteredItems);
+
     // Sort the ongoingItems list by 'report_date' in descending order
     stateFilteredItems.sort((a, b) {
       DateTime dateA = DateTime.parse(a['report_date']);
@@ -113,6 +127,7 @@ class RecallApi extends BaseApi<TopHeadlinesQueryParams,
     print("Success Response: $filteredResponseJson");
     return RecallsResponse.fromJson(filteredResponseJson);
   }
+
 
   String getStateInitials(String state) {
     // Map full state names to their respective initials
