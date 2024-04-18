@@ -1,4 +1,6 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:safe_scan/ui/screens/home/widgets/landing_page.dart';
+import 'package:safe_scan/ui/screens/notifications/notifications_widget.dart';
 import 'package:safe_scan/ui/screens/user_auth/login.dart';
 import 'package:safe_scan/ui/shared/theme/theme_cubit.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -13,6 +15,13 @@ import 'core/app.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  // Optional: Ensure Firebase is initialized
+  await Firebase.initializeApp();
+
+  // Handle your notification logic here
+  print('Handling a background message: ${message.messageId}');
+}
 
 void main() async {
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
@@ -28,6 +37,7 @@ void main() async {
   runApp(MaterialApp(
     home: isFirstTime ? LandingPage() : MyApp(),
   ));
+
   await Firebase.initializeApp(
     options: const FirebaseOptions(
       apiKey:
@@ -38,6 +48,9 @@ void main() async {
       projectId: "saferecall", //paste your project id here
     ),
   );
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+
+
 
   // Enable Crashlytics
   FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(true);
@@ -50,6 +63,8 @@ void main() async {
   await sl.allReady();
   startAppComponent(application, user);
 
+
+
 }
 
 void startAppComponent(var application, User? user) {
@@ -57,12 +72,15 @@ void startAppComponent(var application, User? user) {
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => UserProviderLogin()),
+        ChangeNotifierProvider<NotificationProvider>(
+          create: (_) => NotificationProvider(),
+        ),
 
 
       ],
       child: BlocProvider(
         create: (context) => ThemeCubit(),
-        child: NewsApp(application, user),
+        child: RecallApp(application, user),
 
       ),
 
