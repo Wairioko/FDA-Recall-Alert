@@ -15,12 +15,14 @@ import 'core/app.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+
+@pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  // Optional: Ensure Firebase is initialized
+  // If you're going to use other Firebase services in the background, such as Firestore,
+  // make sure you call `initializeApp` before using other Firebase services.
   await Firebase.initializeApp();
 
-  // Handle your notification logic here
-  print('Handling a background message: ${message.messageId}');
+  print("Handling a background message: ${message.messageId}");
 }
 
 void main() async {
@@ -75,6 +77,8 @@ void startAppComponent(var application, User? user) {
         ChangeNotifierProvider<NotificationProvider>(
           create: (_) => NotificationProvider(),
         ),
+
+
 
 
       ],
