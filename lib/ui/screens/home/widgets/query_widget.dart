@@ -161,10 +161,7 @@ class _QueryWidgetState extends State<QueryWidget> {
       allData[category] = categoryDataList;
     }
 
-    // After fetching data for all categories, you can access it from allData
-    print("ALL THE DATA FOR EACH CATEGORY:");
     allData.forEach((category, data) {
-      print("$category: $data");
     });
   }
 
@@ -179,6 +176,7 @@ class _QueryWidgetState extends State<QueryWidget> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              const SizedBox(height: 10.0, width: 10,),
               // Recall Category Widget
               if (showSearchParameters)
                 Container(
@@ -216,7 +214,7 @@ class _QueryWidgetState extends State<QueryWidget> {
                     },
                   ),
                 ),
-              const SizedBox(height: 6.0), // Adding padding between elements
+              const SizedBox(height: 10.0, width: 10,),  // Adding padding between elements
               // Search Bar
               if (showSearchParameters)
                 Container(
@@ -353,8 +351,9 @@ class _QueryWidgetState extends State<QueryWidget> {
                   children: [
                     ElevatedButton(
                       onPressed: () {
-                        clearAllParameters();
+
                         setState(() {
+                          clearAllParameters();
                           showSearchParameters = true;
                         });
                       },
@@ -371,6 +370,7 @@ class _QueryWidgetState extends State<QueryWidget> {
                     ElevatedButton(
                       onPressed: () {
                         setState(() {
+                          clearAllParameters();
                           showSearchParameters = true;
                         });
                       },
