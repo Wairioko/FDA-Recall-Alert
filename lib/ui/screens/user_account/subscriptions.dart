@@ -375,9 +375,6 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
   }
 
 
-
-
-
   Widget _buildPackageColumn(
     BuildContext context, String title, String price, bool isSelected) {
     return Column(
@@ -416,6 +413,26 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
     );
   }
 
+  void _showSubscribeDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Search Already Conducted"),
+          content: Text("You have already conducted the search."),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text("OK"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   // Add the subscription handling functions within the _SubscriptionPageState class
   Future<void> _purchasePackage(Package package) async {
     try {
@@ -424,14 +441,9 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
       // Handle successful purchase
       if (purchaserInfo.entitlements.all["premium"]!.isActive) {
         // Unlock premium features based on the entitlement
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Purchase successful, premium features unlocked!'),
-          ),
-
-        );
-        final bool isPro = purchaserInfo.entitlements.active.containsKey('premium');
-        final bool isActive = purchaserInfo.entitlements.all['premium'] != null && purchaserInfo.entitlements.all['premium']!.isActive;
+        _showSubscribeDialog();
+        // final bool isPro = purchaserInfo.entitlements.active.containsKey('premium');
+        // final bool isActive = purchaserInfo.entitlements.all['premium'] != null && purchaserInfo.entitlements.all['premium']!.isActive;
 
         Navigator.pushNamed(context, 'home');
       } else {
