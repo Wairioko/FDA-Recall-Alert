@@ -49,8 +49,8 @@ class UserAccountPage extends StatelessWidget {
               // Implement security and privacy widgets here
               _buildSecurityPrivacy(context),
 
-              _buildSectionHeader('Landing Page'),
-              _buildLanding(context),
+              // _buildSectionHeader('Landing Page'),
+              // _buildLanding(context),
 
             ],
           ),
@@ -139,7 +139,7 @@ class UserAccountPage extends StatelessWidget {
         },
         leading: Icon(Icons.credit_card),
         title: Text('Subscription'),
-        subtitle: Text('Active'),
+        subtitle: Text('Access all features'),
         trailing: IconButton(
           icon: Icon(Icons.payment),
           onPressed: () {
@@ -188,24 +188,24 @@ class UserAccountPage extends StatelessWidget {
       ),
     );
   }
-  Widget _buildLanding(BuildContext context) {
-    return Card(
-      child: ListTile(
-        onTap: () {
-          Navigator.of(context).pushNamed(LandingPage.path);
-        },
-        leading: const Icon(Icons.security),
-        title: const Text('Landing Page'),
-        subtitle: const Text('Kulandi'),
-        trailing: IconButton(
-          icon: const Icon(Icons.lock),
-          onPressed: () {
-            // Implement security settings
-          },
-        ),
-      ),
-    );
-  }
+  // Widget _buildLanding(BuildContext context) {
+  //   return Card(
+  //     child: ListTile(
+  //       onTap: () {
+  //         Navigator.of(context).pushNamed(LandingPage.path);
+  //       },
+  //       leading: const Icon(Icons.security),
+  //       title: const Text('Landing Page'),
+  //       subtitle: const Text('Kulandi'),
+  //       trailing: IconButton(
+  //         icon: const Icon(Icons.lock),
+  //         onPressed: () {
+  //           // Implement security settings
+  //         },
+  //       ),
+  //     ),
+  //   );
+  // }
 
 
   Widget _buildLegalCompliance(BuildContext context) {
