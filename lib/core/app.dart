@@ -11,12 +11,12 @@ import 'news_provider.dart';
 
 
 
-class NewsApp extends StatelessWidget {
+class RecallApp extends StatelessWidget {
   final RecallEventApplication _application;
 
   final User? _user;
 
-  const NewsApp(this._application, this._user, {super.key});
+  const RecallApp(this._application, this._user, {super.key});
 
   @override
   Widget build(BuildContext context) {
