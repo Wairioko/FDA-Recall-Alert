@@ -65,7 +65,7 @@ class RecallDataApiProvider extends BaseApiProvider {
   BaseOptions createBaseOptions() {
     // Call getCategory() method to retrieve category
     String baseUrl = 'https://api.fda.gov/food/enforcement.json?search='
-        'report_date:[20230101+TO+$formattedNow]&limit=1000';
+        'report_date:[20231201+TO+$formattedNow]&limit=1000';
     BaseOptions options = BaseOptions(
       baseUrl: baseUrl,
     );
@@ -76,8 +76,8 @@ class RecallDataApiProvider extends BaseApiProvider {
 
   static String get topHeadlines => '';
   static String get drugsRecalls =>  'https://api.fda.gov/drug/enforcement.json?search='
-      'report_date:[20230101+TO+$formattedNow]&limit=1000';
+      'report_date:[20231201+TO+$formattedNow]&limit=1000';
   static String get deviceRecalls => 'https://api.fda.gov/device/enforcement.json?search='
-      'report_date:[20230101+TO+$formattedNow]&limit=1000';
+      'report_date:[20231201+TO+$formattedNow]&limit=1000';
 }
 
