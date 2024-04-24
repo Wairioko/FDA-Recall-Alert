@@ -443,7 +443,7 @@ class _SignUpPageState extends State<SignUpPage> {
                       padding: const EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 8.0),
                       child: Container(
                         child: Text(
-                          "Safe Recall",
+                          "FDA Recall Alert",
                           style: GoogleFonts.lato(fontSize: 50.0, color: Colors.blue),
                         ),
                       ),

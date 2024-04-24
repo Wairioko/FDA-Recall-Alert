@@ -28,7 +28,7 @@ class _AccountSettingsWidgetState extends State<AccountSettingsWidget> {
                   children: <Widget>[
                     Text('Are you sure you want to delete your account?'),
                     Text('This will permanently delete all associated data and your account'), // Emphasize data loss
-                    Text('Thank you for choosing Safe Recall'),
+                    Text('Thank you for choosing FDA Recall Alert'),
                   ],
                 ),
               ),
