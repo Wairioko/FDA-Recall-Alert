@@ -8,7 +8,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Safe Recall',
+      title: 'FDA Recall Alert',
       theme: ThemeData(
         primarySwatch: Colors.blue,
         fontFamily: 'SFPro', // Apple's system font
@@ -24,7 +24,7 @@ class LandingPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Safe Recall'),
+        title: const Text('FDA Recall Alert'),
         centerTitle: true,
         leading: Container(),
       ),
