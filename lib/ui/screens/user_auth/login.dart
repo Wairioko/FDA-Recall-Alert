@@ -159,7 +159,7 @@ class _LogInPageState extends State<LogInPage> {
                       child: Container(
                         child: Text(
                           "FDA Recall Alert",
-                          style: GoogleFonts.lato(fontSize: 50.0, color: Colors.blue),
+                          style: GoogleFonts.lato(fontSize: 40.0, color: Colors.blue),
                         ),
                       ),
                     ),
@@ -261,15 +261,18 @@ class _LogInPageState extends State<LogInPage> {
                         ),
                         GestureDetector(
                           onTap: () {
-                            Navigator.pushNamed(context, '/signup');
+                            Navigator.pushNamed(context, 'signup');
                           },
-                          child:const Text(
-                            ' Sign up',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.blue,
-                              fontFamily: 'San Francisco',
+                          child: const Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 8.0), // Adjust padding here
+                            child: Text(
+                              'Sign up',
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.blue,
+                                fontFamily: 'San Francisco',
+                              ),
                             ),
                           ),
                         ),
