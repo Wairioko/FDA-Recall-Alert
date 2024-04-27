@@ -35,6 +35,7 @@ class MenuWidget extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    if (user != null)
                     _buildMenuItem(
                       onTap: () {
                         Navigator.of(context).pushNamed(UserAccountPage.path);
@@ -84,13 +85,13 @@ class MenuWidget extends StatelessWidget {
                         // Handle dropdown item selection here
                         if (newValue == 'My Watchlist') {
                         if (!hasSubscription && isTrialExpired) {
-                        _showSubscriptionSnackbar(context);
+                        _showSubscriptionDialog(context);
                         } else {
                         Navigator.of(context).pushNamed(WatchlistScreen.path);
                         }
                         } else {
                         if (!hasSubscription && isTrialExpired) {
-                        _showSubscriptionSnackbar(context);
+                        _showSubscriptionDialog(context);
                         } else {
                         Navigator.of(context).pushNamed(
                         WatchlistCategoryItemsScreen.path,
@@ -145,7 +146,7 @@ class MenuWidget extends StatelessWidget {
                               child: _buildMenuItem(
                                 onTap: () {
                                   if (!hasSubscription && isTrialExpired) {
-                                    _showSubscriptionSnackbar(context);
+                                    _showSubscriptionDialog(context);
                                   } else {
                                     Navigator.of(context).pushNamed(MainScreen.path);
                                   }
@@ -248,7 +249,7 @@ class MenuWidget extends StatelessWidget {
       if (registrationDate == null) {
         return true; // Not registered
       } else {
-        const trialPeriodDuration = Duration(days: 10); // Change trial period duration as needed
+        const trialPeriodDuration = Duration(days: 20); // Change trial period duration as needed
         final trialPeriodEnd = registrationDate.add(trialPeriodDuration);
         return DateTime.now().isAfter(trialPeriodEnd);
       }
@@ -260,25 +261,56 @@ class MenuWidget extends StatelessWidget {
       return null;
     }
     final registrationTimestamp = user.metadata.creationTime;
-    print("this is the $registrationTimestamp");
     return registrationTimestamp;
   }
 
-  void _showSubscriptionSnackbar(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Your free trial has expired. Please subscribe to access this feature.'),
-        action: SnackBarAction(
-          label: 'Subscribe',
-          onPressed: () {
-            // Navigate to the subscription screen
-            // You can replace the '/subscription' with the actual subscription screen route
-            Navigator.of(context).pushNamed('/subscription');
-          },
-        ),
-      ),
+  void _showSubscriptionDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Your free trial has expired"),
+          content: Text("Please subscribe to access this feature."),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text("Dismiss"),
+            ),
+            TextButton(
+              onPressed: () {
+                // Navigate to the subscription screen
+                // You can replace the '/subscription' with the actual subscription screen route
+                Navigator.of(context).pushNamed('subscription');
+              },
+              child: Text("Subscribe"),
+            ),
+          ],
+        );
+      },
     );
   }
+
+
+  //
+  // void _showSubscriptionSnackbar(BuildContext context) {
+  //   ScaffoldMessenger.of(context).showSnackBar(
+  //     SnackBar(
+  //       content: Text('Your free trial has expired. Please subscribe to access this feature.'),
+  //       action: SnackBarAction(
+  //         label: 'Subscribe',
+  //         onPressed: () {
+  //           // Navigate to the subscription screen
+  //           // You can replace the '/subscription' with the actual subscription screen route
+  //           Navigator.of(context).pushNamed('/subscription');
+  //         },
+  //       ),
+  //     ),
+  //   );
+  // }
+
+
 
   Widget _buildMenuItem({
     required VoidCallback onTap,
