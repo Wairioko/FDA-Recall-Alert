@@ -1,52 +1,207 @@
+import 'dart:async';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:provider/provider.dart';
 import '../../../data/network/current_weather_api.dart';
 import '../../../model/detail_data_model.dart';
 import '../detail/detail.dart';
 
+GlobalKey<NotificationsPageState> notificationsPageKey = GlobalKey();
 
+// Update the NotificationsPage class
 class NotificationsPage extends StatefulWidget {
   static const String path = '/notifications';
 
+  const NotificationsPage({Key? key}) : super(key: key);
+
   @override
-  _NotificationsPageState createState() => _NotificationsPageState();
+  NotificationsPageState createState() => NotificationsPageState();
 }
 
-class _NotificationsPageState extends State<NotificationsPage> {
-  List<NotificationModel> notifications = [];
-  final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
+class NotificationsPageState extends State<NotificationsPage> {
+  final GlobalKey<NotificationsPageState> _key = GlobalKey();
+  void refresh() {
+    setState(() {});
+  }
 
   @override
-  void initState() {
-    super.initState();
+  Widget build(BuildContext context) {
+    key: notificationsPageKey;
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Notifications'),
+      ),
+      body: Consumer<NotificationProvider>(
+        builder: (context, provider, child) {
+          if (provider.notifications.isEmpty) {
+            debugPrint("No notifications yet"); // Check if this is printed
+            return Center(
+              child: Text('No notifications yet'),
+            );
+          } else {
+            return ListView.builder(
+              itemCount: provider.notifications.length,
+              itemBuilder: (context, index) {
+                return NotificationItem(
+                  notification: provider.notifications[index],
+                  onClear: () {
+                    provider.removeNotification(provider.notifications[index]);
+                  },
+                );
+              },
+            );
+          }
+        },
+      ),
+    );
+  }
+}
+
+
+
+class NotificationProvider extends ChangeNotifier {
+  late List<NotificationModel> _notifications = [];
+  final StreamController<List<NotificationModel>> _notificationStreamController =
+  StreamController<List<NotificationModel>>.broadcast();
+
+  Stream<List<NotificationModel>> get notificationStream =>
+      _notificationStreamController.stream;
+
+  List<NotificationModel> get notifications => _notifications;
+
+  void addNotification(NotificationModel notification) {
+    _notifications.insert(0, notification);
+    notifyListeners(); // Notify listeners whenever a new notification is added
+    print("Notification added: ${notification.message}");
+  }
+
+  final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
+
+  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+  FlutterLocalNotificationsPlugin();
+
+  NotificationProvider() {
+    print("NotificationProvider initialized");
+    _initializeMessaging();
+  }
+
+  void _initializeMessaging() {
+
+    print("_initializeMessaging called");
+    _firebaseMessaging.requestPermission();
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       print("Message received: ${message.notification?.title}");
       _processMessage(message);
     });
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+      print("Message received: ${message.notification?.title}");
       _processMessage(message);
     });
-    FirebaseMessaging.onBackgroundMessage(_processBackgroundMessage);
+    // FlutterLocalNotificationsPlugin();
+    _initLocalNotifications();
     _initializeNotifications();
   }
 
-  Future<void> _processBackgroundMessage(RemoteMessage message) async {
-    print("Handling a background message: ${message.notification?.title}");
-    _processMessage(message);
+
+  void _initLocalNotifications() async {
+    const AndroidInitializationSettings initializationSettingsAndroid =
+    AndroidInitializationSettings('@mipmap/ic_launcher');
+    const InitializationSettings initializationSettings =
+    InitializationSettings(android: initializationSettingsAndroid);
+    await flutterLocalNotificationsPlugin.initialize(initializationSettings);
+
+    // Create the notification channel
+    const String channelId = 'fcm_default_channel';
+    const String channelName = 'Default Notifications';
+    const AndroidNotificationChannel channel = AndroidNotificationChannel(
+      channelId,
+      channelName,
+      importance: Importance.high,
+    );
+
+    // Register the channel with the system
+    await flutterLocalNotificationsPlugin
+        .resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin>()
+        ?.createNotificationChannel(channel);
+
+    print('Notification channel created: $channelId');
   }
 
-  void _processMessage(RemoteMessage message) {
-    setState(() {
-      notifications.insert(
-        0,
-        NotificationModel(
-          icon: Icons.notifications,
-          title: message.notification?.title ?? "Notification",
-          message: message.notification?.body ?? "New notification",
-          remoteMessage: message,
-        ),
-      );
-    });
+
+
+
+
+
+  // Method to remove a notification
+  void removeNotification(NotificationModel notification) {
+    _notifications.remove(notification);
+    notifyListeners(); // Notify listeners whenever a notification is removed
+    print("Notification removed: ${notification.title}");
+  }
+
+
+
+  // void _processMessage(RemoteMessage message) async {
+  //   NotificationModel notification = NotificationModel(
+  //     icon: Icons.notifications,
+  //     title: message.notification?.title ?? "",
+  //     message: message.notification?.body ?? "",
+  //     remoteMessage: message,
+  //   );
+  //
+  //   // Add the notification
+  //   addNotification(notification);
+  //
+  //   // Show the notification
+  //   await _showNotification(
+  //     message.notification?.title ?? "",
+  //     message.notification?.body ?? "",
+  //   );
+  //
+  //   // Update the NotificationsPage with the new notification
+  //   notificationsPageKey.currentState?.refresh();
+  // }
+
+  void _processMessage(RemoteMessage message) async {
+    print("Process Message started, Message received: ${message.notification?.title}");
+    NotificationModel notification = NotificationModel(
+      icon: Icons.notifications,
+      title: message.notification?.title ?? "",
+      message: message.notification?.body ?? "",
+      remoteMessage: message,
+    );
+
+    // Add the notification
+    addNotification(notification);
+
+    // Show the notification
+    await _showNotification(
+      message.notification?.title ?? "",
+      message.notification?.body ?? "",
+    );
+
+    // Update the NotificationsPage with the new notification
+    if (notificationsPageKey.currentState != null) {
+      notificationsPageKey.currentState!.refresh();
+    }
+  }
+
+
+
+  Future<void> _showNotification(String title, String body) async {
+    const AndroidNotificationDetails androidPlatformChannelSpecifics =
+    AndroidNotificationDetails(
+        'default_notification_channel_id', 'default_notification_channel_id',
+        importance: Importance.max,
+        priority: Priority.high,
+        ticker: 'ticker');
+    const NotificationDetails platformChannelSpecifics =
+    NotificationDetails(android: androidPlatformChannelSpecifics);
+    await flutterLocalNotificationsPlugin.show(
+        0, title, body, platformChannelSpecifics,
+        payload: 'item x');
   }
 
   void _initializeNotifications() async {
@@ -55,85 +210,66 @@ class _NotificationsPageState extends State<NotificationsPage> {
     if (initialMessage != null) {
       _processMessage(initialMessage);
     }
-    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      _processMessage(message);
-    });
   }
 
-
-  @override
-  void dispose() {
-    FirebaseMessaging.onMessage.listen(null).cancel();
-    FirebaseMessaging.onMessageOpenedApp.listen(null).cancel();
-    super.dispose();
-  }
-
-
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Notifications'),
-      ),
-      body: notifications.isEmpty
-          ? Center(
-        child: Text('No notifications yet'),
-      )
-          : ListView.builder(
-        itemCount: notifications.length,
-        itemBuilder: (context, index) {
-          return NotificationItem(notification: notifications[index]);
-        },
-      ),
-    );
-  }
 }
 
 class NotificationItem extends StatelessWidget {
   final NotificationModel notification;
+  final VoidCallback onClear;
 
-  NotificationItem({required this.notification});
+  NotificationItem({required this.notification, required this.onClear});
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        if (notification.message.contains("POTENTIAL MATCH FOUND FOR:")) {
-          Navigator.of(context).pushNamed(
-            NotificationDisplay.path,
-            arguments: notification.remoteMessage,
-          );
-        }
-      },
-      child: Container(
-        margin: EdgeInsets.symmetric(vertical: 6.0, horizontal: 12.0),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12.0),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.blueAccent.withOpacity(0.5),
-              spreadRadius: 2,
-              blurRadius: 4,
-              offset: Offset(0, 3),
-            ),
-          ],
-        ),
-        child: Card(
-          elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12.0),
+    return Container(
+      margin: EdgeInsets.symmetric(vertical: 6.0, horizontal: 12.0),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12.0),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.blueAccent.withOpacity(0.5),
+            spreadRadius: 2,
+            blurRadius: 4,
+            offset: Offset(0, 3),
           ),
-          child: ListTile(
-            leading: Icon(notification.icon),
-            title: Text(notification.title, style: TextStyle(fontWeight: FontWeight.bold)),
-            subtitle: Text(notification.message),
+        ],
+      ),
+      child: Card(
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12.0),
+        ),
+        child: ListTile(
+          onTap: () {
+            _handleNotificationClick(context);
+          },
+          leading: Icon(notification.icon),
+          title: Text(notification.title, style: TextStyle(fontWeight: FontWeight.bold)),
+          subtitle: Text(notification.message),
+          trailing: IconButton(
+            icon: Icon(Icons.clear),
+            onPressed: onClear,
           ),
         ),
       ),
     );
   }
+
+  void _handleNotificationClick(BuildContext context) {
+    if (notification.message.contains("POTENTIAL MATCH FOUND FOR:")) {
+      Navigator.of(context).pushNamed(
+        NotificationDisplay.path,
+        arguments: notification.remoteMessage,
+      );
+    } else {
+      Navigator.of(context).pushNamed(
+        NotificationsPage.path,
+      );
+    }
+  }
 }
+
 
 class NotificationModel {
   final IconData icon;
@@ -177,14 +313,11 @@ class NotificationDisplay extends StatelessWidget {
   Widget build(BuildContext context) {
     List<DetailDataModel> matches = [];
     var responseJson = AllApiData.getAllResponseJson();
-    print("Type of responseJson: ${responseJson.runtimeType}");
-    print("Content of responseJson: $responseJson");
-
 
     String itemName = message.notification?.body?.replaceFirst("POTENTIAL MATCH FOUND FOR: ", "") ?? "";
 
     // Iterate over each key in responseJson
-    for (var key in ['DRUG', 'FOOD', 'DEVICE']) {
+    for (var key in ['FOOD','DRUG','DEVICE']) {
       if (responseJson[key] != null && responseJson[key] is List) {
         for (var item in responseJson[key]!) {
           if (item['product_description'] != null &&
