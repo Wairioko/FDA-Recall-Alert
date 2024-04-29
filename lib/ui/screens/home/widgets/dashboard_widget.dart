@@ -1,3 +1,7 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:safe_scan/domain/entities/top_headlines.dart';
 import 'package:safe_scan/ui/screens/home/widgets/recall_list.dart';
 import 'package:safe_scan/ui/screens/home/widgets/query_widget.dart';
@@ -9,6 +13,7 @@ import '../../../shared/common_appbar.dart';
 import '../cubit/home_cubit.dart';
 import '../cubit/home_state.dart';
 import 'data_unavailable_widget.dart';
+
 
 class DashBoardWidget extends StatefulWidget {
   final ZoomDrawerController zoomDrawerController;
@@ -23,8 +28,11 @@ class DashBoardWidget extends StatefulWidget {
 }
 
 class _DashBoardWidgetState extends State<DashBoardWidget> {
+  final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
   late final HomeCubit _homeCubit;
   late Future<void> _hiveInit;
+  String shoppingFrequency = '1-3 times per month';
+  bool additionalInfoCollected = false; // Define this variable in your stateful widget
 
   @override
   void initState() {
@@ -32,6 +40,168 @@ class _DashBoardWidgetState extends State<DashBoardWidget> {
     _homeCubit = HomeCubit();
     _hiveInit = NewsHiveStorage.init();
     _hiveInit.whenComplete(() => _homeCubit.getTopHeadlines());
+    _checkAdditionalInfo();
+    _firebaseMessaging.requestPermission();
+  }
+
+  void _checkAdditionalInfo() async {
+    var userId = FirebaseAuth.instance.currentUser?.uid;
+    var email = FirebaseAuth.instance.currentUser?.email;
+    if (userId != null) {
+      var additionalInfoCollected = await isAdditionalInfoCollected(userId);
+      if (!additionalInfoCollected) {
+        _collectAdditionalInformation(userId, context, email);
+      }
+    }
+  }
+
+  // Function to check if additional information is collected for the user
+  Future<bool> isAdditionalInfoCollected(String? userId) async {
+    if (userId == null) return false;
+
+    try {
+      // Get a reference to the user document in Firestore
+      final userDoc = FirebaseFirestore.instance.collection('users').doc(userId);
+      final userData = await userDoc.get();
+
+      // Check if the user document exists and if additional information is present
+      return userData.exists && userData['shoppingFrequency'] != null && userData['defaultState'] != null;
+    } catch (e) {
+      print('Error checking additional information: $e');
+      return false;
+    }
+  }
+
+  Future<String?> _getFCMToken() async {
+    String? token = await FirebaseMessaging.instance.getToken();
+    return token;
+  }
+
+  // Function to handle the selection of shopping frequency
+  void _onShoppingFrequencyChanged(String? newValue) {
+    setState(() {
+      shoppingFrequency = newValue!;
+    });
+  }
+
+  void _collectAdditionalInformation(String? userId, BuildContext context, String? email) {
+    if (userId == null) return;
+
+    // Log event: _collectAdditionalInformation function is called
+    FirebaseCrashlytics.instance.log('_collectAdditionalInformation function is called');
+
+    // Show a dialog to collect additional information
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        // Variables to store collected information
+        String defaultState = '';
+
+        // GlobalKey to access the form state
+        final GlobalKey<FormState> formKey = GlobalKey<FormState>();
+
+        return AlertDialog(
+          title: const Text('Additional Information'),
+          content: SingleChildScrollView(
+            child: Form(
+              key: formKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Dropdown to select shopping frequency
+                  DropdownButtonFormField<String>(
+                    value: shoppingFrequency,
+                    onChanged: _onShoppingFrequencyChanged,
+                    items: const [
+                      DropdownMenuItem(
+                        value: '1-3 times per month',
+                        child: Text('1-3 times per month'),
+                      ),
+                      DropdownMenuItem(
+                        value: '4-6 times per month',
+                        child: Text('4-6 times per month'),
+                      ),
+                      DropdownMenuItem(
+                        value: '7+ times per month',
+                        child: Text('7+ times per month'),
+                      ),
+                    ],
+                    decoration: const InputDecoration(
+                      labelText: 'Shopping Frequency',
+                      hintText: 'Select Shopping Frequency',
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please select shopping frequency';
+                      }
+                      return null;
+                    },
+                  ),
+                  // Text field to enter default state
+                  TextFormField(
+                    onChanged: (value) {
+                      defaultState = value;
+                    },
+                    decoration: const InputDecoration(
+                      hintText: 'Your Default State',
+                      labelText: 'Enter Default State',
+                    ),
+                    validator: (value) {
+                      if (value!.isEmpty) {
+                        return 'State cannot be empty';
+                      }
+                      return null;
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                // Log event: User cancels the dialog
+                FirebaseCrashlytics.instance.log('User cancels the dialog');
+                Navigator.of(context).pop();
+              },
+              child: Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                if (formKey.currentState!.validate()) {
+                  try {
+                    // Get FCM token
+                    String? fcmToken = await _getFCMToken();
+
+                    // Store additional information in Firestore
+                    await FirebaseFirestore.instance.collection('users').doc(userId).set({
+                      'shoppingFrequency': shoppingFrequency,
+                      'defaultState': defaultState,
+                      'token': fcmToken,
+                      'email': email,
+                    }, SetOptions(merge: true)); // Merge with existing data if present
+
+                    // Update the state to indicate that additional information has been collected
+                    setState(() {
+                      additionalInfoCollected = true;
+                    });
+
+                    // Close the dialog
+                    Navigator.of(context).pop();
+                    Navigator.of(context).pushNamed('/home');
+                  } catch (e) {
+                    // Log error: Error saving additional information
+                    FirebaseCrashlytics.instance.recordError(e, StackTrace.current);
+                    print('Error saving additional information: $e');
+                  }
+                }
+              },
+              child: Text('Save'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   Future<void> _pullRefresh() async {
