@@ -188,25 +188,6 @@ class UserAccountPage extends StatelessWidget {
       ),
     );
   }
-  // Widget _buildLanding(BuildContext context) {
-  //   return Card(
-  //     child: ListTile(
-  //       onTap: () {
-  //         Navigator.of(context).pushNamed(LandingPage.path);
-  //       },
-  //       leading: const Icon(Icons.security),
-  //       title: const Text('Landing Page'),
-  //       subtitle: const Text('Kulandi'),
-  //       trailing: IconButton(
-  //         icon: const Icon(Icons.lock),
-  //         onPressed: () {
-  //           // Implement security settings
-  //         },
-  //       ),
-  //     ),
-  //   );
-  // }
-
 
   Widget _buildLegalCompliance(BuildContext context) {
     return Card(
