@@ -43,7 +43,7 @@ class RecallApi extends BaseApi<TopHeadlinesQueryParams,
 
       // : super(NewsApiProvider.topHeadlines,
       // sl<NewsApiProvider>());
-      : super(CategoryData.category == 'DRUGS' ? RecallDataApiProvider.drugsRecalls :
+      : super(CategoryData.category == 'DRUG' ? RecallDataApiProvider.drugsRecalls :
               CategoryData.category == 'DEVICE' ? RecallDataApiProvider.deviceRecalls
       : RecallDataApiProvider.topHeadlines,
       sl<RecallDataApiProvider>());
