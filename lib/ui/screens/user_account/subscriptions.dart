@@ -8,6 +8,11 @@ import 'package:in_app_purchase/in_app_purchase.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
+// Define your entitlement keys and associated product IDs
+const String premiumEntitlementKey = 'premium';
+const List<String> premiumProductIds = ['monthly','6-months' ,'annual'];
+
+
 class SubscriptionPackage {
   final String identifier; // Identifier for RevenueCat setup
   final String name;
@@ -66,11 +71,17 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
   int selectedIndex = 0;
   String? _error;
   final user = FirebaseAuth.instance.currentUser;
+  // PurchasesResultReceiver to handle purchase confirmation
+  late StreamSubscription _purchasesStreamSub;
 
   @override
   void initState() {
     super.initState();
     _initPlatformStateFuture = _initPlatformState();
+    // Initialize PurchasesResultReceiver
+
+    _purchasesStreamSub = InAppPurchase.instance.purchaseStream.listen(_handlePurchaseResult);
+
   }
 
   Future<void> _initPlatformState() async {
@@ -143,12 +154,11 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
           ),
           onPressed: () {
             if (_offerings.isNotEmpty) {
-              final selectedPackage =
-              _offerings[selectedIndex ?? 0].availablePackages[0];
-              _purchasePackage(selectedPackage);
+              final selectedPackage = _offerings[selectedIndex ?? 0].availablePackages[0];
+              Purchases.purchasePackage(selectedPackage);
             }
           },
-          child: Text(
+          child: const Text(
             'Subscribe',
             style: TextStyle(
               fontFamily: 'San Francisco',
@@ -418,14 +428,14 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text("Search Already Conducted"),
-          content: Text("You have already conducted the search."),
+          title: Text("Purchase Confirmed"),
+          content: Text("Thank You For Supporting FDA Recall Alert"),
           actions: <Widget>[
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop();
+                Navigator.of(context).pushNamed('/home');
               },
-              child: Text("OK"),
+              child: Text("Proceed"),
             ),
           ],
         );
@@ -433,44 +443,60 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
     );
   }
 
-  // Add the subscription handling functions within the _SubscriptionPageState class
-  Future<void> _purchasePackage(Package package) async {
-    try {
-      // Initiate the purchase process for the specified package
-      CustomerInfo purchaserInfo = await Purchases.purchasePackage(package);
-      // Handle successful purchase
-      if (purchaserInfo.entitlements.all["premium"]!.isActive) {
-        // Unlock premium features based on the entitlement
-        _showSubscribeDialog();
-        // final bool isPro = purchaserInfo.entitlements.active.containsKey('premium');
-        // final bool isActive = purchaserInfo.entitlements.all['premium'] != null && purchaserInfo.entitlements.all['premium']!.isActive;
+  // Handle purchase result
+  void _handlePurchaseResult(List<PurchaseDetails> purchaseDetails) {
+    purchaseDetails.forEach((purchaseDetail) async {
+      if (purchaseDetail.status == PurchaseStatus.pending) {
+        // Handle pending purchase
+      } else if (purchaseDetail.status == PurchaseStatus.error) {
+        // Handle purchase error
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Purchase failed: ${purchaseDetail.error?.message}'),
+          ),
+        );
+      } else if (purchaseDetail.status == PurchaseStatus.purchased ||
+          purchaseDetail.status == PurchaseStatus.restored) {
+        await _deliverPurchase(purchaseDetail);
+      }
+    });
+  }
 
-        Navigator.pushNamed(context, 'home');
+  // Updated _deliverPurchase function
+  Future<void> _deliverPurchase(PurchaseDetails purchaseDetails) async {
+    try {
+      // Fetch the latest entitlement information
+      CustomerInfo customerInfo = await Purchases.getCustomerInfo();
+
+      // Check if the entitlement is active and valid
+      if (customerInfo.entitlements.all[premiumEntitlementKey]?.isActive == true) {
+        // Unlock premium features
+        _showSubscribeDialog();
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Purchase successful, but entitlement not found.'),
           ),
         );
-        Navigator.pushNamed(context, 'feedback');
       }
-      // Example: Update UI after successful transaction
-      setState(() {
-        // Update UI for success
-      });
-    } on PlatformException catch (e) {
-      // Handle platform-specific errors (e.g., user cancels the purchase)
-      var errorCode = PurchasesErrorHelper.getErrorCode(e);
+    } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Purchase failed: $errorCode'),
+          content: Text('Error delivering purchase: $e'),
         ),
       );
+    }
+  }
+
+  // Restore previous purchases
+  Future<void> _restorePurchases() async {
+    try {
+      // Initiate purchase restoration
+      await Purchases.restorePurchases();
     } catch (e) {
-      // Catch other unexpected errors
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Unexpected error: $e'),
+          content: Text('Error restoring purchases: $e'),
         ),
       );
     }
@@ -478,8 +504,10 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
 
   @override
   void dispose() {
+    _purchasesStreamSub.cancel(); // Cancel the PurchasesResultReceiver stream
     super.dispose();
   }
+
 }
 
 
