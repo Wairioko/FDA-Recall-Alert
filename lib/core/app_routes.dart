@@ -32,12 +32,12 @@ class AppRoutes {
       FeedbackForm.path: (context) => FeedbackForm(),
       AccountSettingsWidget.path: (context) => AccountSettingsWidget(),
       NotificationsPage.path: (context) => NotificationsPage(),
+      LandingPage.path: (context) => LandingPage(),
+
       NotificationDisplay.path: (context) {
         final RemoteMessage message = ModalRoute.of(context)!.settings.arguments as RemoteMessage;
         return NotificationDisplay(message: message);
       },
-
-      LandingPage.path: (context) => LandingPage(),
 
       WatchlistCategoryItemsScreen.path: (context) {
         final String category = ModalRoute.of(context)?.settings.arguments as String;
