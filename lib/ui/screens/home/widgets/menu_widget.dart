@@ -183,7 +183,7 @@ class MenuWidget extends StatelessWidget {
                       ),
                     _buildMenuItem(
                       onTap: () {
-                        launchUrlString('https://www.termsfeed.com/live/dc8eb1b0-e905-46b7-85b0-408a1dbb8604');
+                        launchUrlString('https://play.google.com/store/apps/details?id=com.saferecall.com');
                       },
                       icon: 'assets/icons/rate.svg', // Replace with appropriate icon
                       text: 'Rate Us',
