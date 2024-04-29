@@ -60,10 +60,7 @@ class _SignUpPageState extends State<SignUpPage> {
     // Reset text controllers and other state variables when the sign-up page is initialized
   }
 
-  Future<String?> _getFCMToken() async {
-    String? token = await FirebaseMessaging.instance.getToken();
-    return token;
-  }
+
 
 
   void _handleGoogleSignUp(BuildContext context) async {
@@ -97,19 +94,28 @@ class _SignUpPageState extends State<SignUpPage> {
         // Log event: User selects email
         FirebaseCrashlytics.instance.log('User selects email: ${googleUser.email}');
 
-        // Check if additional information has been collected
-        final userId = userCredential.user?.uid;
-        final additionalInfoCollected = await isAdditionalInfoCollected(userId);
-
-        if (isNewUser && !additionalInfoCollected) {
-          String email = googleUser.email;
-          // prompt the user to provide additional information
-          _collectAdditionalInformation(userId, context, email);
+        // Show a dialog if the user account is already registered
+        if (!isNewUser) {
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: Text('Account Already Registered'),
+                content: Text('Your Google account is already registered.'),
+                actions: <Widget>[
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    child: Text('OK'),
+                  ),
+                ],
+              );
+            },
+          );
         } else {
-          // If the user already exists or additional information has been collected,
-          // proceed with the regular sign-in flow
-          final List<GoogleSignInAccount> accounts = [googleUser];
-          _showGoogleAccountsDialog(context, googleSignIn, accounts);
+          // Redirect to home page after successful login
+          Navigator.of(context).pushNamed('/home');
         }
       }
     } catch (e, stackTrace) {
@@ -120,152 +126,6 @@ class _SignUpPageState extends State<SignUpPage> {
     }
   }
 
-
-// Function to check if additional information is collected for the user
-  Future<bool> isAdditionalInfoCollected(String? userId) async {
-    if (userId == null) return false;
-
-    try {
-      // Get a reference to the user document in Firestore
-      final userDoc = FirebaseFirestore.instance.collection('users').doc(userId);
-      final userData = await userDoc.get();
-
-      // Check if the user document exists and if additional information is present
-      return userData.exists && userData['shoppingFrequency'] != null && userData['defaultState'] != null;
-    } catch (e) {
-      print('Error checking additional information: $e');
-      return false;
-    }
-  }
-
-
-
-// Function to handle the selection of shopping frequency
-  void _onShoppingFrequencyChanged(String? newValue) {
-    setState(() {
-      shoppingFrequency = newValue!;
-    });
-  }
-
-  void _collectAdditionalInformation(String? userId, BuildContext context, String? email) {
-    if (userId == null) return;
-
-    // Log event: _collectAdditionalInformation function is called
-    FirebaseCrashlytics.instance.log('_collectAdditionalInformation function is called');
-
-    // Show a dialog to collect additional information
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        // Variables to store collected information
-        String defaultState = '';
-
-        // GlobalKey to access the form state
-        final GlobalKey<FormState> formKey = GlobalKey<FormState>();
-
-        return AlertDialog(
-          title: const Text('Additional Information'),
-          content: SingleChildScrollView(
-            child: Form(
-              key: formKey,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Dropdown to select shopping frequency
-                  DropdownButtonFormField<String>(
-                    value: shoppingFrequency,
-                    onChanged: _onShoppingFrequencyChanged,
-                    items: const [
-                      DropdownMenuItem(
-                        value: '1-3 times per month',
-                        child: Text('1-3 times per month'),
-                      ),
-                      DropdownMenuItem(
-                        value: '4-6 times per month',
-                        child: Text('4-6 times per month'),
-                      ),
-                      DropdownMenuItem(
-                        value: '7+ times per month',
-                        child: Text('7+ times per month'),
-                      ),
-                    ],
-                    decoration: const InputDecoration(
-                      labelText: 'Shopping Frequency',
-                      hintText: 'Select Shopping Frequency',
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please select shopping frequency';
-                      }
-                      return null;
-                    },
-                  ),
-                  // Text field to enter default state
-                  TextFormField(
-                    onChanged: (value) {
-                      defaultState = value;
-                    },
-                    decoration: const InputDecoration(
-                      hintText: 'Your Default State',
-                      labelText: 'Enter Default State',
-                    ),
-                    validator: (value) {
-                      if (value!.isEmpty) {
-                        return 'State cannot be empty';
-                      }
-                      return null;
-                    },
-                  ),
-                ],
-              ),
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                // Log event: User cancels the dialog
-                FirebaseCrashlytics.instance.log('User cancels the dialog');
-                Navigator.of(context).pop();
-              },
-              child: Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                if (formKey.currentState!.validate()) {
-                  try {
-                    // Get FCM token
-                    String? fcmToken = await _getFCMToken();
-
-                    // Store additional information in Firestore
-                    await FirebaseFirestore.instance.collection('users').doc(userId).set({
-                      'shoppingFrequency': shoppingFrequency,
-                      'defaultState': defaultState,
-                      'token': fcmToken,
-                      'email': email,
-                    }, SetOptions(merge: true)); // Merge with existing data if present
-
-                    // Update the state to indicate that additional information has been collected
-                    setState(() {
-                      additionalInfoCollected = true;
-                    });
-
-                    // Close the dialog
-                    Navigator.of(context).pop();
-                    Navigator.of(context).pushNamed('/home');
-                  } catch (e) {
-                    // Log error: Error saving additional information
-                    FirebaseCrashlytics.instance.recordError(e, StackTrace.current);
-                    print('Error saving additional information: $e');
-                  }
-                }
-              },
-              child: Text('Save'),
-            ),
-          ],
-        );
-      },
-    );
-  }
 
 
 
@@ -444,7 +304,7 @@ class _SignUpPageState extends State<SignUpPage> {
                       child: Container(
                         child: Text(
                           "FDA Recall Alert",
-                          style: GoogleFonts.lato(fontSize: 50.0, color: Colors.blue),
+                          style: GoogleFonts.lato(fontSize: 40.0, color: Colors.blue),
                         ),
                       ),
                     ),
@@ -540,10 +400,10 @@ class _SignUpPageState extends State<SignUpPage> {
                         ),
                         GestureDetector(
                           onTap: () {
-                            Navigator.pushNamed(context, '/login');
+                            Navigator.pushNamed(context, LogInPage.path);
                           },
                           child:const Text(
-                            ' Sign In',
+                            'Sign In',
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
