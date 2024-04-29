@@ -1,25 +1,26 @@
 import 'package:flutter/material.dart';
+import 'package:safe_scan/ui/screens/user_auth/signup.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-void main() {
-  runApp(MyApp());
-}
 
-class MyApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'FDA Recall Alert',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        fontFamily: 'SFPro', // Apple's system font
-      ),
-      home: LandingPage(),
-    );
-  }
-}
-
-class LandingPage extends StatelessWidget {
+class LandingPage extends StatefulWidget {
   static const String path = 'landing';
+
+  @override
+  _LandingPageState createState() => _LandingPageState();
+}
+
+class _LandingPageState extends State<LandingPage> {
+  @override
+  void initState() {
+    super.initState();
+    _setFirstTimeFalse();
+  }
+
+  Future<void> _setFirstTimeFalse() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('isFirstTime', false);
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -162,8 +163,7 @@ class LandingPage extends StatelessWidget {
             Center(
               child: ElevatedButton(
                 onPressed: () {
-                  // Redirect to detailed features breakdown
-                  Navigator.pushNamed(context, 'signup');
+                  Navigator.pushNamed(context, SignUpPage.path); // Use the named route
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue,
