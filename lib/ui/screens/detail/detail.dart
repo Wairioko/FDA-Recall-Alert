@@ -6,9 +6,8 @@ import 'package:google_generative_ai/google_generative_ai.dart';
 
 
 
-class Detail extends StatelessWidget {
+class Detail extends StatefulWidget {
   static const String path = '/detail';
-
   final DetailDataModel detailDataModel;
 
   const Detail({
@@ -17,15 +16,28 @@ class Detail extends StatelessWidget {
   }) : super(key: key);
 
   @override
+  _DetailState createState() => _DetailState();
+}
+
+class _DetailState extends State<Detail> {
+  bool _showGeneratedContent = false;
+  bool _isButtonClicked = false;
+  late Future<GenerateContentResponse> _generatedContentFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    // // Initialize the future for generating content
+    // _generatedContentFuture = fetchAdditionalInfo(widget.detailDataModel.reason_for_recall);
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Product Details",
-          style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontFamily: 'SanFrancisco'
-          ),
-
+        title: const Text(
+          "Product Details",
+          style: TextStyle(fontWeight: FontWeight.bold, fontFamily: 'SanFrancisco'),
         ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
@@ -53,19 +65,73 @@ class Detail extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildDetailRow('Product Recall:', detailDataModel.product_description),
-                  _buildDetailRow('Status:', detailDataModel.status),
-                  _buildDetailRow('Classification:', detailDataModel.classification),
-                  _buildDetailRow('Reason for Recall:', detailDataModel.reason_for_recall),
-                  _buildGeneratedContent(context, detailDataModel.reason_for_recall),
+                  _buildDetailRow('Product Recall:', widget.detailDataModel.product_description),
+                  _buildDetailRow('Status:', widget.detailDataModel.status),
+                  _buildDetailRow('Classification:', widget.detailDataModel.classification),
+                  _buildDetailRow('Reason for Recall:', widget.detailDataModel.reason_for_recall),
                 ],
               ),
             ),
+            if (_showGeneratedContent)
+              FutureBuilder<GenerateContentResponse>(
+                future: _generatedContentFuture,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          CircularProgressIndicator(),
+                          SizedBox(height: 10),
+                          Text("Generating insights..."),
+                        ],
+                      ),
+                    );
+                  } else if (snapshot.hasError) {
+                    print(snapshot.error);
+                    return Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.error_outline, color: Colors.red),
+                          SizedBox(height: 10),
+                          Text("Couldn't generate insights. Please try again."),
+                        ],
+                      ),
+                    );
+                  } else {
+                    final generatedText = snapshot.data?.text ?? '';
+                    return Container(
+                      padding: EdgeInsets.all(12),
+                      margin: EdgeInsets.only(top: 16),
+                      decoration: BoxDecoration(
+                        color: Colors.blueGrey.shade100,
+                        border: Border.all(color: Colors.grey.shade300),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "Generated AI Insights:",
+                            style: TextStyle(fontWeight: FontWeight.w500, fontFamily: 'SanFrancisco'),
+                          ),
+                          SizedBox(height: 8),
+                          _buildRichTextWithLinks(context, generatedText),
+                        ],
+                      ),
+                    );
+                  }
+                },
+              ),
+            _buildGenerateInsightsButton(widget.detailDataModel.reason_for_recall),
           ],
         ),
       ),
     );
   }
+
+
 // Helper function
   Widget _buildDetailRow(String label, String value) {
     return Padding(
@@ -280,6 +346,35 @@ class Detail extends StatelessWidget {
       throw 'Could not launch $_url';
     }
   }
+
+  Widget _buildGenerateInsightsButton(String reason) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        TextButton(
+          onPressed: _isButtonClicked
+              ? null // Disable the button if it has already been clicked
+              : () {
+            setState(() {
+              // Set the future only when the button is pressed
+              _generatedContentFuture = fetchAdditionalInfo(
+                  widget.detailDataModel.reason_for_recall);
+              _showGeneratedContent = true;
+              _isButtonClicked = true; // Set the flag to true after clicking the button
+            });
+          },
+          child: const Text('Generate Additional Insights'),
+          style: ButtonStyle(
+            backgroundColor: MaterialStateProperty.all<Color>(Colors.blue),
+            foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
+          ),
+        ),
+      ],
+    );
+  }
+
+
+
 
 
   static const apiKey = 'AIzaSyDWmLWTEAujx3vLdfH-VTifvE2Jti6bR5U';
