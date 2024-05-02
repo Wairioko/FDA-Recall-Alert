@@ -1,4 +1,5 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:safe_scan/ui/screens/detail/detail.dart';
 import 'package:safe_scan/ui/screens/home/home.dart';
 import 'package:safe_scan/ui/screens/home/widgets/landing_page.dart';
@@ -55,6 +56,10 @@ void main() async {
   );
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
+  // Configure Purchases SDK
+  await Purchases.setDebugLogsEnabled(true); // Enable debug logs for troubleshooting
+  await Purchases.setup('goog_ZfrdtkQtiwLcpHvPjOUfvqxPqCq');
+  //
   FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(true);
 
   User? user = FirebaseAuth.instance.currentUser;
@@ -87,7 +92,7 @@ class MyApp extends StatelessWidget {
             return Container(); // handle error
           }
           final bool isFirstTime = snapshot.data ?? true;
-          return isFirstTime ? LandingPage() : Home();
+          return isFirstTime ? LandingPage() : const Home();
         },
       ),
       routes: {
@@ -100,8 +105,9 @@ class MyApp extends StatelessWidget {
         '/feedback': (context) => FeedbackForm(),
         '/account_security': (context) => AccountSettingsWidget(),
         '/receipts': (context) => const ReceiptListScreen(),
-        '/notifications': (context) => NotificationsPage(),
+        '/notifications': (context) => const NotificationsPage(),
         '/camera': (context) => const MainScreen(),
+        '/subscription': (context) => SubscriptionPage(),
         NotificationDisplay.path: (context) {
           final RemoteMessage message = ModalRoute.of(context)!.settings.arguments as RemoteMessage;
           return NotificationDisplay(message: message);
