@@ -75,72 +75,74 @@ class MenuWidget extends StatelessWidget {
 
                         return Column(
                           children: [
+                            if (user != null)
                         Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 10),
-                        child: Align(
-                        alignment: Alignment.centerLeft,
-                        child: DropdownButton<String>(
-                        value: 'My Watchlist',
-                        onChanged: (String? newValue) {
-                        // Handle dropdown item selection here
-                        if (newValue == 'My Watchlist') {
-                        if (!hasSubscription && isTrialExpired) {
-                        _showSubscriptionDialog(context);
-                        } else {
-                        Navigator.of(context).pushNamed(WatchlistScreen.path);
-                        }
-                        } else {
-                        if (!hasSubscription && isTrialExpired) {
-                        _showSubscriptionDialog(context);
-                        } else {
-                        Navigator.of(context).pushNamed(
-                        WatchlistCategoryItemsScreen.path,
-                        arguments: newValue,
-                        );
-                        }
-                        }
-                        },
-                        items: <String>[
-                        'My Watchlist',
-                        'FOOD',
-                        'DRUG',
-                        'DEVICE'
-                        // Add more items as needed
-                        ].map<DropdownMenuItem<String>>((String value) {
-                        // You can customize the icon based on the value
-                        IconData iconData;
-                        switch (value) {
-                        case 'My Watchlist':
-                        iconData = Icons.watch_later; // Change to your watchlist icon
-                        break;
-                        case 'FOOD':
-                        iconData = Icons.fastfood;
-                        break;
-                        case 'DRUG':
-                        iconData = Icons.local_pharmacy;
-                        break;
-                        case 'DEVICE':
-                        iconData = Icons.devices;
-                        break;
-                        default:
-                        iconData = Icons.error_outline; // Default icon
-                        }
-                        return DropdownMenuItem<String>(
-                        value: value,
-                        child: Row(
-                        mainAxisAlignment: MainAxisAlignment.start, // Adjust alignment as needed
-                        children: [
-                        Icon(iconData), // Icon
-                        SizedBox(width: 15), // Adjust spacing between icon and text
-                        Text(value), // Text
-                        ],
-                        ),
-                        );
-                        }).toList(),
-                        ),
-                        ),
-                        ),
+                          padding: const EdgeInsets.symmetric(horizontal: 10),
+                          child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: DropdownButton<String>(
+                          value: 'My Watchlist',
+                          onChanged: (String? newValue) {
+                          // Handle dropdown item selection here
+                          if (newValue == 'My Watchlist') {
+                            if (!hasSubscription && isTrialExpired) {
+                            _showSubscriptionDialog(context);
+                            } else {
+                            Navigator.of(context).pushNamed(WatchlistScreen.path);
+                            }
+                          } else {
 
+                          if (!hasSubscription && isTrialExpired) {
+                          _showSubscriptionDialog(context);
+                          } else {
+                          Navigator.of(context).pushNamed(
+                          WatchlistCategoryItemsScreen.path,
+                          arguments: newValue,
+                          );
+                          }
+                          }
+                          },
+                          items: <String>[
+                          'My Watchlist',
+                          'FOOD',
+                          'DRUG',
+                          'DEVICE'
+                          // Add more items as needed
+                          ].map<DropdownMenuItem<String>>((String value) {
+                          // You can customize the icon based on the value
+                          IconData iconData;
+                          switch (value) {
+                          case 'My Watchlist':
+                          iconData = Icons.watch_later; // Change to your watchlist icon
+                          break;
+                          case 'FOOD':
+                          iconData = Icons.fastfood;
+                          break;
+                          case 'DRUG':
+                          iconData = Icons.local_pharmacy;
+                          break;
+                          case 'DEVICE':
+                          iconData = Icons.devices;
+                          break;
+                          default:
+                          iconData = Icons.error_outline; // Default icon
+                          }
+                          return DropdownMenuItem<String>(
+                          value: value,
+                          child: Row(
+                          mainAxisAlignment: MainAxisAlignment.start, // Adjust alignment as needed
+                          children: [
+                          Icon(iconData), // Icon
+                          SizedBox(width: 15), // Adjust spacing between icon and text
+                          Text(value), // Text
+                          ],
+                          ),
+                          );
+                          }).toList(),
+                          ),
+                          ),
+                          ),
+                            if (user != null)
                             Align(
                               alignment: Alignment.centerLeft,
                               child: _buildMenuItem(
@@ -232,10 +234,14 @@ class MenuWidget extends StatelessWidget {
     );
   }
 
+
+
   Stream<CustomerInfo> _checkSubsStream() async* {
     try {
-      final customerInfo = await Purchases.getCustomerInfo();
-      yield customerInfo;
+      final purchaserInfo = await Purchases.getCustomerInfo();
+      final bool hasSubscription = purchaserInfo.entitlements.active.containsKey('premium');
+      // Use the hasSubscription boolean to determine the user's subscription status
+      yield purchaserInfo;
     } catch (e) {
       print('Error checking subscription: $e');
     }
@@ -249,7 +255,7 @@ class MenuWidget extends StatelessWidget {
       if (registrationDate == null) {
         return true; // Not registered
       } else {
-        const trialPeriodDuration = Duration(days: 20); // Change trial period duration as needed
+        const trialPeriodDuration = Duration(days: 1); // Change trial period duration as needed
         final trialPeriodEnd = registrationDate.add(trialPeriodDuration);
         return DateTime.now().isAfter(trialPeriodEnd);
       }
@@ -282,7 +288,7 @@ class MenuWidget extends StatelessWidget {
               onPressed: () {
                 // Navigate to the subscription screen
                 // You can replace the '/subscription' with the actual subscription screen route
-                Navigator.of(context).pushNamed('subscription');
+                Navigator.of(context).pushNamed('/subscription');
               },
               child: Text("Subscribe"),
             ),
@@ -291,26 +297,6 @@ class MenuWidget extends StatelessWidget {
       },
     );
   }
-
-
-  //
-  // void _showSubscriptionSnackbar(BuildContext context) {
-  //   ScaffoldMessenger.of(context).showSnackBar(
-  //     SnackBar(
-  //       content: Text('Your free trial has expired. Please subscribe to access this feature.'),
-  //       action: SnackBarAction(
-  //         label: 'Subscribe',
-  //         onPressed: () {
-  //           // Navigate to the subscription screen
-  //           // You can replace the '/subscription' with the actual subscription screen route
-  //           Navigator.of(context).pushNamed('/subscription');
-  //         },
-  //       ),
-  //     ),
-  //   );
-  // }
-
-
 
   Widget _buildMenuItem({
     required VoidCallback onTap,
