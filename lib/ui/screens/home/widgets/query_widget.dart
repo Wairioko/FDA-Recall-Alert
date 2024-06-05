@@ -421,7 +421,7 @@ class _QueryWidgetState extends State<QueryWidget> {
                           }
                           String title = '5 Most Recently Recalled Items in $state_value';
                           String referral = 'Download our app to see more recalled items in your state, check your shopping against the recalled list nationwide, and access other features!';
-                          String referralLink = 'https://yourapp.com/download?ref=$uid';
+                          String referralLink = 'https://play.google.com/store/apps/details?id=com.saferecall.com';
 
                           showDialog(
                             context: context,
