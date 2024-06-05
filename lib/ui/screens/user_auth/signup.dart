@@ -42,13 +42,22 @@ class SignUpPage extends StatefulWidget {
   _SignUpPageState createState() => _SignUpPageState();
 }
 // Define a variable to track the authentication method
-enum AuthMethod {Google, Apple }
+enum AuthMethod {Google, Apple, EmailPassword }
 
 class _SignUpPageState extends State<SignUpPage> {
   final formkey = GlobalKey<FormState>();
   TextEditingController defaultStateController = TextEditingController();
   String shoppingFrequency = '1-3 times per month';
   bool additionalInfoCollected = false; // Define this variable in your stateful widget
+
+  // Controllers for email and password fields
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _confirmPasswordController = TextEditingController();
+
+  // Boolean to toggle password visibility
+  bool _passwordVisible = false;
+  bool _confirmPasswordVisible = false;
 
 
   // Initialize it with the default method
@@ -126,134 +135,73 @@ class _SignUpPageState extends State<SignUpPage> {
     }
   }
 
+  Future<void> _handleEmailPasswordSignUp() async {
+    try {
+      if (formkey.currentState!.validate()) {
+        final email = _emailController.text.trim();
+        final password = _passwordController.text;
+        final confirmPassword = _confirmPasswordController.text;
 
-
-
-  void _showGoogleAccountsDialog(BuildContext context, GoogleSignIn googleSignIn, List<GoogleSignInAccount> accounts) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return Dialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20.0),
-          ),
-          elevation: 0.0,
-          backgroundColor: Colors.transparent,
-          child: AlertDialog(
-            contentPadding: EdgeInsets.zero,
-            content: SingleChildScrollView(
-              child: Container(
-                width: MediaQuery.of(context).size.width * 0.8,
-                padding:const EdgeInsets.all(20.0),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(10.0),
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Continue with:',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    ...accounts.map((account) {
-                      return Container(
-                        margin:const EdgeInsets.symmetric(vertical: 5.0),
-                        decoration: BoxDecoration(
-                          color: Colors.grey[200],
-                          borderRadius: BorderRadius.circular(50.0),
-                        ),
-                        child: ListTile(
-                          onTap: () {
-                            context.read<UserProviderLogin>().signInWithGoogle(context);
-                            Navigator.pop(context);
-                            Navigator.push(context, MaterialPageRoute(
-                                builder: (context) => Home()));
-                          },
-                          title: Text(
-                            '${account.email}',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.grey[700],
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            maxLines: 1,
-                          ),
-                          leading: Icon(Icons.account_circle),
-                        ),
-                      );
-                    }).toList(),
-                    const SizedBox(height: 20),
-                    const Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Expanded(
-                          child: Divider(
-                            color: Colors.grey,
-                            height: 36,
-                          ),
-                        ),
-                        Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 10),
-                          child: Text(
-                            'OR',
-                            style: TextStyle(color: Colors.grey, fontWeight: FontWeight.w900),
-                          ),
-                        ),
-                        Expanded(
-                          child: Divider(
-                            color: Colors.grey,
-                            height: 36,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 20),
-                    Align(
-                      alignment: Alignment.center,
-                      child: TextButton(
-                        onPressed: () {
-                          Navigator.pop(context);
-                          _handleGoogleSignUp(context);
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.all(10.0),
-                          decoration: BoxDecoration(
-                            color: Colors.blue,
-                            borderRadius: BorderRadius.circular(30.0),
-                          ),
-                          child: const Text(
-                            'Register Another Account',
-                            style: TextStyle(
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+        if (password != confirmPassword) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Passwords do not match'),
             ),
-          ),
+          );
+          return;
+        }
+
+        // Log event: User initiates sign-up process
+        FirebaseCrashlytics.instance.log('User initiates sign-up process');
+
+        // Create user with email and password
+        final userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+          email: email,
+          password: password,
         );
-      },
-    );
+
+        // Send email verification
+        await userCredential.user?.sendEmailVerification();
+
+        // Show a dialog to prompt the user to check their email
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text('Email Verification'),
+              content: const Text('Please check your email and verify your account.'),
+              actions: <Widget>[
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('OK'),
+                ),
+              ],
+            );
+          },
+        );
+
+        // Redirect to home page after successful login
+        Navigator.of(context).pushNamed('/home');
+      }
+    } catch (e, stackTrace) {
+      // Log error: Error signing up with email and password
+      FirebaseCrashlytics.instance.recordError(e, stackTrace);
+      // Handle sign-up errors
+      print('Error signing up with email and password: $e');
+    }
   }
 
 
+
+  //
 
   void _handleAppleSignUp() async {
     try {
       final credential = await SignInWithApple.getAppleIDCredential(
         scopes: [
           AppleIDAuthorizationScopes.email,
-          AppleIDAuthorizationScopes.fullName,
         ],
         webAuthenticationOptions: WebAuthenticationOptions(
           clientId: 'your_client_id',
@@ -273,8 +221,6 @@ class _SignUpPageState extends State<SignUpPage> {
       print("Apple sign-in error: $e");
     }
   }
-
-
 
 
   @override
@@ -318,7 +264,118 @@ class _SignUpPageState extends State<SignUpPage> {
                       'One Scan at a time!',
                       style: TextStyle(fontSize: 20, fontFamily: 'San Francisco'),
                     ),
-                    SizedBox(height: 50), // Reduced the height
+                  const SizedBox(height: 40), // Adjusted gap
+                  SizedBox(
+                    width: double.infinity, // Make the button as wide as possible
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30.0),
+                        ),
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          authMethod = AuthMethod.EmailPassword;
+                        });
+                      },
+                      icon: const Icon(Icons.email, color: Colors.black),
+                      label: const Text(
+                        'Register with Email',
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontFamily: 'San Francisco',
+                        ),
+                      ),
+                    ),
+                  ),
+                  if (authMethod == AuthMethod.EmailPassword)
+                Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  children: [
+                    TextFormField(
+                      controller: _emailController,
+                      decoration: const InputDecoration(
+                        labelText: 'Email',
+                        prefixIcon: Icon(Icons.email),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter an email';
+                        }
+                        return null;
+                      },
+                    ),
+                const SizedBox(height: 16.0),
+                TextFormField(
+                  controller: _passwordController,
+                  obscureText: !_passwordVisible,
+                  decoration: InputDecoration(
+                    labelText: 'Password',
+                    prefixIcon: const Icon(Icons.lock),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _passwordVisible ? Icons.visibility : Icons.visibility_off,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _passwordVisible = !_passwordVisible;
+                        });
+                      },
+                    ),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter a password';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16.0),
+                TextFormField(
+                    controller: _confirmPasswordController,
+                    obscureText: !_confirmPasswordVisible,
+                    decoration: InputDecoration(
+                    labelText: 'Confirm Password',
+                    prefixIcon: const Icon(Icons.lock),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _confirmPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _confirmPasswordVisible = !_confirmPasswordVisible;
+                        });
+                      },
+                    ),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please confirm your password';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16.0),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _handleEmailPasswordSignUp,
+                    child: const Text('Register'),
+                  ),
+                ),
+              ],
+            ),
+                ),
+                    SizedBox(height: 20),
+                    Text(
+                      'OR',
+                      style: TextStyle(color: Colors.grey, fontWeight: FontWeight.w900),
+                    ),
+
+                    SizedBox(height: 20), // Reduced the height
                     SizedBox(
                       width: double.infinity, // Make the button as wide as possible
                       child: ElevatedButton.icon(
@@ -343,40 +400,36 @@ class _SignUpPageState extends State<SignUpPage> {
                         ),
                       ),
                     ),
-                    SizedBox(height: 20),
-                    Text(
-                      'OR',
-                      style: TextStyle(color: Colors.grey, fontWeight: FontWeight.w900),
-                    ),
-                    SizedBox(height: 20), // Adjusted gap between buttons
-                    SizedBox(
-                      width: double.infinity,
-                      // Make the button as wide as possible
-                      child: ElevatedButton.icon(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.black,
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 20, vertical: 12),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30.0),
-                          ),
-                        ),
-                        onPressed: () {
-                          _handleAppleSignUp();
-                        },
-                        icon: const FaIcon(
-                          FontAwesomeIcons.apple,
-                          color: Colors.white,
-                        ),
-                        label: const Text(
-                          'Register with Apple',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontFamily: 'San Francisco',
-                          ),
-                        ),
-                      ),
-                    ),
+
+                    // SizedBox(height: 20), // Adjusted gap between buttons
+                    // SizedBox(
+                    //   width: double.infinity,
+                    //   // Make the button as wide as possible
+                    //   child: ElevatedButton.icon(
+                    //     style: ElevatedButton.styleFrom(
+                    //       backgroundColor: Colors.black,
+                    //       padding: const EdgeInsets.symmetric(
+                    //           horizontal: 20, vertical: 12),
+                    //       shape: RoundedRectangleBorder(
+                    //         borderRadius: BorderRadius.circular(30.0),
+                    //       ),
+                    //     ),
+                    //     onPressed: () {
+                    //       _handleAppleSignUp();
+                    //     },
+                    //     icon: const FaIcon(
+                    //       FontAwesomeIcons.apple,
+                    //       color: Colors.white,
+                    //     ),
+                    //     label: const Text(
+                    //       'Register with Apple',
+                    //       style: TextStyle(
+                    //         color: Colors.white,
+                    //         fontFamily: 'San Francisco',
+                    //       ),
+                    //     ),
+                    //   ),
+                    // ),
 
                     const SizedBox(height: 40), // Space above the "OR" line
                     const Center(
@@ -425,3 +478,120 @@ class _SignUpPageState extends State<SignUpPage> {
     );
   }
 }
+
+// void _showGoogleAccountsDialog(BuildContext context, GoogleSignIn googleSignIn, List<GoogleSignInAccount> accounts) {
+//   showDialog(
+//     context: context,
+//     builder: (BuildContext context) {
+//       return Dialog(
+//         shape: RoundedRectangleBorder(
+//           borderRadius: BorderRadius.circular(20.0),
+//         ),
+//         elevation: 0.0,
+//         backgroundColor: Colors.transparent,
+//         child: AlertDialog(
+//           contentPadding: EdgeInsets.zero,
+//           content: SingleChildScrollView(
+//             child: Container(
+//               width: MediaQuery.of(context).size.width * 0.8,
+//               padding:const EdgeInsets.all(20.0),
+//               decoration: BoxDecoration(
+//                 color: Colors.white,
+//                 borderRadius: BorderRadius.circular(10.0),
+//               ),
+//               child: Column(
+//                 mainAxisSize: MainAxisSize.min,
+//                 crossAxisAlignment: CrossAxisAlignment.start,
+//                 children: [
+//                   const Text(
+//                     'Continue with:',
+//                     style: TextStyle(
+//                       fontSize: 20,
+//                       fontWeight: FontWeight.bold,
+//                     ),
+//                   ),
+//                   const SizedBox(height: 10),
+//                   ...accounts.map((account) {
+//                     return Container(
+//                       margin:const EdgeInsets.symmetric(vertical: 5.0),
+//                       decoration: BoxDecoration(
+//                         color: Colors.grey[200],
+//                         borderRadius: BorderRadius.circular(50.0),
+//                       ),
+//                       child: ListTile(
+//                         onTap: () {
+//                           context.read<UserProviderLogin>().signInWithGoogle(context);
+//                           Navigator.pop(context);
+//                           Navigator.push(context, MaterialPageRoute(
+//                               builder: (context) => Home()));
+//                         },
+//                         title: Text(
+//                           '${account.email}',
+//                           style: TextStyle(
+//                             fontSize: 14,
+//                             color: Colors.grey[700],
+//                             overflow: TextOverflow.ellipsis,
+//                           ),
+//                           maxLines: 1,
+//                         ),
+//                         leading: Icon(Icons.account_circle),
+//                       ),
+//                     );
+//                   }).toList(),
+//                   const SizedBox(height: 20),
+//                   const Row(
+//                     mainAxisAlignment: MainAxisAlignment.center,
+//                     children: [
+//                       Expanded(
+//                         child: Divider(
+//                           color: Colors.grey,
+//                           height: 36,
+//                         ),
+//                       ),
+//                       Padding(
+//                         padding: EdgeInsets.symmetric(horizontal: 10),
+//                         child: Text(
+//                           'OR',
+//                           style: TextStyle(color: Colors.grey, fontWeight: FontWeight.w900),
+//                         ),
+//                       ),
+//                       Expanded(
+//                         child: Divider(
+//                           color: Colors.grey,
+//                           height: 36,
+//                         ),
+//                       ),
+//                     ],
+//                   ),
+//                   const SizedBox(height: 20),
+//                   Align(
+//                     alignment: Alignment.center,
+//                     child: TextButton(
+//                       onPressed: () {
+//                         Navigator.pop(context);
+//                         _handleGoogleSignUp(context);
+//                       },
+//                       child: Container(
+//                         padding: const EdgeInsets.all(10.0),
+//                         decoration: BoxDecoration(
+//                           color: Colors.blue,
+//                           borderRadius: BorderRadius.circular(30.0),
+//                         ),
+//                         child: const Text(
+//                           'Register Another Account',
+//                           style: TextStyle(
+//                             color: Colors.white,
+//                           ),
+//                         ),
+//                       ),
+//                     ),
+//                   ),
+//                 ],
+//               ),
+//             ),
+//           ),
+//         ),
+//       );
+//     },
+//   );
+// }
