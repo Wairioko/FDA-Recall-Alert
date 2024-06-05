@@ -1,7 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -10,7 +9,6 @@ import 'package:safe_scan/ui/screens/user_auth/signup.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:safe_scan/ui/screens/home/home.dart';
-
 
 class UserProviderLogin extends ChangeNotifier {
   User? _user;
@@ -29,7 +27,6 @@ class UserProviderLogin extends ChangeNotifier {
       final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
 
       if (googleUser == null) {
-        // User canceled the sign-in process
         return;
       }
 
@@ -39,49 +36,39 @@ class UserProviderLogin extends ChangeNotifier {
         idToken: googleAuth.idToken,
       );
 
-      // Sign in with the Google credential
       final authResult = await FirebaseAuth.instance.signInWithCredential(credential);
 
-      final isNewUser = authResult.additionalUserInfo?.isNewUser ?? true;
-
-      if (isNewUser) {
-        // Redirect to the signup page if the user is new
+      if (authResult.additionalUserInfo?.isNewUser ?? true) {
         Navigator.pushNamed(context, '/signup');
       } else {
-        // Update authentication state
         setUser(authResult.user);
-
-        // Redirect to the home page upon successful authentication
-        Navigator.pushNamed(context, '/home'); // Replace '/home' with your home page route
+        Navigator.pushNamed(context, '/home');
       }
     } catch (e) {
-      // Handle sign-in errors
-      if (e.toString().contains('Bad state: User is no longer signed in')) {
-        // Handle token expiration or user no longer signed in
-        print('User is no longer signed in. Please try signing in again.');
-        // You may want to show a snackbar or dialog to inform the user
-      } else {
-        // For other errors, log the error and handle it accordingly
-        print('Error signing in with Google: $e');
-      }
+      _showErrorDialog(context, 'Error signing in with Google: $e');
     }
   }
 
+  Future<void> signInWithEmailAndPassword(BuildContext context, String email, String password) async {
+    try {
+      await FirebaseAuth.instance.signInWithEmailAndPassword(email: email, password: password);
+      setUser(FirebaseAuth.instance.currentUser);
+      Navigator.pushNamed(context, '/home');
+    } on FirebaseAuthException catch (e) {
+      _showErrorDialog(context, e.message ?? 'Unknown error occurred');
+    }
+  }
 
   Future<bool> checkIfUserIsRegistered(GoogleSignInAccount googleUser) async {
-    // Get the UID (unique identifier) of the Google user
     String userUid = googleUser.id;
 
-    // Query Firestore to check if the user's UID exists in the 'users' collection
     QuerySnapshot querySnapshot = await FirebaseFirestore.instance
         .collection('users')
         .where('uid', isEqualTo: userUid)
         .get();
 
-    // Check if any documents match the query
     bool userExists = querySnapshot.docs.isNotEmpty;
 
-    // Print statement based on whether matches were found or not
     if (userExists) {
       print('Matches found');
     } else {
@@ -91,14 +78,10 @@ class UserProviderLogin extends ChangeNotifier {
     return userExists;
   }
 
-
   Future<void> signInWithApple(BuildContext context) async {
     try {
       final credential = await SignInWithApple.getAppleIDCredential(
-        scopes: [
-          AppleIDAuthorizationScopes.email,
-          AppleIDAuthorizationScopes.fullName,
-        ],
+        scopes: [AppleIDAuthorizationScopes.email],
       );
 
       final OAuthProvider oAuthProvider = OAuthProvider("apple.com");
@@ -110,21 +93,100 @@ class UserProviderLogin extends ChangeNotifier {
       await FirebaseAuth.instance.signInWithCredential(authCredential);
 
       setUser(FirebaseAuth.instance.currentUser);
+      Navigator.pushNamed(context, '/home');
     } catch (e) {
-      print(e.toString());
+      _showErrorDialog(context, e.toString());
     }
   }
 
+  Future<void> resetPassword(BuildContext context, String email) async {
+    try {
+      await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
+      _showSuccessDialog(context, 'Password reset email sent to $email');
+    } on FirebaseAuthException catch (e) {
+      _showErrorDialog(context, e.message ?? 'Unknown error occurred');
+    }
+  }
 
   Future<void> signOut() async {
     await FirebaseAuth.instance.signOut();
     setUser(null);
   }
+
+  void _showErrorDialog(BuildContext context, String message) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Error'),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showSuccessDialog(BuildContext context, String message) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Success'),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showForgotPasswordDialog(BuildContext context) {
+    final TextEditingController emailController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Forgot Password'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: emailController,
+                decoration: InputDecoration(labelText: 'Enter your email'),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                if (emailController.text.isNotEmpty) {
+                  resetPassword(context, emailController.text.trim());
+                } else {
+                  _showErrorDialog(context, 'Please enter your email to reset password');
+                }
+              },
+              child: Text('Submit'),
+            ),
+          ],
+        );
+      },
+    );
+  }
 }
-
-
-
-
 
 class LogInPage extends StatefulWidget {
   static const String path = '/login';
@@ -138,6 +200,7 @@ class _LogInPageState extends State<LogInPage> {
   final formkey = GlobalKey<FormState>();
   TextEditingController email = TextEditingController();
   TextEditingController password = TextEditingController();
+  bool showLoginForm = false;
 
   @override
   Widget build(BuildContext context) {
@@ -155,7 +218,7 @@ class _LogInPageState extends State<LogInPage> {
                   children: [
                     const SizedBox(height: 0),
                     Padding(
-                      padding: const EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 8.0),
+                      padding: const EdgeInsets.all(8.0),
                       child: Container(
                         child: Text(
                           "FDA Recall Alert",
@@ -163,90 +226,153 @@ class _LogInPageState extends State<LogInPage> {
                         ),
                       ),
                     ),
-                    SizedBox(height: 20),
+                    const SizedBox(height: 20),
                     Text(
                       'Keeping you and your family safe',
                       style: TextStyle(fontSize: 20, fontFamily: 'SF Pro Text'),
                     ),
-                    SizedBox(height: 20),
+                    const SizedBox(height: 20),
                     Text(
                       'One Scan at a time!',
                       style: TextStyle(fontSize: 20, fontFamily: 'San Francisco'),
                     ),
-                    SizedBox(height: 50), // Reduced the height
-                    SizedBox(
-                      width: double.infinity, // Make the button as wide as possible
-                      child: ElevatedButton.icon(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          padding: EdgeInsets.symmetric(
-                              horizontal: 20, vertical: 12),
-                          shape: RoundedRectangleBorder(
+                    const SizedBox(height: 20),
+                    if (showLoginForm) ...[
+                      TextFormField(
+                        controller: email,
+                        decoration: InputDecoration(
+                          labelText: 'Email',
+                          border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(30.0),
                           ),
                         ),
-
-                        onPressed: () {
-                          context.read<UserProviderLogin>().signInWithGoogle(context);
-
-
+                        validator: (value) {
+                          if (value!.isEmpty) {
+                            return 'Please enter your email';
+                          }
+                          return null;
                         },
-                        icon: FaIcon(FontAwesomeIcons.google),
-                        label: Text(
-                          'Sign in with Google',
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontFamily: 'San Francisco',
-                          ),
-                        ),
                       ),
-                    ),
-                    SizedBox(height: 20),
-                    Text(
-                      'OR',
-                      style: TextStyle(color: Colors.grey, fontWeight: FontWeight.w900),
-                    ),
-                    SizedBox(height: 20), // Adjusted gap between buttons
-                    SizedBox(
-                      width: double.infinity,
-                      // Make the button as wide as possible
-                      child: ElevatedButton.icon(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.black,
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 20, vertical: 12),
-                          shape: RoundedRectangleBorder(
+                      const SizedBox(height: 20),
+                      TextFormField(
+                        controller: password,
+                        obscureText: true,
+                        decoration: InputDecoration(
+                          labelText: 'Password',
+                          border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(30.0),
                           ),
                         ),
-                        onPressed: () {
-                          context.read<UserProviderLogin>().signInWithApple(
-                              context);
-                          Navigator.push(context, MaterialPageRoute(
-                              builder: (context) => Home()));
+                        validator: (value) {
+                          if (value!.isEmpty) {
+                            return 'Please enter your password';
+                          }
+                          return null;
                         },
-                        icon: const FaIcon(
-                          FontAwesomeIcons.apple,
-                          color: Colors.white,
-                        ),
-                        label: const Text(
-                          'Sign in with Apple',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontFamily: 'San Francisco',
+                      ),
+                      const SizedBox(height: 20),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            if (formkey.currentState!.validate()) {
+                              context.read<UserProviderLogin>().signInWithEmailAndPassword(
+                                context,
+                                email.text.trim(),
+                                password.text.trim(),
+                              );
+                            }
+                          },
+                          style: ElevatedButton.styleFrom(
+                            padding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30.0),
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              FaIcon(FontAwesomeIcons.envelope),
+                              SizedBox(width: 10),
+                              Text('Sign in'),
+                            ],
                           ),
                         ),
                       ),
-                    ),
-
-                    const SizedBox(height: 40), // Space above the "OR" line
+                      const SizedBox(height: 20),
+                      TextButton(
+                        onPressed: () {
+                          context.read<UserProviderLogin>()._showForgotPasswordDialog(context);
+                        },
+                        child: Text('Forgot Password?'),
+                      ),
+                    ] else ...[
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            setState(() {
+                              showLoginForm = true;
+                            });
+                          },
+                          style: ElevatedButton.styleFrom(
+                            padding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30.0),
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              FaIcon(FontAwesomeIcons.envelope),
+                              SizedBox(width: 10),
+                              Text('Sign in with Email',
+                                style: TextStyle(
+                                color: Colors.black,
+                                fontFamily: 'San Francisco',
+                              ),),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      Text(
+                        'OR',
+                        style: TextStyle(color: Colors.grey, fontWeight: FontWeight.w900),
+                      ),
+                      const SizedBox(height: 20),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.white,
+                            padding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30.0),
+                            ),
+                          ),
+                          onPressed: () {
+                            context.read<UserProviderLogin>().signInWithGoogle(context);
+                          },
+                          icon: FaIcon(FontAwesomeIcons.google),
+                          label: Text(
+                            'Sign in with Google',
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontFamily: 'San Francisco',
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: 30),
                     const Center(
                       child: Text(
                         '----------------Register----------------',
                         style: TextStyle(color: Colors.grey, fontWeight: FontWeight.w900, fontSize: 14),
                       ),
                     ),
-                    const SizedBox(height: 40), // Adjusted gap
+                    const SizedBox(height: 30),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -264,11 +390,11 @@ class _LogInPageState extends State<LogInPage> {
                             Navigator.pushNamed(context, 'signup');
                           },
                           child: const Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 8.0), // Adjust padding here
+                            padding: EdgeInsets.symmetric(horizontal: 8.0),
                             child: Text(
                               'Sign up',
                               style: TextStyle(
-                                fontSize: 24,
+                                fontSize: 16,
                                 fontWeight: FontWeight.bold,
                                 color: Colors.blue,
                                 fontFamily: 'San Francisco',
@@ -278,7 +404,6 @@ class _LogInPageState extends State<LogInPage> {
                         ),
                       ],
                     ),
-
                   ],
                 ),
               ),
@@ -290,3 +415,38 @@ class _LogInPageState extends State<LogInPage> {
   }
 }
 
+
+
+
+// SizedBox(height: 20), // Adjusted gap between buttons
+// SizedBox(
+// width: double.infinity,
+// // Make the button as wide as possible
+// child: ElevatedButton.icon(
+// style: ElevatedButton.styleFrom(
+// backgroundColor: Colors.black,
+// padding: const EdgeInsets.symmetric(
+// horizontal: 20, vertical: 12),
+// shape: RoundedRectangleBorder(
+// borderRadius: BorderRadius.circular(30.0),
+// ),
+// ),
+// onPressed: () {
+// context.read<UserProviderLogin>().signInWithApple(
+// context);
+// Navigator.push(context, MaterialPageRoute(
+// builder: (context) => Home()));
+// },
+// icon: const FaIcon(
+// FontAwesomeIcons.apple,
+// color: Colors.white,
+// ),
+// label: const Text(
+// 'Sign in with Apple',
+// style: TextStyle(
+// color: Colors.white,
+// fontFamily: 'San Francisco',
+// ),
+// ),
+// ),
+// ),
