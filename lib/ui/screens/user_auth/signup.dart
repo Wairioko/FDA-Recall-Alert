@@ -12,7 +12,6 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import '../home/home.dart';
 import 'login.dart';
 
-
 class UserModel {
   String defaultState;
   String shoppingFrequency;
@@ -28,9 +27,6 @@ class UserModel {
   }
 }
 
-
-
-
 String shoppingFrequencyHintText = "";
 
 class SignUpPage extends StatefulWidget {
@@ -41,8 +37,9 @@ class SignUpPage extends StatefulWidget {
   @override
   _SignUpPageState createState() => _SignUpPageState();
 }
+
 // Define a variable to track the authentication method
-enum AuthMethod {Google, Apple, EmailPassword }
+enum AuthMethod { Google, Apple, EmailPassword }
 
 class _SignUpPageState extends State<SignUpPage> {
   final formkey = GlobalKey<FormState>();
@@ -59,18 +56,15 @@ class _SignUpPageState extends State<SignUpPage> {
   bool _passwordVisible = false;
   bool _confirmPasswordVisible = false;
 
-
   // Initialize it with the default method
   AuthMethod authMethod = AuthMethod.Google;
+  bool showEmailForm = false; // State variable to show/hide email form
 
   @override
   void initState() {
     super.initState();
     // Reset text controllers and other state variables when the sign-up page is initialized
   }
-
-
-
 
   void _handleGoogleSignUp(BuildContext context) async {
     try {
@@ -193,10 +187,6 @@ class _SignUpPageState extends State<SignUpPage> {
     }
   }
 
-
-
-  //
-
   void _handleAppleSignUp() async {
     try {
       final credential = await SignInWithApple.getAppleIDCredential(
@@ -222,7 +212,6 @@ class _SignUpPageState extends State<SignUpPage> {
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
     List<String> shoppingFrequencyOptions = [
@@ -230,7 +219,6 @@ class _SignUpPageState extends State<SignUpPage> {
       '4-6 times per month',
       '7+ times per month'
     ];
-
 
     return Scaffold(
       body: Container(
@@ -264,174 +252,146 @@ class _SignUpPageState extends State<SignUpPage> {
                       'One Scan at a time!',
                       style: TextStyle(fontSize: 20, fontFamily: 'San Francisco'),
                     ),
-                  const SizedBox(height: 40), // Adjusted gap
-                  SizedBox(
-                    width: double.infinity, // Make the button as wide as possible
-                    child: ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30.0),
-                        ),
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          authMethod = AuthMethod.EmailPassword;
-                        });
-                      },
-                      icon: const Icon(Icons.email, color: Colors.black),
-                      label: const Text(
-                        'Register with Email',
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontFamily: 'San Francisco',
-                        ),
-                      ),
-                    ),
-                  ),
-                  if (authMethod == AuthMethod.EmailPassword)
-                Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  children: [
-                    TextFormField(
-                      controller: _emailController,
-                      decoration: const InputDecoration(
-                        labelText: 'Email',
-                        prefixIcon: Icon(Icons.email),
-                      ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter an email';
-                        }
-                        return null;
-                      },
-                    ),
-                const SizedBox(height: 16.0),
-                TextFormField(
-                  controller: _passwordController,
-                  obscureText: !_passwordVisible,
-                  decoration: InputDecoration(
-                    labelText: 'Password',
-                    prefixIcon: const Icon(Icons.lock),
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _passwordVisible ? Icons.visibility : Icons.visibility_off,
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          _passwordVisible = !_passwordVisible;
-                        });
-                      },
-                    ),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter a password';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16.0),
-                TextFormField(
-                    controller: _confirmPasswordController,
-                    obscureText: !_confirmPasswordVisible,
-                    decoration: InputDecoration(
-                    labelText: 'Confirm Password',
-                    prefixIcon: const Icon(Icons.lock),
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _confirmPasswordVisible ? Icons.visibility : Icons.visibility_off,
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          _confirmPasswordVisible = !_confirmPasswordVisible;
-                        });
-                      },
-                    ),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please confirm your password';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16.0),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: _handleEmailPasswordSignUp,
-                    child: const Text('Register'),
-                  ),
-                ),
-              ],
-            ),
-                ),
-                    SizedBox(height: 20),
-                    Text(
-                      'OR',
-                      style: TextStyle(color: Colors.grey, fontWeight: FontWeight.w900),
-                    ),
-
-                    SizedBox(height: 20), // Reduced the height
-                    SizedBox(
-                      width: double.infinity, // Make the button as wide as possible
-                      child: ElevatedButton.icon(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          padding: EdgeInsets.symmetric(
-                              horizontal: 20, vertical: 12),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30.0),
+                    const SizedBox(height: 40), // Adjusted gap
+                    if (!showEmailForm) ...[
+                      SizedBox(
+                        width: double.infinity, // Make the button as wide as possible
+                        child: ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30.0),
+                            ),
                           ),
-                        ),
-                        onPressed: () {
-                          _handleGoogleSignUp(context);
-                        },
-                        icon: FaIcon(FontAwesomeIcons.google),
-                        label: Text(
-                          'Register with Google',
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontFamily: 'San Francisco',
+                          onPressed: () {
+                            setState(() {
+                              showEmailForm = true;
+                              authMethod = AuthMethod.EmailPassword;
+                            });
+                          },
+                          icon: const Icon(Icons.email, color: Colors.black),
+                          label: const Text(
+                            'Register with Email',
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontFamily: 'San Francisco',
+                            ),
                           ),
                         ),
                       ),
-                    ),
+                      SizedBox(height: 20),
+                      Text(
+                        'OR',
+                        style: TextStyle(color: Colors.grey, fontWeight: FontWeight.w900),
+                      ),
+                      SizedBox(height: 20), // Reduced the height
+                      SizedBox(
+                        width: double.infinity, // Make the button as wide as possible
+                        child: ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.white,
+                            padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30.0),
+                            ),
+                          ),
+                          onPressed: () {
+                            _handleGoogleSignUp(context);
+                          },
+                          icon: FaIcon(FontAwesomeIcons.google),
+                          label: Text(
+                            'Register with Google',
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontFamily: 'San Francisco',
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                    if (showEmailForm) ...[
+                      Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          children: [
+                            TextFormField(
+                              controller: _emailController,
+                              decoration: const InputDecoration(
+                                labelText: 'Email',
+                                prefixIcon: Icon(Icons.email),
+                              ),
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Please enter an email';
+                                }
+                                return null;
+                              },
+                            ),
+                            const SizedBox(height: 16.0),
+                            TextFormField(
+                              controller: _passwordController,
+                              obscureText: !_passwordVisible,
+                              decoration: InputDecoration(
+                                labelText: 'Password',
+                                prefixIcon: const Icon(Icons.lock),
+                                suffixIcon: IconButton(
+                                  icon: Icon(
+                                    _passwordVisible ? Icons.visibility : Icons.visibility_off,
+                                  ),
+                                  onPressed: () {
+                                    setState(() {
+                                      _passwordVisible = !_passwordVisible;
+                                    });
+                                  },
+                                ),
+                              ),
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Please enter a password';
+                                }
+                                return null;
+                              },
+                            ),
+                            const SizedBox(height: 16.0),
+                            TextFormField(
+                              controller: _confirmPasswordController,
+                              obscureText: !_confirmPasswordVisible,
+                              decoration: InputDecoration(
+                                labelText: 'Confirm Password',
+                                prefixIcon: const Icon(Icons.lock),
+                                suffixIcon: IconButton(
+                                  icon: Icon(
+                                    _confirmPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                                  ),
+                                  onPressed: () {
+                                    setState(() {
+                                      _confirmPasswordVisible = !_confirmPasswordVisible;
+                                    });
+                                  },
+                                ),
+                              ),
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Please confirm your password';
+                                }
+                                return null;
+                              },
+                            ),
+                            const SizedBox(height: 16.0),
+                            SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton(
+                                onPressed: _handleEmailPasswordSignUp,
+                                child: const Text('Register'),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
 
-                    // SizedBox(height: 20), // Adjusted gap between buttons
-                    // SizedBox(
-                    //   width: double.infinity,
-                    //   // Make the button as wide as possible
-                    //   child: ElevatedButton.icon(
-                    //     style: ElevatedButton.styleFrom(
-                    //       backgroundColor: Colors.black,
-                    //       padding: const EdgeInsets.symmetric(
-                    //           horizontal: 20, vertical: 12),
-                    //       shape: RoundedRectangleBorder(
-                    //         borderRadius: BorderRadius.circular(30.0),
-                    //       ),
-                    //     ),
-                    //     onPressed: () {
-                    //       _handleAppleSignUp();
-                    //     },
-                    //     icon: const FaIcon(
-                    //       FontAwesomeIcons.apple,
-                    //       color: Colors.white,
-                    //     ),
-                    //     label: const Text(
-                    //       'Register with Apple',
-                    //       style: TextStyle(
-                    //         color: Colors.white,
-                    //         fontFamily: 'San Francisco',
-                    //       ),
-                    //     ),
-                    //   ),
-                    // ),
-
-                    const SizedBox(height: 40), // Space above the "OR" line
+                    SizedBox(height: 40), // Space above the "OR" line
                     const Center(
                       child: Text(
                         '------------------Login------------------',
@@ -445,7 +405,7 @@ class _SignUpPageState extends State<SignUpPage> {
                         const Text(
                           'Already a member?',
                           style: TextStyle(
-                            fontSize: 15,
+                            fontSize: 16,
                             fontWeight: FontWeight.bold,
                             color: Colors.black,
                             fontFamily: 'San Francisco',
@@ -455,10 +415,10 @@ class _SignUpPageState extends State<SignUpPage> {
                           onTap: () {
                             Navigator.pushNamed(context, LogInPage.path);
                           },
-                          child:const Text(
+                          child: const Text(
                             'Sign In',
                             style: TextStyle(
-                              fontSize: 18,
+                              fontSize: 16,
                               fontWeight: FontWeight.bold,
                               color: Colors.blue,
                               fontFamily: 'San Francisco',
@@ -467,7 +427,6 @@ class _SignUpPageState extends State<SignUpPage> {
                         ),
                       ],
                     ),
-
                   ],
                 ),
               ),
