@@ -10,6 +10,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 // Define your entitlement keys and associated product IDs
 const String premiumEntitlementKey = 'premium';
+const String monthlyEntitlementKey = 'monthly';
 const List<String> premiumProductIds = ['monthly','6-months' ,'annual'];
 
 
@@ -478,6 +479,7 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
             content: Text('Purchase successful, but entitlement not found.'),
           ),
         );
+        Navigator.of(context).pushNamed('/home');
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
