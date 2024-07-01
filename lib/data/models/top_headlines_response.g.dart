@@ -95,6 +95,7 @@ class RecallResponseModelAdapter extends TypeAdapter<_$_ArticleResponseModel> {
       fields[5] as String?,
       fields[6] as String?,
       fields[7] as String?,
+      fields[8] as String?,
     );
   }
 
@@ -170,6 +171,7 @@ _$_ArticleResponseModel _$$_RecallResponseModelFromJson(
       json['voluntary_mandated'] as String?,
       json['distribution_pattern'] as String?,
       json['event_id'] as dynamic,
+      json['recall_number'] as dynamic
     );
 
 
