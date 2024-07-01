@@ -61,6 +61,7 @@ class RecallResponseModel with _$RecallResponseModel {
     @HiveField(5)  String? voluntary_mandated,
     @HiveField(6)  String? distribution_pattern,
     @HiveField(7)  dynamic event_id,
+    @HiveField(8)  dynamic recall_number,
   ) = _RecallResponseModel;
 
   factory RecallResponseModel.fromJson(Map<String, dynamic> json) =>
@@ -75,6 +76,7 @@ class RecallResponseModel with _$RecallResponseModel {
     voluntary_mandated: voluntary_mandated,
     distribution_pattern: distribution_pattern,
     event_id: event_id,
+    recall_number: recall_number,
   );
 }
 
