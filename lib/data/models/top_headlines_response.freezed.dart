@@ -34,6 +34,8 @@ mixin _$RecallResponseModel {
   String? get distribution_pattern => throw _privateConstructorUsedError;
   @HiveField(7)
   dynamic get event_id => throw _privateConstructorUsedError;
+  @HiveField(8)
+  dynamic get recall_number => throw _privateConstructorUsedError;
 }
 /// @nodoc
 @JsonSerializable(createToJson: false)
@@ -57,7 +59,11 @@ class _$_ArticleResponseModel extends _RecallResponseModel {
       @HiveField(6)
       this.distribution_pattern,
       @HiveField(7)
-      this.event_id)
+      this.event_id,
+      @HiveField(8)
+      this.recall_number
+      )
+      
       : super._();
 
 
@@ -87,10 +93,12 @@ class _$_ArticleResponseModel extends _RecallResponseModel {
   final String? distribution_pattern;
   @HiveField(7)
   final dynamic event_id;
+  @HiveField(8)
+  final dynamic recall_number;
 
   @override
   String toString() {
-    return '_$_RecallResponseModel(status: $status, product_description: $product_description, '
+    return '_$_RecallResponseModel(status: $status, recall_number: $recall_number ,product_description: $product_description, '
         'classification: $classification, reason_for_recall: $reason_for_recall, '
         'recalling_firm: $recalling_firm, voluntary_mandated: $voluntary_mandated,'
         ' distribution_pattern: $distribution_pattern),'
@@ -116,7 +124,9 @@ abstract class _RecallResponseModel extends RecallResponseModel {
       @HiveField(6)
       final String? distribution_pattern,
       @HiveField(7)
-      final dynamic event_id
+      final dynamic event_id,
+      @HiveField(8)
+      final dynamic recall_number,
       ) = _$_ArticleResponseModel;
   const _RecallResponseModel._() : super._();
 
@@ -146,5 +156,7 @@ abstract class _RecallResponseModel extends RecallResponseModel {
   String? get distribution_pattern;
   @HiveField(7)
   dynamic get event_id;
+  @HiveField(8)
+  dynamic get recall_number;
 
 }
