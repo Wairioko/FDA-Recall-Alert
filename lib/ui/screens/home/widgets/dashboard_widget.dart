@@ -67,7 +67,7 @@ class _DashBoardWidgetState extends State<DashBoardWidget> {
       // Check if the user document exists and if additional information is present
       return userData.exists && userData['shoppingFrequency'] != null && userData['defaultState'] != null;
     } catch (e) {
-      print('Error checking additional information: $e');
+
       return false;
     }
   }
@@ -91,15 +91,25 @@ class _DashBoardWidgetState extends State<DashBoardWidget> {
     FirebaseCrashlytics.instance.log('_collectAdditionalInformation function is called');
 
     // Show a dialog to collect additional information
+
+    // List of all 50 states
+    List<String> states = [
+      'Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorado', 'Connecticut',
+      'Delaware', 'Florida', 'Georgia', 'Hawaii', 'Idaho', 'Illinois', 'Indiana', 'Iowa',
+      'Kansas', 'Kentucky', 'Louisiana', 'Maine', 'Maryland', 'Massachusetts', 'Michigan',
+      'Minnesota', 'Mississippi', 'Missouri', 'Montana', 'Nebraska', 'Nevada', 'New Hampshire',
+      'New Jersey', 'New Mexico', 'New York', 'North Carolina', 'North Dakota', 'Ohio', 'Oklahoma',
+      'Oregon', 'Pennsylvania', 'Rhode Island', 'South Carolina', 'South Dakota', 'Tennessee',
+      'Texas', 'Utah', 'Vermont', 'Virginia', 'Washington', 'West Virginia', 'Wisconsin', 'Wyoming'
+    ];
+
+    // GlobalKey to access the form state
+    final GlobalKey<FormState> formKey = GlobalKey<FormState>();
+    String defaultState = states[0]; // Initial value
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        // Variables to store collected information
-        String defaultState = '';
-
-        // GlobalKey to access the form state
-        final GlobalKey<FormState> formKey = GlobalKey<FormState>();
-
         return AlertDialog(
           title: const Text('Additional Information'),
           content: SingleChildScrollView(
@@ -108,7 +118,7 @@ class _DashBoardWidgetState extends State<DashBoardWidget> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Dropdown to select shopping frequency
+                  // Dropdown to select shopping frequency (unchanged)
                   DropdownButtonFormField<String>(
                     value: shoppingFrequency,
                     onChanged: _onShoppingFrequencyChanged,
@@ -137,18 +147,27 @@ class _DashBoardWidgetState extends State<DashBoardWidget> {
                       return null;
                     },
                   ),
-                  // Text field to enter default state
-                  TextFormField(
-                    onChanged: (value) {
-                      defaultState = value;
+                  // Dropdown to select default state
+                  DropdownButtonFormField<String>(
+                    value: defaultState,
+                    onChanged: (newValue) {
+                      setState(() {
+                        defaultState = newValue!;
+                      });
                     },
+                    items: states.map((String state) {
+                      return DropdownMenuItem<String>(
+                        value: state,
+                        child: Text(state),
+                      );
+                    }).toList(),
                     decoration: const InputDecoration(
-                      hintText: 'Your Default State',
-                      labelText: 'Enter Default State',
+                      labelText: 'Home State',
+                      hintText: 'Select Home State',
                     ),
                     validator: (value) {
-                      if (value!.isEmpty) {
-                        return 'State cannot be empty';
+                      if (value == null || value.isEmpty) {
+                        return 'Please select a state';
                       }
                       return null;
                     },
@@ -158,14 +177,6 @@ class _DashBoardWidgetState extends State<DashBoardWidget> {
             ),
           ),
           actions: [
-            TextButton(
-              onPressed: () {
-                // Log event: User cancels the dialog
-                FirebaseCrashlytics.instance.log('User cancels the dialog');
-                Navigator.of(context).pop();
-              },
-              child: Text('Cancel'),
-            ),
             ElevatedButton(
               onPressed: () async {
                 if (formKey.currentState!.validate()) {
@@ -186,13 +197,13 @@ class _DashBoardWidgetState extends State<DashBoardWidget> {
                       additionalInfoCollected = true;
                     });
 
-                    // Close the dialog
+                    // Close the dialog and navigate to home screen
                     Navigator.of(context).pop();
                     Navigator.of(context).pushNamed('/home');
                   } catch (e) {
                     // Log error: Error saving additional information
                     FirebaseCrashlytics.instance.recordError(e, StackTrace.current);
-                    print('Error saving additional information: $e');
+
                   }
                 }
               },
@@ -203,6 +214,7 @@ class _DashBoardWidgetState extends State<DashBoardWidget> {
       },
     );
   }
+
 
   Future<void> _pullRefresh() async {
     _homeCubit.getTopHeadlines();
