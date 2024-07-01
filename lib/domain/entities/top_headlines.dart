@@ -21,7 +21,8 @@ class Recall_Event {
     required this.recalling_firm,
     required this.distribution_pattern,
     required this.voluntary_mandated,
-    required this.event_id
+    required this.event_id,
+    required this.recall_number
 
   });
 
@@ -33,5 +34,6 @@ class Recall_Event {
   final String? distribution_pattern;
   final String? recalling_firm;
   final dynamic event_id;
+  final dynamic recall_number;
 
 }
