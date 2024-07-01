@@ -5,6 +5,7 @@ class DetailDataModel {
   final String classification;
   final String recalling_firm;
   final String product_description;
+  final String recall_number;
 
 
 
@@ -15,6 +16,7 @@ class DetailDataModel {
     required this.classification,
     required this.recalling_firm,
     required this.product_description,
+    required this.recall_number
 
   });
 }
