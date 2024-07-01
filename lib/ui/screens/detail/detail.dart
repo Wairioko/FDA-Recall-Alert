@@ -68,7 +68,9 @@ class _DetailState extends State<Detail> {
                   _buildDetailRow('Product Recall:', widget.detailDataModel.product_description),
                   _buildDetailRow('Status:', widget.detailDataModel.status),
                   _buildDetailRow('Classification:', widget.detailDataModel.classification),
-                  _buildDetailRow('Reason for Recall:', widget.detailDataModel.reason_for_recall),
+                  _buildDetailRow('Recalling Company:', widget.detailDataModel.recalling_firm),
+                  _buildDetailRow('Recall Number:', widget.detailDataModel.recall_number),
+
                 ],
               ),
             ),
