@@ -330,6 +330,7 @@ class NotificationDisplay extends StatelessWidget {
                 classification: item['classification'],
                 recalling_firm: item['recalling_firm'],
                 voluntary_mandated: item['voluntary_mandated'],
+                recall_number: item['recall_number']
               ),
             );
           }
