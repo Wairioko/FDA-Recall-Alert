@@ -60,6 +60,7 @@ class RecallList extends StatelessWidget {
                   recalling_firm: articles[index].recalling_firm ?? "",
                   status: articles[index].status ?? "",
                   voluntary_mandated: articles[index].voluntary_mandated ?? "",
+                  recall_number: articles[index].recall_number ?? ""
                 ),
               ),
             ),
