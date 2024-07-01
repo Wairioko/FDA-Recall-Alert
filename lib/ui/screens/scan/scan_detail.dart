@@ -393,6 +393,7 @@ class _ResultScreenState extends State<ResultScreen> {
               classification: item['classification'],
               recalling_firm: item['recalling_firm'],
               voluntary_mandated: item['voluntary_mandated'],
+              recall_number: item['recall_number']
             ),
           );
         }
