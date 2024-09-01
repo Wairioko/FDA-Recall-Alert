@@ -379,7 +379,7 @@ class _DetailState extends State<Detail> {
 
 
 
-  static const apiKey = 'AIzaSyDWmLWTEAujx3vLdfH-VTifvE2Jti6bR5U';
+  static const apiKey = 'GEMINI API KEY';
   Future<GenerateContentResponse> fetchAdditionalInfo(
       String reasonForRecall) async {
     final model = await GenerativeModel(model: 'gemini-pro', apiKey: apiKey);
