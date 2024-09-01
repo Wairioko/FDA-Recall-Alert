@@ -63,12 +63,13 @@ Start the Flutter App:
 
 *Monitor Cloud Functions:*
 Ensure that the Google Cloud Scheduler is set up and properly triggering the Cloud Function.
+the cloud function is under the file(cloud-function.py) upload that code to google cloud function
 
 Contributing
 I welcome contributions to this project. Please submit a pull request with a detailed description of the changes and ensure your code adheres to the project's style guidelines.
 
 License
-This project is licensed under the MIT License.
+This project is licensed under the Eclipse Public License - v 2.0.
 
 Contact
 For any queries or issues, please reach out to charlesmungai5@gmail.com
