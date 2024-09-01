@@ -1,3 +1,5 @@
+***FDA RECALL ALERT**
+
 Overview
 The FDA Recall Alert is a Flutter-based mobile application designed to help users stay informed about food and product recalls issued by the U.S. Food and Drug Administration (FDA). This app provides real-time information on recalls, allows users to maintain a personal watchlist, and offers AI-powered insights on the potential effects of consuming recalled items.
 Features
@@ -33,7 +35,7 @@ Frontend: Flutter
 Backend: Google Cloud Functions
 Scheduler: Google Cloud Scheduler
 AI Integration: Gemini AI
-Database: [Specify your database choice, e.g., Firebase Realtime Database, Cloud Firestore]
+Database: [Cloud Firestore]
 
 
 Setup Instructions
@@ -48,7 +50,7 @@ Installation
 
 **Clone the Repository:**
 
-git clone https://github.com/your-repo/fda-recall-watchlist.git
+git clone [(https://github.com/Wairioko/FDA-Recall-Alert.git)]
 **Install Dependencies:**
  - flutter pub get
 
