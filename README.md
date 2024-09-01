@@ -48,6 +48,8 @@ Google Cloud account (for scheduling tasks and managing cloud functions)
 **Clone the Repository:**
 
 git clone [(https://github.com/Wairioko/FDA-Recall-Alert.git)]
+
+
 **Install Dependencies:**
  - flutter pub get
 
