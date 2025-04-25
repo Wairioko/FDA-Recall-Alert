@@ -100,7 +100,7 @@ def get_stored_results_from_storage():
     bucket = storage_client.bucket('fda_data_change')
     blob = bucket.blob('results.json')
     if blob.exists():
-        print("extracted data from cloud storage")
+
         return json.loads(blob.download_as_string())['results']
     else:
         return []
@@ -205,7 +205,7 @@ def send_match_notification(item, result_data, user_id):
             )
             try:
                 response = messaging.send(message)
-                print(f"Notification sent successfully to user {user_id}.")
+
                 # Update notification record
                 update_notification_record(user_id, item_name)
             except Exception as e:
@@ -260,9 +260,7 @@ def main():
     new_food_elements = compare_results(food_results, stored_results)
     new_drug_elements = compare_results(drug_results, stored_results)
     new_device_elements = compare_results(device_results, stored_results)
-    print("Old food results length:", len(stored_results))
-    print("New food results length:", len(food_results))
-    print("New food elements: ", len(new_food_elements))
+
     # Store the new results for future comparison
     store_results_in_storage(food_results)
 
@@ -270,7 +268,7 @@ def main():
     if new_food_elements:
         send_notifications_async(new_food_elements)
     else:
-        print("No new elements for food")
+        return
 
     # Process potential matches for each user for all categories
     users_ref = firestore.client().collection('users')

@@ -73,7 +73,7 @@ class NotificationProvider extends ChangeNotifier {
   void addNotification(NotificationModel notification) {
     _notifications.insert(0, notification);
     notifyListeners(); // Notify listeners whenever a new notification is added
-    print("Notification added: ${notification.message}");
+
   }
 
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
@@ -138,7 +138,7 @@ class NotificationProvider extends ChangeNotifier {
   void removeNotification(NotificationModel notification) {
     _notifications.remove(notification);
     notifyListeners(); // Notify listeners whenever a notification is removed
-    print("Notification removed: ${notification.title}");
+
   }
 
 
@@ -165,7 +165,7 @@ class NotificationProvider extends ChangeNotifier {
   // }
 
   void _processMessage(RemoteMessage message) async {
-    print("Process Message started, Message received: ${message.notification?.title}");
+
     NotificationModel notification = NotificationModel(
       icon: Icons.notifications,
       title: message.notification?.title ?? "",

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import '../../../model/detail_data_model.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
-
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 
 class Detail extends StatefulWidget {
@@ -65,11 +65,11 @@ class _DetailState extends State<Detail> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildDetailRow('Product Recall:', widget.detailDataModel.product_description),
+                  _buildDetailRow('Product Recalled:', widget.detailDataModel.product_description),
                   _buildDetailRow('Status:', widget.detailDataModel.status),
                   _buildDetailRow('Classification:', widget.detailDataModel.classification),
                   _buildDetailRow('Recalling Company:', widget.detailDataModel.recalling_firm),
-                  _buildDetailRow('Recall Number:', widget.detailDataModel.recall_number),
+                  _buildDetailRow('FDA Recall Tracking Number:', widget.detailDataModel.recall_number),
 
                 ],
               ),
@@ -90,7 +90,7 @@ class _DetailState extends State<Detail> {
                       ),
                     );
                   } else if (snapshot.hasError) {
-                    print(snapshot.error);
+
                     return Center(
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
@@ -126,7 +126,7 @@ class _DetailState extends State<Detail> {
                   }
                 },
               ),
-            _buildGenerateInsightsButton(widget.detailDataModel.reason_for_recall),
+            _buildGenerateInsightsButton(widget.detailDataModel.product_description,widget.detailDataModel.reason_for_recall),
           ],
         ),
       ),
@@ -182,9 +182,9 @@ class _DetailState extends State<Detail> {
 
 
 
-  Widget _buildGeneratedContent(BuildContext context, String reason) {
+  Widget _buildGeneratedContent(BuildContext context, String product, String reason) {
     return FutureBuilder<GenerateContentResponse>(
-      future: fetchAdditionalInfo(reason),
+      future: fetchAdditionalInfo(product,reason),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Center(
@@ -198,7 +198,7 @@ class _DetailState extends State<Detail> {
             ),
           );
         } else if (snapshot.hasError) {
-          print(snapshot.error);
+
           return Center( // More robust error handling
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -349,7 +349,7 @@ class _DetailState extends State<Detail> {
     }
   }
 
-  Widget _buildGenerateInsightsButton(String reason) {
+  Widget _buildGenerateInsightsButton(String product, String reason) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -360,6 +360,7 @@ class _DetailState extends State<Detail> {
             setState(() {
               // Set the future only when the button is pressed
               _generatedContentFuture = fetchAdditionalInfo(
+                  widget.detailDataModel.product_description,
                   widget.detailDataModel.reason_for_recall);
               _showGeneratedContent = true;
               _isButtonClicked = true; // Set the flag to true after clicking the button
@@ -376,19 +377,17 @@ class _DetailState extends State<Detail> {
   }
 
 
-
-
-
-  static const apiKey = 'GEMINI API KEY';
-  Future<GenerateContentResponse> fetchAdditionalInfo(
-      String reasonForRecall) async {
-    final model = await GenerativeModel(model: 'gemini-pro', apiKey: apiKey);
+  Future<GenerateContentResponse> fetchAdditionalInfo(String product,
+    String reasonForRecall) async {
+    final apiKey = dotenv.env['GEMINI_API_KEY'];
+    final model = await GenerativeModel(model: "gemini-1.5-flash", apiKey: apiKey!);
     final prompt =
-        'Give responses for the effects of consuming a product that has been recalled for: $reasonForRecall '
-        'and next steps if you have consumed such a product';
+        'Give responses for the effects of consuming $product that has been recalled for: $reasonForRecall '
+        'and next steps if you have consumed such a products';
     final content = [Content.text(prompt)];
     final response = await model.generateContent(content);
-    print(response);
+
     return response;
   }
 }
+

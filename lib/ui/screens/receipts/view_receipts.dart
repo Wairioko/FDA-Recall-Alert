@@ -248,7 +248,7 @@ class _ReceiptEditScreenState extends State<ReceiptEditScreen> {
         .doc(widget.receiptId)
         .update({'cleared_items': updatedText})
         .then((_) {
-      print("Receipt updated successfully");
+
       Navigator.pop(context); // Pop back to the receipts list screen
     }).catchError((error) {
     });

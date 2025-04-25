@@ -180,11 +180,11 @@ class _ResultScreenState extends State<ResultScreen> {
         FocusScope.of(context).requestFocus(_focusNode);
       });
       final line = filteredLines[index].trim(); // Get the line item text and trim any whitespace
-      print("the line $line");
+
       final matches = _getMatchesForLine(index); // Retrieve matches based on the line item text
-      print("the matches for line $matches");
+
       if (matches == null || clearedIndices.contains(index)) {
-        print('Item cleared. No matches found.');
+
       } else if (matches.isNotEmpty) {
         setState(() {
           _editingLineIndex = index;

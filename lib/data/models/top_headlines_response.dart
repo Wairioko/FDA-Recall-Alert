@@ -31,7 +31,7 @@ class RecallsResponse extends BaseModel<RecallsResponse> {
     } else {
       // Handle the case where 'results' is not a List
       // You might want to provide a default value or throw an exception
-      print("THIS IS $metaResults");
+
       return RecallsResponse([]);
     }
   }

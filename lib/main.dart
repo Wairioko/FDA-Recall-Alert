@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:safe_scan/ui/screens/detail/detail.dart';
@@ -25,58 +27,76 @@ import 'core/service_locator.dart';
 import 'core/app.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import 'model/detail_data_model.dart';
 
 
-@pragma('vm:entry-point')
-Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  // If you're going to use other Firebase services in the background, such as Firestore,
-  // make sure you call `initializeApp` before using other Firebase services.
-  await Firebase.initializeApp();
 
-  print("Handling a background message: ${message.messageId}");
+class NotInitializedError extends Error {
+  @override
+  String toString() => 'DotEnv has not been initialized. Call dotenv.load() first.';
 }
 
-void main() async {
+FirebaseOptions firebaseOptionsFromEnv() {
+  if (!dotenv.isInitialized) throw NotInitializedError();
+  return FirebaseOptions(
+    apiKey: requireEnv('FIREBASE_API_KEY'),
+    appId: requireEnv('FIREBASE_APP_ID'),
+    messagingSenderId: requireEnv('FIREBASE_MESSAGING_SENDERID'),
+    projectId: "saferecall",
+  );
+}
+
+String requireEnv(String key) {
+  final value = dotenv.env[key];
+  if (value == null || value.isEmpty) {
+    throw Exception('Missing env key: $key');
+  }
+  return value;
+}
+
+@pragma('vm:entry-point')
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load();
+  await Firebase.initializeApp(options: firebaseOptionsFromEnv());
+}
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load(fileName: ".env");
+
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
     statusBarColor: Colors.transparent,
     statusBarIconBrightness: Brightness.dark,
   ));
 
-  WidgetsFlutterBinding.ensureInitialized();
 
-  await Firebase.initializeApp(
-    options: const FirebaseOptions(
-      apiKey: "AIzaSyBpl9Bti-DNxFG4qbNf3n-YIlGpF7BPdUE",
-      appId: "1:529836025778:android:555c3ccf188bf01794a6ab",
-      messagingSenderId: "529836025778",
-      projectId: "saferecall",
-    ),
-  );
+  await Firebase.initializeApp(options: firebaseOptionsFromEnv());
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
-  // Configure Purchases SDK
-  await Purchases.setDebugLogsEnabled(true); // Enable debug logs for troubleshooting
+  FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
+  PlatformDispatcher.instance.onError = (error, stack) {
+    FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+    return true;
+  };
+
+  await Purchases.setDebugLogsEnabled(true);
   await Purchases.setup('goog_ZfrdtkQtiwLcpHvPjOUfvqxPqCq');
-  //
-  FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(true);
+  await FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(true);
 
-  User? user = FirebaseAuth.instance.currentUser;
+  final user = FirebaseAuth.instance.currentUser;
 
-  RecallEventApplication application = RecallEventApplication();
-  application.onCreate();
+  RecallEventApplication().onCreate();
   await setUpServiceLocators();
   await sl.allReady();
 
-  runApp(
-    MyApp(user: user),
-  );
+  runApp(MyApp(user: user));
 }
 
 class MyApp extends StatelessWidget {
   final User? user;
-
   const MyApp({Key? key, this.user}) : super(key: key);
 
   @override
@@ -86,60 +106,52 @@ class MyApp extends StatelessWidget {
         future: _checkFirstTime(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return Container(); // or loading indicator
+            return const SizedBox();
           }
           if (snapshot.hasError) {
-            return Container(); // handle error
+            return const Center(child: Text('Error loading app'));
           }
-          final bool isFirstTime = snapshot.data ?? true;
+          final isFirstTime = snapshot.data ?? true;
           return isFirstTime ? LandingPage() : const Home();
         },
       ),
       routes: {
-        SignUpPage.path: (context) => const SignUpPage(),
-        '/login': (context) => const LogInPage(),
-        '/signup': (context) => const SignUpPage(),
-        '/home': (context) => const Home(),
-        '/user-account': (context) => const UserAccountPage(),
-        '/subscription_page': (context) => SubscriptionPage(),
-        '/feedback': (context) => FeedbackForm(),
-        '/account_security': (context) => AccountSettingsWidget(),
-        '/receipts': (context) => const ReceiptListScreen(),
-        '/notifications': (context) => const NotificationsPage(),
-        '/camera': (context) => const MainScreen(),
-        '/subscription': (context) => SubscriptionPage(),
+        SignUpPage.path: (_) => const SignUpPage(),
+        '/login': (_) => const LogInPage(),
+        '/home': (_) => const Home(),
+        '/user-account': (_) => const UserAccountPage(),
+        '/subscription_page': (_) => SubscriptionPage(),
+        '/feedback': (_) => FeedbackForm(),
+        '/account_security': (_) => AccountSettingsWidget(),
+        '/receipts': (_) => const ReceiptListScreen(),
+        '/notifications': (_) => const NotificationsPage(),
+        '/camera': (_) => const MainScreen(),
+        '/subscription': (_) => SubscriptionPage(),
         NotificationDisplay.path: (context) {
-          final RemoteMessage message = ModalRoute.of(context)!.settings.arguments as RemoteMessage;
+          final message = ModalRoute.of(context)!.settings.arguments as RemoteMessage;
           return NotificationDisplay(message: message);
         },
         WatchlistCategoryItemsScreen.path: (context) {
-          final String category = ModalRoute.of(context)?.settings.arguments as String;
+          final category = ModalRoute.of(context)!.settings.arguments as String;
           return WatchlistCategoryItemsScreen(category: category);
         },
         Detail.path: (context) {
-          DetailDataModel detailDataModel = ModalRoute.of(context)?.settings.arguments as DetailDataModel;
+          final detailDataModel = ModalRoute.of(context)!.settings.arguments as DetailDataModel;
           return Detail(detailDataModel: detailDataModel);
-        }
+        },
       },
-      builder: (context, child) {
-        return MultiProvider(
-          providers: [
-            ChangeNotifierProvider(create: (_) => UserProviderLogin()),
-            ChangeNotifierProvider<NotificationProvider>(
-              create: (_) => NotificationProvider(),
-            ),
-          ],
-          child: BlocProvider(
-            create: (context) => ThemeCubit(),
-            child: child,
-          ),
-        );
-      },
+      builder: (context, child) => MultiProvider(
+        providers: [
+          ChangeNotifierProvider(create: (_) => UserProviderLogin()),
+          ChangeNotifierProvider(create: (_) => NotificationProvider()),
+        ],
+        child: BlocProvider(create: (_) => ThemeCubit(), child: child!),
+      ),
     );
   }
 
   Future<bool> _checkFirstTime() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
+    final prefs = await SharedPreferences.getInstance();
     return prefs.getBool('isFirstTime') ?? true;
   }
 }

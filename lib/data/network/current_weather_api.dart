@@ -124,7 +124,7 @@ class RecallApi extends BaseApi<TopHeadlinesQueryParams,
       'results': stateFilteredItems,
     };
 
-    print("Success Response: $filteredResponseJson");
+
     return RecallsResponse.fromJson(filteredResponseJson);
   }
 

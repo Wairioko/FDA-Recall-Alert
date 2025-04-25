@@ -7,6 +7,7 @@ import 'package:flutter/widgets.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 // Define your entitlement keys and associated product IDs
 const String premiumEntitlementKey = 'premium';
@@ -89,7 +90,7 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
     try {
       await Purchases.setDebugLogsEnabled(true);
       if (Platform.isAndroid) {
-        await Purchases.setup('goog_ZfrdtkQtiwLcpHvPjOUfvqxPqCq', appUserId: user?.uid);
+        await Purchases.setup(dotenv.env['ANDROID_APP_USER_ID']!, appUserId: user?.uid);
       } else if (Platform.isIOS) {
         await Purchases.setup('ios_app_user_id', appUserId: user?.uid);
       } else {
